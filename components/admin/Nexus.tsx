@@ -40,6 +40,7 @@ export type NexusNode = {
   github?: string;
   homepage?: string;
   actions?: NexusAction[];
+  synced?: boolean;
 };
 
 export type NexusLink = {
@@ -509,6 +510,16 @@ export function Nexus({ domains, nodes, links }: Props) {
                     <circle r={r + 5} fill={color} opacity={0.25} filter="url(#nodeGlow)" />
                     <circle r={r} fill={color} />
                     <circle r={Math.max(2, r * 0.25)} fill="#faf7f2" />
+                    {n.synced && (
+                      <circle
+                        r={r + 4}
+                        fill="transparent"
+                        stroke="#faf7f2"
+                        strokeWidth={0.8}
+                        strokeOpacity={0.5}
+                        strokeDasharray="2 3"
+                      />
+                    )}
                   </>
                 )}
                 {n.kind === "ghost" && (
@@ -665,8 +676,9 @@ const HoverTooltip = forwardRef<
   ref
 ) {
   const domainColor = domain?.color ?? "#d97757";
-  const kindTag =
-    node.kind === "real"
+  const kindTag = node.synced
+    ? "auto-synced"
+    : node.kind === "real"
       ? "original"
       : node.kind === "fork"
         ? "fork"

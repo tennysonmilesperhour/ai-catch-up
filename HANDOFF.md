@@ -14,6 +14,31 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-24 - Nexus auto-sync (GitHub + local tool adds)
+
+Direct request: "I want the nexus to auto update every time I add a new repo to github. I also want it to be able to autoupdate essentially any time I download or integrate a new tool - within the scope of possibility and relevance."
+
+**GitHub auto-sync (real auto-update):**
+
+- `lib/github.ts` fetches public repos from `https://api.github.com/users/{GITHUB_USERNAME}/repos` at request time. Respects optional `GITHUB_TOKEN` for higher rate limits / private repos. Uses Next.js `fetch` cache with a 15-minute revalidate, so new repos show up within the cache window.
+- `lib/nexus-merge.ts` merges live GitHub data with the curated `nexus-data.ts`:
+  - Curated nodes with a matching `github` field keep all their copy; only `homepage` and `deployed` get refreshed from the live data.
+  - Unknown repos (not yet in the content file) get auto-added as `real` (or `fork` if the repo is a fork) in the `apps` domain, weight 3, desc = GitHub description, and are auto-linked to `global-memory` with strength 0.25 so they join the orbit rather than float alone.
+- Auto-added nodes carry a `synced: true` flag. Visually they get a thin dashed cream-colored ring; in the hover tooltip their kind tag reads `auto-synced`.
+- The Nexus page header now shows `GitHub synced, N auto-added` or `GitHub sync off (reason)` so the state is legible.
+- New env vars: `GITHUB_USERNAME` (required for sync), `GITHUB_TOKEN` (optional). Added to `.env.example`.
+
+**Tool auto-sync (semi-automatic):**
+
+- Auto-detecting local tool installs (Cursor, 1Password, Raycast, etc.) isn't possible from a web app without an agent on Tennyson's machine. Intentional v1.0 decision: offer a low-friction quick-add form instead.
+- New `NexusAdmin` client wrapper (`components/admin/NexusAdmin.tsx`) renders an "Add a tool or node" button above the graph. The form takes a name, domain, description, and kind ("Already using" / "Planning to" / "Fork / adjacent"). Adds persist to `localStorage` under `nexus-custom-nodes-v1` and merge into the graph immediately with no reload.
+- A "Manage local additions" disclosure lets you remove any entry you added.
+- Cross-device sync is out of scope for v1.0. The UI labels this honestly ("Saved in this browser only. Cross-device sync lands in v1.1.") so Tennyson isn't surprised when a tool added on his laptop doesn't appear on his Mac mini.
+
+**New env var Tennyson needs to set on Vercel:** `GITHUB_USERNAME=tennysonmilesperhour`. Without it, the Nexus falls back to the curated data only (no sync), still works.
+
+Verified: typecheck clean; `npm run build` green (18 routes); Nexus page renders with "GitHub sync off" banner when the var is missing and the add-tool form is visible.
+
 ### 2026-04-24 - Full security / bug / UX audit (autonomous)
 
 Direct request from Tennyson: full audit, fix everything, use best judgment on trade-offs, report when done. Changes in one batch:
