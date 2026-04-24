@@ -14,6 +14,30 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-24 - Landing upgrades + Nexus tooltip action buttons
+
+**Section 1: Landing page.**
+
+- `what-you-get.mdx` rewritten as three layers (what you install / what Claude learns / what you learn); `WhatYouGet.tsx` renders them as three equally-weighted cards.
+- New `before-after.mdx` + `BeforeAfter.tsx`: side-by-side panels showing a user prompt, Claude response, and outcome for "without this system" vs "with this system". Styled distinctly (muted grays vs warm terracotta).
+- New `this-is-for-you.mdx` + `ThisIsForYou.tsx`: prominent positive list plus a muted "and this is not for you if..." counterpoint below.
+- One-line positioning statement appended to `who-its-for.mdx` (hiding vs teaching).
+- Landing page section order is now: Hero → Video → Pricing → Plateau → Before/After → What You Get → Who It's For → This Is For You → Final CTA → Footer.
+
+**Section 2: Nexus tooltip action buttons.**
+
+- `NexusNode` in `/content/admin/nexus-data.ts` gained an optional `actions` field (`NodeAction[]`). `ActionKind` is `copy-prompt | open-url | copy-commands | view-steps`.
+- Populated actions for 10 key nodes (cursor, 1password, claude-sync, env-sync, claude-projects, this-product, readmes, claude-md-per, context-md, decisions-md).
+- Hover tooltip now renders action buttons below the description, separated by a faint border in the domain color. `pointerEvents` is `"auto"` when a node has actions so the buttons are clickable.
+- `copy-prompt` / `copy-commands` write to clipboard with a 2-second "Copied" confirmation.
+- `open-url` opens in a new tab with `noopener,noreferrer`.
+- `view-steps` opens a full-screen modal with markdown content rendered via `react-markdown` (installed). The tooltip closes when the modal opens. Pressing Escape or clicking the backdrop closes the modal.
+- Nodes without actions render the tooltip unchanged (just the description, no button section, no visual glitch).
+
+Scope boundary respected: no API automation, no direct Claude Code integration. Clipboard prompts are the manual-but-reliable bridge for v1.0.
+
+Verified: typecheck clean; `npm run build` green (14 pages, Nexus bundle 39kB after react-markdown addition); public landing page unaffected.
+
 ### 2026-04-24 - Nexus tooltips
 
 Added an HTML overlay tooltip to the Nexus component that shows on hover. Anchored to the existing `position: relative` SVG container, top-right corner, max-width 320px, glassy dark background with a left accent bar in the domain color. Shows: domain label, kind tag ("original" / "fork" / "high priority gap" / "gap"), node label in monospace, description, and a "click to open" hint when `github` or `homepage` is set. Renders only when a node is hovered and no modal is open (`hovered && !selected`). Implementation uses a derived `hoveredNode` from the existing `hoveredId` state, so the dimming/highlight logic stays untouched. The component's `NexusNode` type gained optional `deployed`, `github`, `homepage` fields to match the richer schema in `/content/admin/nexus-data.ts`.

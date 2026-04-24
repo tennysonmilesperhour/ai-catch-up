@@ -7,8 +7,21 @@ import {
   useRef,
   useState,
 } from "react";
+import ReactMarkdown from "react-markdown";
 
 export type NexusKind = "real" | "ghost" | "fork";
+
+export type NexusActionKind =
+  | "copy-prompt"
+  | "open-url"
+  | "copy-commands"
+  | "view-steps";
+
+export type NexusAction = {
+  kind: NexusActionKind;
+  label: string;
+  payload: string;
+};
 
 export type NexusNode = {
   id: string;
@@ -21,6 +34,7 @@ export type NexusNode = {
   deployed?: boolean;
   github?: string;
   homepage?: string;
+  actions?: NexusAction[];
 };
 
 export type NexusLink = {
@@ -105,6 +119,9 @@ export function Nexus({ domains, nodes, links }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [didDrag, setDidDrag] = useState(false);
   const [filter, setFilter] = useState<NexusFilter>("everything");
+  const [stepsModalContent, setStepsModalContent] = useState<string | null>(
+    null
+  );
 
   const visibleIds = useMemo(() => {
     const set = new Set<string>();
@@ -552,6 +569,17 @@ export function Nexus({ domains, nodes, links }: Props) {
         <HoverTooltip
           node={hoveredNode}
           domain={domains[hoveredNode.domain]}
+          onViewSteps={(payload) => {
+            setStepsModalContent(payload);
+            setHoveredId(null);
+          }}
+        />
+      )}
+
+      {stepsModalContent && (
+        <StepsModal
+          content={stepsModalContent}
+          onClose={() => setStepsModalContent(null)}
         />
       )}
 
@@ -658,9 +686,11 @@ function NodeModal({
 function HoverTooltip({
   node,
   domain,
+  onViewSteps,
 }: {
   node: NexusNode;
   domain: DomainInfo | undefined;
+  onViewSteps: (payload: string) => void;
 }) {
   const domainColor = domain?.color ?? "#d97757";
   const kindTag =
@@ -671,6 +701,7 @@ function HoverTooltip({
         : node.priority === "high"
           ? "high priority gap"
           : "gap";
+  const hasActions = !!(node.actions && node.actions.length > 0);
 
   return (
     <div
@@ -685,7 +716,7 @@ function HoverTooltip({
         padding: "16px 18px",
         border: `1px solid ${domainColor}`,
         borderLeft: `3px solid ${domainColor}`,
-        pointerEvents: "none",
+        pointerEvents: hasActions ? "auto" : "none",
         zIndex: 10,
         boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
       }}
@@ -727,7 +758,28 @@ function HoverTooltip({
       >
         {node.desc}
       </div>
-      {(node.github || node.homepage) && (
+      {hasActions && node.actions && (
+        <div
+          style={{
+            marginTop: 14,
+            paddingTop: 12,
+            borderTop: `1px solid ${domainColor}40`,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+          }}
+        >
+          {node.actions.map((action, i) => (
+            <TooltipActionButton
+              key={i}
+              action={action}
+              domainColor={domainColor}
+              onViewSteps={onViewSteps}
+            />
+          ))}
+        </div>
+      )}
+      {!hasActions && (node.github || node.homepage) && (
         <div
           style={{
             fontSize: 11,
@@ -739,6 +791,230 @@ function HoverTooltip({
           click to open
         </div>
       )}
+    </div>
+  );
+}
+
+function TooltipActionButton({
+  action,
+  domainColor,
+  onViewSteps,
+}: {
+  action: NexusAction;
+  domainColor: string;
+  onViewSteps: (payload: string) => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (action.kind === "open-url") {
+      window.open(action.payload, "_blank", "noopener,noreferrer");
+    } else if (
+      action.kind === "copy-prompt" ||
+      action.kind === "copy-commands"
+    ) {
+      try {
+        await navigator.clipboard.writeText(action.payload);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error("Clipboard write failed:", err);
+      }
+    } else if (action.kind === "view-steps") {
+      onViewSteps(action.payload);
+    }
+  };
+
+  const icon =
+    action.kind === "open-url"
+      ? "↗"
+      : action.kind === "copy-prompt" || action.kind === "copy-commands"
+        ? copied
+          ? "✓"
+          : "⎘"
+        : action.kind === "view-steps"
+          ? "→"
+          : "";
+
+  return (
+    <button
+      onClick={handleClick}
+      onPointerDown={(e) => e.stopPropagation()}
+      style={{
+        background: "transparent",
+        color: "#f5efe0",
+        border: `1px solid ${domainColor}80`,
+        padding: "8px 12px",
+        fontSize: 12,
+        fontFamily: "ui-monospace, Menlo, monospace",
+        letterSpacing: "0.03em",
+        cursor: "pointer",
+        textAlign: "left",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 8,
+        transition: "background 0.15s, border-color 0.15s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = `${domainColor}20`;
+        e.currentTarget.style.borderColor = domainColor;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.borderColor = `${domainColor}80`;
+      }}
+    >
+      <span>{copied ? "Copied" : action.label}</span>
+      <span style={{ opacity: 0.7 }}>{icon}</span>
+    </button>
+  );
+}
+
+function StepsModal({
+  content,
+  onClose,
+}: {
+  content: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(13, 10, 8, 0.85)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 100,
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#1a1612",
+          border: "1px solid #3a342c",
+          borderLeft: "3px solid #d97757",
+          padding: "32px 36px",
+          maxWidth: 640,
+          width: "100%",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          color: "#f5efe0",
+          fontFamily: "Georgia, 'Times New Roman', serif",
+          fontSize: 15,
+          lineHeight: 1.6,
+        }}
+      >
+        <div className="nexus-steps-markdown">
+          <ReactMarkdown
+            components={{
+              h1: ({ children }) => (
+                <h1
+                  style={{
+                    fontFamily: "ui-monospace, Menlo, monospace",
+                    fontSize: 14,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "#d97757",
+                    marginBottom: 16,
+                  }}
+                >
+                  {children}
+                </h1>
+              ),
+              h2: ({ children }) => (
+                <h2
+                  style={{
+                    fontFamily: "ui-monospace, Menlo, monospace",
+                    fontSize: 12,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "#a99c87",
+                    marginTop: 20,
+                    marginBottom: 10,
+                  }}
+                >
+                  {children}
+                </h2>
+              ),
+              p: ({ children }) => (
+                <p style={{ margin: "0 0 12px", color: "#e5ddd0" }}>{children}</p>
+              ),
+              ol: ({ children }) => (
+                <ol
+                  style={{
+                    margin: "0 0 12px 20px",
+                    paddingLeft: 10,
+                    color: "#e5ddd0",
+                  }}
+                >
+                  {children}
+                </ol>
+              ),
+              ul: ({ children }) => (
+                <ul
+                  style={{
+                    margin: "0 0 12px 20px",
+                    paddingLeft: 10,
+                    color: "#e5ddd0",
+                  }}
+                >
+                  {children}
+                </ul>
+              ),
+              li: ({ children }) => (
+                <li style={{ marginBottom: 6 }}>{children}</li>
+              ),
+              code: ({ children }) => (
+                <code
+                  style={{
+                    background: "#2a2520",
+                    padding: "2px 6px",
+                    fontSize: 13,
+                    fontFamily: "ui-monospace, Menlo, monospace",
+                    color: "#e5a08a",
+                  }}
+                >
+                  {children}
+                </code>
+              ),
+              strong: ({ children }) => (
+                <strong style={{ color: "#f5efe0" }}>{children}</strong>
+              ),
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        </div>
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: 24,
+            background: "transparent",
+            color: "#8a7f6b",
+            border: "1px solid #3a342c",
+            padding: "8px 16px",
+            fontSize: 12,
+            fontFamily: "ui-monospace, Menlo, monospace",
+            cursor: "pointer",
+          }}
+        >
+          Close
+        </button>
+      </div>
     </div>
   );
 }
