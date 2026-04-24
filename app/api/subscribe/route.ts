@@ -48,10 +48,25 @@ export async function POST(request: Request) {
     );
   }
 
-  const list = await readSubscribers();
-  if (!list.some((s) => s.email === email)) {
-    list.push({ email, createdAt: new Date().toISOString() });
-    await writeSubscribers(list);
+  const entry: Subscriber = {
+    email,
+    createdAt: new Date().toISOString(),
+  };
+
+  // Always log so the email lands somewhere persistent (local stdout in dev,
+  // Vercel logs in prod). v1.0 only; v1.1 will route this to a real service.
+  console.log("[subscribe]", JSON.stringify(entry));
+
+  // Best-effort append to the local JSON file. Will fail silently on Vercel's
+  // read-only serverless filesystem, which is fine because we logged above.
+  try {
+    const list = await readSubscribers();
+    if (!list.some((s) => s.email === email)) {
+      list.push(entry);
+      await writeSubscribers(list);
+    }
+  } catch (err) {
+    console.warn("[subscribe] file write skipped:", (err as Error).message);
   }
 
   return NextResponse.json({ ok: true });
