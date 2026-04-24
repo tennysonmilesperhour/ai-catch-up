@@ -1,17 +1,14 @@
 import { loadJson } from "@/lib/content";
 
 type Decision = {
-  title: string;
-  status: string;
+  decision: string;
   rationale: string;
 };
-
-type Decisions = { decisions: Decision[] };
 
 export const metadata = { title: "Decisions" };
 
 export default function DecisionsPage() {
-  const { decisions } = loadJson<Decisions>("admin/decisions.json");
+  const decisions = loadJson<Decision[]>("admin/decisions.json");
 
   return (
     <div>
@@ -32,11 +29,11 @@ export default function DecisionsPage() {
             className="bg-white/60 border border-[var(--color-border)] p-6 md:p-7"
           >
             <div className="flex items-start justify-between gap-4 mb-3">
-              <h2 className="font-serif text-xl md:text-2xl text-[var(--color-dark)]">
-                {d.title}
+              <h2 className="font-serif text-lg md:text-xl text-[var(--color-dark)]">
+                {d.decision}
               </h2>
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-1 border border-[var(--color-dark)] text-[var(--color-dark)]">
-                {d.status}
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-1 border border-[var(--color-dark)] text-[var(--color-dark)] whitespace-nowrap">
+                Locked
               </span>
             </div>
             <p className="text-[var(--color-muted-dark)] leading-relaxed">

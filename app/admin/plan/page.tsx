@@ -1,33 +1,21 @@
 import { loadContent } from "@/lib/content";
 
+type PlanSection = {
+  title: string;
+  content: string;
+};
+
 type PlanFrontmatter = {
   title?: string;
   subtitle?: string;
-  sections?: { id: string; label: string }[];
+  sections?: PlanSection[];
 };
 
 export const metadata = { title: "Plan" };
 
-type Section = { heading: string; body: string };
-
-function parseSections(body: string): Section[] {
-  const clean = body.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").trim();
-  if (!clean) return [];
-  const chunks = clean.split(/^##\s+/m).filter(Boolean);
-  return chunks.map((chunk) => {
-    const [heading, ...rest] = chunk.split("\n");
-    return {
-      heading: heading.trim(),
-      body: rest.join("\n").trim(),
-    };
-  });
-}
-
 export default function PlanPage() {
-  const { frontmatter, body } = loadContent<PlanFrontmatter>(
-    "admin/plan.mdx"
-  );
-  const sections = parseSections(body);
+  const { frontmatter } = loadContent<PlanFrontmatter>("admin/plan.mdx");
+  const sections = frontmatter.sections || [];
 
   return (
     <div>
@@ -56,15 +44,11 @@ export default function PlanPage() {
               className="bg-white/60 border border-[var(--color-border)] p-6 md:p-8"
             >
               <p className="label text-[var(--color-terracotta)] mb-3">
-                {String(i + 1).padStart(2, "0")} &middot; {s.heading}
+                {String(i + 1).padStart(2, "0")} &middot; {s.title}
               </p>
-              <div className="text-[var(--color-muted-dark)] leading-relaxed whitespace-pre-line">
-                {s.body || (
-                  <span className="italic text-[var(--color-muted)]">
-                    TODO copy pending.
-                  </span>
-                )}
-              </div>
+              <p className="text-[var(--color-muted-dark)] leading-relaxed">
+                {s.content}
+              </p>
             </article>
           ))
         )}

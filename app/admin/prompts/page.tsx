@@ -1,17 +1,18 @@
 import { loadJson } from "@/lib/content";
 import { PromptsList, type Prompt } from "@/components/admin/PromptsList";
 
-type PromptsFile = {
-  categories?: string[];
-  prompts: Prompt[];
-};
+type PromptsFile =
+  | Prompt[]
+  | { categories?: string[]; prompts: Prompt[] };
 
 export const metadata = { title: "Prompts" };
 
 export default function PromptsPage() {
-  const { prompts, categories } = loadJson<PromptsFile>("admin/prompts.json");
+  const raw = loadJson<PromptsFile>("admin/prompts.json");
+  const prompts = Array.isArray(raw) ? raw : raw.prompts;
+  const explicitCategories = !Array.isArray(raw) ? raw.categories : undefined;
   const derivedCategories =
-    categories ?? Array.from(new Set(prompts.map((p) => p.category)));
+    explicitCategories ?? Array.from(new Set(prompts.map((p) => p.category)));
 
   return (
     <div>
@@ -23,7 +24,20 @@ export default function PromptsPage() {
           The prompt library. Click any card to expand.
         </p>
       </header>
-      <PromptsList prompts={prompts} categories={derivedCategories} />
+      {prompts.length === 0 ? (
+        <div className="bg-white/60 border border-[var(--color-border)] p-8 md:p-10">
+          <p className="label text-[var(--color-terracotta)] mb-3">
+            Empty for now
+          </p>
+          <p className="text-[var(--color-muted-dark)] leading-relaxed max-w-xl">
+            The prompt library is waiting on its first batch of prompts from
+            Strategy Claude. Once the handoff arrives, this page will light up
+            with expandable cards and category filters.
+          </p>
+        </div>
+      ) : (
+        <PromptsList prompts={prompts} categories={derivedCategories} />
+      )}
     </div>
   );
 }

@@ -1,33 +1,41 @@
-{
-  "weeks": [
-    {
-      "week": 1,
-      "title": "Scaffold and ship the marketing site",
-      "tasks": [
-        { "label": "Scaffold Next.js project with Tailwind v4", "status": "done" },
-        { "label": "Landing page sections", "status": "done" },
-        { "label": "Admin dashboard shell", "status": "done" },
-        { "label": "Deploy to Vercel", "status": "in_progress" }
-      ]
-    },
-    {
-      "week": 2,
-      "title": "Content and polish",
-      "tasks": [
-        { "label": "Finalize hero copy", "status": "todo" },
-        { "label": "Finalize Plateau section copy", "status": "todo" },
-        { "label": "Finalize What You Get items", "status": "todo" },
-        { "label": "Final visual QA pass", "status": "todo" }
-      ]
-    },
-    {
-      "week": 3,
-      "title": "Product delivery (v1.1 start)",
-      "tasks": [
-        { "label": "Record onboarding video", "status": "todo" },
-        { "label": "Wire real email service", "status": "todo" },
-        { "label": "Protected product delivery page", "status": "todo" }
-      ]
-    }
-  ]
-}
+[
+  {
+    "week": "Week 1",
+    "focus": "Foundation",
+    "items": [
+      { "type": "Long video", "title": "The Plateau - your landing page hero video", "status": "not-started", "owner": "you" },
+      { "type": "Writing", "title": "Rewrite the Plateau story in your voice (300-400 words)", "status": "not-started", "owner": "you" },
+      { "type": "Product", "title": "Landing page live with video and payment", "status": "in-progress", "owner": "claude+you" },
+      { "type": "Writing", "title": "One-page spec for v1 setup flow (5 phases)", "status": "not-started", "owner": "claude+you" }
+    ]
+  },
+  {
+    "week": "Week 2",
+    "focus": "Build Core",
+    "items": [
+      { "type": "Product", "title": "Diagnostic flow (10 questions) wired up", "status": "not-started", "owner": "claude+you" },
+      { "type": "Product", "title": "Personalized Nexus generator", "status": "not-started", "owner": "claude+you" },
+      { "type": "Product", "title": "Starter GitHub repo template ready to fork", "status": "not-started", "owner": "you" },
+      { "type": "Video", "title": "Demo walkthrough using Geck Inspect as example", "status": "not-started", "owner": "you" }
+    ]
+  },
+  {
+    "week": "Week 3",
+    "focus": "Launch",
+    "items": [
+      { "type": "Marketing", "title": "Soft launch to 10 friends, get feedback", "status": "not-started", "owner": "you" },
+      { "type": "Product", "title": "Fix top 3 issues from soft launch", "status": "not-started", "owner": "claude+you" },
+      { "type": "Marketing", "title": "Public launch on Twitter, Reddit, one newsletter", "status": "not-started", "owner": "you" },
+      { "type": "Video", "title": "Cut 3 short clips from hero video for social", "status": "not-started", "owner": "you" }
+    ]
+  },
+  {
+    "week": "Week 4+",
+    "focus": "Iterate",
+    "items": [
+      { "type": "Content", "title": "Monthly email list starts - one distillation", "status": "not-started", "owner": "you" },
+      { "type": "Product", "title": "Add the $149 consultation upsell flow", "status": "not-started", "owner": "claude+you" },
+      { "type": "Planning", "title": "Scope v2: business-adjacent lane", "status": "not-started", "owner": "you" }
+    ]
+  }
+]

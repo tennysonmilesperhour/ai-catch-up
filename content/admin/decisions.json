@@ -1,24 +1,12 @@
-{
-  "decisions": [
-    {
-      "title": "Single one-time price of $49",
-      "status": "locked",
-      "rationale": "Low-friction impulse buy, no subscription fatigue, simple to explain, matches the 'simple, quick, cheap' promise."
-    },
-    {
-      "title": "No real database in v1.0",
-      "status": "locked",
-      "rationale": "Scope control. Static MDX content and a JSON file for email capture is enough to validate the offer."
-    },
-    {
-      "title": "Ship marketing site before product delivery",
-      "status": "locked",
-      "rationale": "V1.0 is a waitlist-style buy: pay, land on 'video coming soon', I ship the actual product in v1.1. Gets the offer in market faster."
-    },
-    {
-      "title": "Strategy Claude owns all /content/ files",
-      "status": "locked",
-      "rationale": "Prevents two agents from stomping on copy. Claude Code never edits content files based on its own judgment."
-    }
-  ]
-}
+[
+  { "decision": "Version A (personalized feel, one engine)", "rationale": "Building V2 later; don't double-scope now" },
+  { "decision": "Software-adjacent lane only for v1", "rationale": "Your actual lived experience; business lane becomes v2" },
+  { "decision": "One universal setup flow", "rationale": "Claude handles customization through interview" },
+  { "decision": "Free email list in v1", "rationale": "Preserves future paid tier option without publishing pressure" },
+  { "decision": "$49 one-time + $149 upsell", "rationale": "Filters for real intent, no subscription burden" },
+  { "decision": "Long story-form video first", "rationale": "Asset beats content treadmill for solo builders" },
+  { "decision": "60-minute setup time as core promise", "rationale": "Demonstration of belief, not just information" },
+  { "decision": "No em dashes in anything", "rationale": "Reads as AI-generated, breaks voice" },
+  { "decision": "Claude Code owns the repo, Strategy Claude owns content", "rationale": "Prevents the two Claudes from stepping on each other's work" },
+  { "decision": "v1.0 ships landing and admin only", "rationale": "Collect emails and validate demand before building the product delivery flow" }
+]

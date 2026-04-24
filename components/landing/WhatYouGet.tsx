@@ -1,8 +1,9 @@
 import { loadContent } from "@/lib/content";
 
 type WhatYouGetItem = {
+  number?: string;
   title: string;
-  body: string;
+  text: string;
 };
 
 type WhatYouGetFrontmatter = {
@@ -33,14 +34,14 @@ export function WhatYouGet() {
         {items.map((item, i) => (
           <li key={i} className="flex gap-6">
             <span className="font-mono text-sm text-[var(--color-terracotta)] pt-1 min-w-[2rem]">
-              {String(i + 1).padStart(2, "0")}
+              {item.number ?? String(i + 1).padStart(2, "0")}
             </span>
             <div>
               <h3 className="font-serif text-xl text-[var(--color-dark)] mb-2">
                 {item.title}
               </h3>
               <p className="text-[var(--color-muted-dark)] leading-relaxed">
-                {item.body}
+                {item.text}
               </p>
             </div>
           </li>
