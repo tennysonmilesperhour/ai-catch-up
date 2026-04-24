@@ -68,5 +68,40 @@
     "title": "Understanding a technical concept without pretending to be technical",
     "prompt": "Explain [CONCEPT] to me. I have no coding background. I've heard the term used but I don't have a real grip on what it means.\n\nPlease:\n1. Start with a one-sentence plain-English definition\n2. Give me a real-world analogy that's not cringe\n3. Show me when this concept actually matters in practice for someone building apps with AI\n4. Tell me what I can do without understanding this deeply, versus what I'd need to actually learn\n5. If I were going to explain this to someone else later, what's the one sentence I'd use?",
     "whyItWorks": "This structure produces explanations you actually retain. The 'explain it to someone else' step tests whether you understood it."
+  },
+  {
+    "id": 11,
+    "category": "Marketing & Sales",
+    "title": "Writing landing page copy that doesn't sound like AI wrote it",
+    "prompt": "I'm writing a landing page for [PRODUCT]. Before you draft anything:\n\n1. Ask me who specifically this is for - not a demographic, a real person\n2. Ask me what they're feeling the moment they land on this page\n3. Ask me what they need to believe to buy\n\nThen write the copy in my voice, which is [DESCRIBE OR LINK TO EXAMPLES]. Avoid: em dashes, 'unlock your potential,' 'transform your life,' 'harness the power of,' 'in today's fast-paced world.'\n\nThe copy should sound like one human talking to another specific human, not a brand talking to an audience.",
+    "whyItWorks": "The three questions at the top force you to articulate positioning you probably haven't written down. The explicit banned phrases catch the AI tells that kill conversion."
+  },
+  {
+    "id": 12,
+    "category": "Marketing & Sales",
+    "title": "Generating viral-hook-style content from a single insight",
+    "prompt": "I have an insight I want to turn into [NUMBER] short-form posts (Twitter/LinkedIn/TikTok script).\n\nThe insight is: [YOUR INSIGHT IN ONE PARAGRAPH]\n\nFor each post:\n- Lead with a hook that makes someone stop scrolling\n- Deliver the insight in a way that feels earned, not lectured\n- End with something that makes them think or act\n\nShow me 10 variations. Vary the tone: some confident, some vulnerable, some contrarian, some informational. I'll pick the ones that feel most like me.",
+    "whyItWorks": "Asking for 10 variations with varied tone beats asking for the 'best' version. You pick what fits your voice and discover patterns you couldn't have specified up front."
+  },
+  {
+    "id": 13,
+    "category": "Marketing & Sales",
+    "title": "Finding the one sentence that sells your product",
+    "prompt": "I'm trying to find the one sentence that captures what my product is and who it's for.\n\nHere's what the product does: [DESCRIBE FUNCTIONALLY]\nHere's who it's for: [SPECIFIC BUYER]\nHere's what they feel before they buy: [EMOTIONAL STATE]\nHere's what they get out of it: [OUTCOME]\n\nGenerate 20 candidate sentences. Each should:\n- Be under 20 words\n- Name the buyer specifically (even if subtly)\n- Promise a specific outcome, not a vague feeling\n- Avoid jargon that would only land with insiders\n\nAfter the list, pick your top 3 and explain why each would convert a cold visitor.",
+    "whyItWorks": "Twenty options forces Claude past its default formulations. The 'top 3 with reasoning' step teaches you what's actually working in the good ones."
+  },
+  {
+    "id": 14,
+    "category": "Business Operations",
+    "title": "Setting up Supabase for a new project",
+    "prompt": "I'm setting up Supabase for a new project. Walk me through it assuming I've never done this before. I need:\n\n1. How to create the project in the Supabase dashboard\n2. What schema to create for [BRIEFLY DESCRIBE YOUR DATA - users, items, relationships]\n3. How to set up Row Level Security policies so users can only see their own data\n4. How to connect my [FRAMEWORK] app using environment variables\n5. The exact commands I'd run to test the connection works\n\nGo slow. Assume I'll get confused at UI changes and give me screenshots-description-level detail.",
+    "whyItWorks": "Infrastructure setup is where non-coders bail out. This prompt fights that by demanding walkthrough-level detail up front."
+  },
+  {
+    "id": 15,
+    "category": "Business Operations",
+    "title": "Figuring out what to charge",
+    "prompt": "Help me figure out what to charge for [PRODUCT].\n\nHere's what it does: [DESCRIPTION]\nHere's who it's for: [BUYER]\nHere's what similar products charge: [IF YOU KNOW]\nHere's what I'd like to charge: [IF YOU HAVE AN INSTINCT]\n\nWalk me through:\n1. What pricing models make sense here (one-time, subscription, freemium, tiered)\n2. What the market will bear for this buyer type\n3. Where my instinct might be wrong (too low? too high?)\n4. A specific price and model you'd recommend, with reasoning\n5. How I'd know if I got it wrong in the first month\n\nBe direct. Don't hedge.",
+    "whyItWorks": "Pricing is where solo builders self-sabotage most. Forcing Claude to recommend a specific number with reasoning cuts through your own anxiety."
   }
 ]
