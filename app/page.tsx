@@ -4,6 +4,7 @@ import { Pricing } from "@/components/landing/Pricing";
 import { Plateau } from "@/components/landing/Plateau";
 import { BeforeAfter } from "@/components/landing/BeforeAfter";
 import { WhatYouGet } from "@/components/landing/WhatYouGet";
+import { SetupPreview } from "@/components/landing/SetupPreview";
 import { WhoItsFor } from "@/components/landing/WhoItsFor";
 import { ThisIsForYou } from "@/components/landing/ThisIsForYou";
 import { FinalCTA } from "@/components/landing/FinalCTA";
@@ -18,6 +19,7 @@ export default function LandingPage() {
       <Plateau />
       <BeforeAfter />
       <WhatYouGet />
+      <SetupPreview />
       <WhoItsFor />
       <ThisIsForYou />
       <FinalCTA />
