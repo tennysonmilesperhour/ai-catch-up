@@ -1,5 +1,9 @@
-import { Nexus } from "@/components/admin/Nexus";
-import { domains, links, nodes } from "@/components/admin/nexus-data";
+import { Nexus, type NexusNode } from "@/components/admin/Nexus";
+import {
+  DOMAINS,
+  NEXUS_LINKS,
+  NEXUS_NODES,
+} from "@/content/admin/nexus-data";
 
 export const metadata = { title: "Nexus" };
 
@@ -15,7 +19,11 @@ export default function NexusPage() {
           click for detail.
         </p>
       </header>
-      <Nexus domains={domains} nodes={nodes} links={links} />
+      <Nexus
+        domains={DOMAINS}
+        nodes={NEXUS_NODES as NexusNode[]}
+        links={NEXUS_LINKS}
+      />
     </div>
   );
 }

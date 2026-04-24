@@ -14,6 +14,20 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-24 - Nexus data
+
+Created `/content/admin/nexus-data.ts` (new location under `/content/`) with Strategy Claude's exact 18 nodes, 16 links, and 6 domains for the current state of Tennyson's ecosystem. Nodes now use a richer schema: `kind` ("real" | "ghost" | "fork"), `weight`, `desc`, optional `priority`. Domains are a keyed object with absolute anchor offsets.
+
+`components/admin/Nexus.tsx` rewritten to match:
+
+- Accepts `kind: "real" | "ghost" | "fork"`; fork renders as a semi-transparent filled circle with a thin outer ring.
+- Node radius now scales with `weight` (6 + weight * 1.5).
+- Domain anchors are absolute offsets from the viewBox center, matching the layout Strategy Claude specified.
+- Legend now includes the Fork marker.
+- Detail modal reads `desc` and shows a kind-specific label.
+
+Old sample data file `components/admin/nexus-data.ts` removed. The nexus page boundary casts `NEXUS_NODES` to the strict `NexusNode[]` type to keep the content file as plain JS declarations.
+
 ### 2026-04-24 - v1.0 prompts library
 
 Replaced `/content/admin/prompts.json` with the full 20-prompt library from Strategy Claude, spanning seven categories: Getting Unstuck, Project Setup, Building, Prompting Claude, Research & Learning, Marketing & Sales, Business Operations, Brand & Design, When Things Feel Hard.

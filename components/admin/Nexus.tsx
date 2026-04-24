@@ -7,16 +7,37 @@ import {
   useRef,
   useState,
 } from "react";
-import type {
-  Domain,
-  GraphLink,
-  GraphNode,
-} from "@/components/admin/nexus-data";
+
+export type NexusKind = "real" | "ghost" | "fork";
+
+export type NexusNode = {
+  id: string;
+  label: string;
+  domain: string;
+  kind: NexusKind;
+  weight: number;
+  desc: string;
+  priority?: "high";
+};
+
+export type NexusLink = {
+  source: string;
+  target: string;
+  strength: number;
+};
+
+export type DomainInfo = {
+  label: string;
+  color: string;
+  anchor: { x: number; y: number };
+};
+
+export type DomainsRecord = Record<string, DomainInfo>;
 
 type Props = {
-  domains: Domain[];
-  nodes: GraphNode[];
-  links: GraphLink[];
+  domains: DomainsRecord;
+  nodes: NexusNode[];
+  links: NexusLink[];
 };
 
 type Pos = {
@@ -26,7 +47,6 @@ type Pos = {
   vy: number;
 };
 
-// Force tuning from spec
 const DOMAIN_ANCHOR_PULL = 0.008;
 const LINK_STIFFNESS = 0.01;
 const LINK_TARGET = 110;
@@ -35,6 +55,16 @@ const DAMPING = 0.82;
 
 const VIEW_W = 1000;
 const VIEW_H = 700;
+const CX = VIEW_W / 2;
+const CY = VIEW_H / 2;
+
+function anchorFor(d: DomainInfo) {
+  return { x: CX + d.anchor.x, y: CY + d.anchor.y };
+}
+
+function nodeRadius(n: NexusNode) {
+  return 6 + n.weight * 1.5;
+}
 
 export function Nexus({ domains, nodes, links }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -46,11 +76,14 @@ export function Nexus({ domains, nodes, links }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [didDrag, setDidDrag] = useState(false);
 
-  const domainById = useMemo(() => {
-    const m = new Map<string, Domain>();
-    for (const d of domains) m.set(d.id, d);
-    return m;
-  }, [domains]);
+  const domainList = useMemo(
+    () =>
+      Object.entries(domains).map(([id, info]) => ({
+        id,
+        ...info,
+      })),
+    [domains]
+  );
 
   const neighborsOf = useMemo(() => {
     const m = new Map<string, Set<string>>();
@@ -67,9 +100,10 @@ export function Nexus({ domains, nodes, links }: Props) {
     const positions = positionsRef.current;
     for (const n of nodes) {
       if (positions.has(n.id)) continue;
-      const d = domainById.get(n.domain);
-      const cx = (d?.x ?? 0.5) * VIEW_W;
-      const cy = (d?.y ?? 0.5) * VIEW_H;
+      const d = domains[n.domain];
+      const { x: cx, y: cy } = d
+        ? anchorFor(d)
+        : { x: CX, y: CY };
       const angle = Math.random() * Math.PI * 2;
       const r = 30 + Math.random() * 40;
       positions.set(n.id, {
@@ -79,28 +113,24 @@ export function Nexus({ domains, nodes, links }: Props) {
         vy: 0,
       });
     }
-  }, [nodes, domainById]);
+  }, [nodes, domains]);
 
   // Simulation loop
   useEffect(() => {
     const positions = positionsRef.current;
 
     const step = () => {
-      // Apply forces, but not to the dragging node (its position is pinned).
-      // 1) Domain anchor pull
       for (const n of nodes) {
         if (draggingRef.current === n.id) continue;
         const p = positions.get(n.id);
         if (!p) continue;
-        const d = domainById.get(n.domain);
+        const d = domains[n.domain];
         if (!d) continue;
-        const ax = d.x * VIEW_W;
-        const ay = d.y * VIEW_H;
+        const { x: ax, y: ay } = anchorFor(d);
         p.vx += (ax - p.x) * DOMAIN_ANCHOR_PULL;
         p.vy += (ay - p.y) * DOMAIN_ANCHOR_PULL;
       }
 
-      // 2) Link spring
       for (const l of links) {
         const a = positions.get(l.source);
         const b = positions.get(l.target);
@@ -122,7 +152,6 @@ export function Nexus({ domains, nodes, links }: Props) {
         }
       }
 
-      // 3) Node-node repulsion (600/dist^2)
       for (let i = 0; i < nodes.length; i++) {
         const a = positions.get(nodes[i].id);
         if (!a) continue;
@@ -147,7 +176,6 @@ export function Nexus({ domains, nodes, links }: Props) {
         }
       }
 
-      // Integrate with damping; clamp inside viewbox
       for (const n of nodes) {
         if (draggingRef.current === n.id) continue;
         const p = positions.get(n.id);
@@ -180,9 +208,8 @@ export function Nexus({ domains, nodes, links }: Props) {
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [nodes, links, domainById]);
+  }, [nodes, links, domains]);
 
-  // Convert pointer client coords to viewBox coords
   const clientToSvg = useCallback((clientX: number, clientY: number) => {
     const svg = svgRef.current;
     if (!svg) return { x: 0, y: 0 };
@@ -229,7 +256,6 @@ export function Nexus({ domains, nodes, links }: Props) {
     (e.currentTarget as Element).releasePointerCapture?.(e.pointerId);
     if (draggingRef.current === nodeId) {
       draggingRef.current = null;
-      // If the pointer never moved meaningfully, treat as click.
       if (!didDrag) setSelectedId(nodeId);
     }
   };
@@ -248,7 +274,7 @@ export function Nexus({ domains, nodes, links }: Props) {
         style={{ touchAction: "none" }}
       >
         <defs>
-          {domains.map((d) => (
+          {domainList.map((d) => (
             <radialGradient
               key={d.id}
               id={`halo-${d.id}`}
@@ -270,36 +296,37 @@ export function Nexus({ domains, nodes, links }: Props) {
           </filter>
         </defs>
 
-        {/* Domain halos */}
         <g>
-          {domains.map((d) => (
-            <g key={d.id}>
-              <circle
-                cx={d.x * VIEW_W}
-                cy={d.y * VIEW_H}
-                r={180}
-                fill={`url(#halo-${d.id})`}
-              />
-              <text
-                x={d.x * VIEW_W}
-                y={d.y * VIEW_H - 150}
-                textAnchor="middle"
-                fill={d.color}
-                style={{
-                  fontFamily: "ui-monospace, Menlo, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  opacity: 0.8,
-                }}
-              >
-                {d.label}
-              </text>
-            </g>
-          ))}
+          {domainList.map((d) => {
+            const { x, y } = anchorFor(d);
+            return (
+              <g key={d.id}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={180}
+                  fill={`url(#halo-${d.id})`}
+                />
+                <text
+                  x={x}
+                  y={y - 150}
+                  textAnchor="middle"
+                  fill={d.color}
+                  style={{
+                    fontFamily: "ui-monospace, Menlo, monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    opacity: 0.8,
+                  }}
+                >
+                  {d.label}
+                </text>
+              </g>
+            );
+          })}
         </g>
 
-        {/* Links */}
         <g stroke="#d4cdbf" strokeOpacity="0.25">
           {links.map((l, i) => {
             const a = positionsRef.current.get(l.source);
@@ -323,18 +350,19 @@ export function Nexus({ domains, nodes, links }: Props) {
           })}
         </g>
 
-        {/* Nodes */}
         <g>
           {nodes.map((n) => {
             const p = positionsRef.current.get(n.id);
             if (!p) return null;
-            const d = domainById.get(n.domain);
+            const d = domains[n.domain];
             const color = d?.color ?? "#d97757";
             const isHovered = hoveredId === n.id;
             const isNeighbor =
               hoveredId !== null &&
               neighborsOf.get(hoveredId)?.has(n.id);
-            const dimmed = hoveredId !== null && !isHovered && !isNeighbor;
+            const dimmed =
+              hoveredId !== null && !isHovered && !isNeighbor;
+            const r = nodeRadius(n);
 
             return (
               <g
@@ -351,16 +379,17 @@ export function Nexus({ domains, nodes, links }: Props) {
                 onPointerEnter={() => setHoveredId(n.id)}
                 onPointerLeave={() => setHoveredId(null)}
               >
-                {n.type === "real" ? (
+                {n.kind === "real" && (
                   <>
-                    <circle r={16} fill={color} opacity={0.25} filter="url(#nodeGlow)" />
-                    <circle r={11} fill={color} />
-                    <circle r={3} fill="#faf7f2" />
+                    <circle r={r + 5} fill={color} opacity={0.25} filter="url(#nodeGlow)" />
+                    <circle r={r} fill={color} />
+                    <circle r={Math.max(2, r * 0.25)} fill="#faf7f2" />
                   </>
-                ) : (
+                )}
+                {n.kind === "ghost" && (
                   <>
                     <circle
-                      r={11}
+                      r={r}
                       fill="transparent"
                       stroke={color}
                       strokeWidth={1.4}
@@ -368,7 +397,7 @@ export function Nexus({ domains, nodes, links }: Props) {
                     >
                       <animate
                         attributeName="r"
-                        values="11;13;11"
+                        values={`${r};${r + 2};${r}`}
                         dur="2.2s"
                         repeatCount="indefinite"
                       />
@@ -380,16 +409,29 @@ export function Nexus({ domains, nodes, links }: Props) {
                       />
                     </circle>
                     {n.priority === "high" && (
-                      <circle r={3} fill="#d97757" />
+                      <circle r={Math.max(2, r * 0.25)} fill="#d97757" />
                     )}
+                  </>
+                )}
+                {n.kind === "fork" && (
+                  <>
+                    <circle
+                      r={r + 3}
+                      fill="transparent"
+                      stroke={color}
+                      strokeWidth={1}
+                      strokeOpacity={0.5}
+                    />
+                    <circle r={r} fill={color} opacity={0.75} />
+                    <circle r={Math.max(2, r * 0.25)} fill="#faf7f2" />
                   </>
                 )}
                 <text
                   x={0}
-                  y={28}
+                  y={r + 16}
                   textAnchor="middle"
                   fill="#faf7f2"
-                  fontStyle={n.type === "ghost" ? "italic" : "normal"}
+                  fontStyle={n.kind === "ghost" ? "italic" : "normal"}
                   style={{
                     fontFamily: "Georgia, serif",
                     fontSize: 12,
@@ -404,8 +446,7 @@ export function Nexus({ domains, nodes, links }: Props) {
         </g>
       </svg>
 
-      {/* Legend */}
-      <div className="absolute top-4 left-4 flex flex-col gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--color-muted)]">
+      <div className="absolute top-4 left-4 flex flex-col gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--color-muted)]">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[var(--color-terracotta)]" />
           <span>Real</span>
@@ -413,20 +454,28 @@ export function Nexus({ domains, nodes, links }: Props) {
         <div className="flex items-center gap-2">
           <span
             className="w-3 h-3 rounded-full border border-[var(--color-terracotta)]"
-            style={{
-              background: "transparent",
-              borderStyle: "dashed",
-            }}
+            style={{ background: "transparent", borderStyle: "dashed" }}
           />
           <span>Ghost (coming soon)</span>
         </div>
+        <div className="flex items-center gap-2">
+          <span
+            className="w-3 h-3 rounded-full"
+            style={{
+              background: "var(--color-terracotta)",
+              opacity: 0.75,
+              outline: "1px solid var(--color-terracotta)",
+              outlineOffset: "1px",
+            }}
+          />
+          <span>Fork</span>
+        </div>
       </div>
 
-      {/* Detail modal */}
       {selectedNode && (
         <NodeModal
           node={selectedNode}
-          domain={domainById.get(selectedNode.domain)}
+          domain={domains[selectedNode.domain]}
           onClose={() => setSelectedId(null)}
         />
       )}
@@ -439,8 +488,8 @@ function NodeModal({
   domain,
   onClose,
 }: {
-  node: GraphNode;
-  domain: Domain | undefined;
+  node: NexusNode;
+  domain: DomainInfo | undefined;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -450,6 +499,13 @@ function NodeModal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  const kindLabel =
+    node.kind === "real"
+      ? "In the onboarding"
+      : node.kind === "fork"
+        ? "Fork / adjacent"
+        : "Coming soon";
 
   return (
     <div
@@ -468,19 +524,18 @@ function NodeModal({
           X
         </button>
         <p className="label mb-3" style={{ color: domain?.color }}>
-          {domain?.label || node.domain} &middot;{" "}
-          {node.type === "ghost" ? "Coming soon" : "In the onboarding"}
+          {domain?.label || node.domain} &middot; {kindLabel}
         </p>
         <h2 className="font-serif text-2xl md:text-3xl mb-4">
           {node.label}
         </h2>
-        {node.summary ? (
+        {node.desc ? (
           <p className="text-[var(--color-muted-dark)] leading-relaxed">
-            {node.summary}
+            {node.desc}
           </p>
         ) : (
           <p className="italic text-[var(--color-muted)]">
-            TODO: Summary pending from Strategy Claude.
+            TODO: Description pending.
           </p>
         )}
       </div>
