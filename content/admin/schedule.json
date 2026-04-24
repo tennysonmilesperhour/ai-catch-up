@@ -1,0 +1,33 @@
+{
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Scaffold and ship the marketing site",
+      "tasks": [
+        { "label": "Scaffold Next.js project with Tailwind v4", "status": "done" },
+        { "label": "Landing page sections", "status": "done" },
+        { "label": "Admin dashboard shell", "status": "done" },
+        { "label": "Deploy to Vercel", "status": "in_progress" }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Content and polish",
+      "tasks": [
+        { "label": "Finalize hero copy", "status": "todo" },
+        { "label": "Finalize Plateau section copy", "status": "todo" },
+        { "label": "Finalize What You Get items", "status": "todo" },
+        { "label": "Final visual QA pass", "status": "todo" }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Product delivery (v1.1 start)",
+      "tasks": [
+        { "label": "Record onboarding video", "status": "todo" },
+        { "label": "Wire real email service", "status": "todo" },
+        { "label": "Protected product delivery page", "status": "todo" }
+      ]
+    }
+  ]
+}

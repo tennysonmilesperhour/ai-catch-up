@@ -1,0 +1,24 @@
+{
+  "decisions": [
+    {
+      "title": "Single one-time price of $49",
+      "status": "locked",
+      "rationale": "Low-friction impulse buy, no subscription fatigue, simple to explain, matches the 'simple, quick, cheap' promise."
+    },
+    {
+      "title": "No real database in v1.0",
+      "status": "locked",
+      "rationale": "Scope control. Static MDX content and a JSON file for email capture is enough to validate the offer."
+    },
+    {
+      "title": "Ship marketing site before product delivery",
+      "status": "locked",
+      "rationale": "V1.0 is a waitlist-style buy: pay, land on 'video coming soon', I ship the actual product in v1.1. Gets the offer in market faster."
+    },
+    {
+      "title": "Strategy Claude owns all /content/ files",
+      "status": "locked",
+      "rationale": "Prevents two agents from stomping on copy. Claude Code never edits content files based on its own judgment."
+    }
+  ]
+}

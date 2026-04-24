@@ -1,0 +1,23 @@
+{
+  "categories": ["Onboarding", "Workflow", "Debugging"],
+  "prompts": [
+    {
+      "id": "p1",
+      "title": "TODO first prompt title",
+      "category": "Onboarding",
+      "body": "TODO prompt body from Strategy Claude."
+    },
+    {
+      "id": "p2",
+      "title": "TODO second prompt title",
+      "category": "Workflow",
+      "body": "TODO prompt body from Strategy Claude."
+    },
+    {
+      "id": "p3",
+      "title": "TODO third prompt title",
+      "category": "Debugging",
+      "body": "TODO prompt body from Strategy Claude."
+    }
+  ]
+}
