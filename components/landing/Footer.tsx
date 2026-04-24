@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { EmailCaptureForm } from "@/components/shared/EmailCaptureForm";
 
 export function Footer() {
@@ -24,7 +25,15 @@ export function Footer() {
       </div>
       <div className="px-6 md:px-12 max-w-5xl mx-auto mt-16 pt-6 border-t border-[var(--color-border-dark)] flex flex-col md:flex-row justify-between items-start md:items-center gap-3 font-mono text-xs text-[var(--color-muted)]">
         <p>&copy; {new Date().getFullYear()} AI Catch Up. All rights reserved.</p>
-        <p>Made with care, not hype.</p>
+        <div className="flex items-center gap-5">
+          <Link
+            href="/login"
+            className="hover:text-[var(--color-cream)] transition-colors"
+          >
+            Log in
+          </Link>
+          <span>Made with care, not hype.</span>
+        </div>
       </div>
     </footer>
   );
