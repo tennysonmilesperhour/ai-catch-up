@@ -33,5 +33,40 @@
     "title": "Breaking a big feature into 5-minute tasks",
     "prompt": "I want to build [FEATURE]. Before you start coding anything:\n\n1. Review the existing codebase and summarize what's relevant to this feature\n2. Break the work into tasks that would each take no more than 5 minutes\n3. Show me the full list and wait for my approval before starting\n4. Execute one task at a time, showing me the result after each\n5. If you hit something unexpected, stop and ask rather than guessing\n\nDo not touch any files outside what's necessary for this feature.",
     "whyItWorks": "Claude Code wanders when given too much autonomy. Forcing 5-minute chunks with check-ins keeps you in control and surfaces problems before they compound."
+  },
+  {
+    "id": 6,
+    "category": "Building",
+    "title": "Getting Claude to act like a domain expert, not just a coder",
+    "prompt": "You are both an AI app developer AND a world-leading expert in [DOMAIN, e.g., crested gecko genetics / credit repair law / mushroom identification].\n\nWhile you build this feature, apply domain knowledge to every design decision. Don't build generic scaffolding. Specifically:\n\n- Use terminology a [DOMAIN EXPERT] would actually use\n- Anticipate edge cases someone in this field would know about\n- Structure the data model based on how real [DOMAIN USERS] actually think about the information\n\nReference these source materials as authoritative: [LINK TO YOUR DOCS, URLS, OR UPLOADED FILES]",
+    "whyItWorks": "Claude has deep knowledge of most fields. Telling it to wear that hat while coding produces work that feels native to your industry instead of like a generic template."
+  },
+  {
+    "id": 7,
+    "category": "Prompting Claude",
+    "title": "Making Claude ask better questions instead of assuming",
+    "prompt": "Before you answer my next request, I want you to operate under this rule for our entire conversation:\n\nWhen I give you a task, if there's any ambiguity, ask me up to 3 clarifying questions before you start. Use the ask_user_input tool if it's available so I can click answers instead of typing.\n\nDon't ask permission to ask. Just ask.",
+    "whyItWorks": "This single instruction transforms the quality of every subsequent interaction. Claude's default is to guess and proceed. Flipping that default to 'ask first' catches scope mistakes before you've wasted time."
+  },
+  {
+    "id": 8,
+    "category": "Prompting Claude",
+    "title": "Getting Claude to disagree with you when you're wrong",
+    "prompt": "For the rest of this conversation, I want you to push back on my ideas when you see problems with them, rather than defaulting to encouragement.\n\nIf I'm about to make a scope mistake, tell me. If I'm underestimating complexity, say so. If my plan has a hole, name it.\n\nStay kind but direct. Treat me like a peer who can handle honest feedback, not a customer you're trying to please.",
+    "whyItWorks": "Claude's defaults lean toward agreeable and helpful. This is fine for most things, but terrible when you need a real sounding board. This instruction unlocks the useful-critic mode."
+  },
+  {
+    "id": 9,
+    "category": "Research & Learning",
+    "title": "Deep research that doesn't waste your time",
+    "prompt": "I need you to go deep on [TOPIC]. This is for [PURPOSE, e.g., launching a product / making a decision / learning the basics].\n\nPlease:\n1. Search multiple angles of this topic, not just one\n2. Cite sources as you go, especially for anything statistical or recent\n3. Flag where expert consensus is strong vs. where it's contested\n4. Identify what an insider would know that an outsider wouldn't\n5. End with 'what I'd do if this were my problem' - your actual recommendation\n\nI'm going to be away for [TIME]. Go as deep as the topic warrants. Don't rush.",
+    "whyItWorks": "Setting a long time budget and giving Claude explicit permission to go deep produces reports 10x better than quick queries. Most people underuse this mode."
+  },
+  {
+    "id": 10,
+    "category": "Research & Learning",
+    "title": "Understanding a technical concept without pretending to be technical",
+    "prompt": "Explain [CONCEPT] to me. I have no coding background. I've heard the term used but I don't have a real grip on what it means.\n\nPlease:\n1. Start with a one-sentence plain-English definition\n2. Give me a real-world analogy that's not cringe\n3. Show me when this concept actually matters in practice for someone building apps with AI\n4. Tell me what I can do without understanding this deeply, versus what I'd need to actually learn\n5. If I were going to explain this to someone else later, what's the one sentence I'd use?",
+    "whyItWorks": "This structure produces explanations you actually retain. The 'explain it to someone else' step tests whether you understood it."
   }
 ]
