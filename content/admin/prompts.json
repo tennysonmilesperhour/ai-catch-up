@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "id": 1,
+    "category": "Getting Unstuck",
+    "title": "When you don't know what to do next",
+    "prompt": "I'm working on [PROJECT NAME]. Here's where I am right now: [DESCRIBE CURRENT STATE IN YOUR OWN WORDS, EVEN IF MESSY].\n\nI feel stuck because [WHAT'S BLOCKING YOU].\n\nBefore suggesting next steps, ask me 3 clarifying questions that will help you give better advice. Don't skip this step even if my message feels clear.",
+    "whyItWorks": "Forcing Claude to ask questions first prevents generic advice. The best sessions start with Claude understanding your real situation, not its assumption of it."
+  },
+  {
+    "id": 2,
+    "category": "Getting Unstuck",
+    "title": "When an error message doesn't make sense",
+    "prompt": "I got this error and I don't understand what it means or how to fix it:\n\n[PASTE ENTIRE ERROR, INCLUDING ANY STACK TRACE]\n\nI'm not a developer. Please:\n1. Tell me in plain English what this error is actually saying\n2. Tell me the most likely cause based on the project context\n3. Give me the specific fix as a step-by-step with exact commands\n4. Tell me how I'd avoid this next time",
+    "whyItWorks": "The explicit non-developer framing changes Claude's default response shape. The numbered structure prevents it from jumping straight to a fix you can't apply."
+  },
+  {
+    "id": 3,
+    "category": "Project Setup",
+    "title": "Starting a new Claude Code project from scratch",
+    "prompt": "Create a monorepo project called [PROJECT-NAME] with this structure:\n\n/frontend - [YOUR STACK, e.g. React + Vite + Tailwind]\n/backend - [YOUR STACK, e.g. Python FastAPI + PostgreSQL]\n/.github/workflows - GitHub Actions (empty for now)\n\nRoot files:\n- README.md explaining what this project is\n- .gitignore covering node_modules, .env, __pycache__, .DS_Store, dist, venv\n- CLAUDE.md that will be the persistent context for future Claude Code sessions\n\nIn /frontend, initialize the project with [STACK] and install: [PACKAGES]\n\nIn /backend, create:\n- requirements.txt with [DEPENDENCIES]\n- .env.example with placeholder variables\n- app/main.py with a /health endpoint\n\nPrint the full folder tree when done.",
+    "whyItWorks": "Explicit scaffolding beats 'build me an app' every time. Claude Code does its best work when it knows exactly what to create and where."
+  },
+  {
+    "id": 4,
+    "category": "Project Setup",
+    "title": "The CLAUDE.md file that makes every future session better",
+    "prompt": "Create a CLAUDE.md at the project root. This file is read at the start of every Claude Code session. Include these sections:\n\n## Project\n[One-sentence description of what this app is and who it's for.]\n\n## Tech Stack\n[List the frameworks, databases, services used, one per line.]\n\n## Conventions\n- File naming: [your pattern]\n- Component structure: [your pattern]\n- State management: [your approach]\n\n## Known Gotchas\n[Things you've already hit and fixed. Example: 'Supabase auth requires anon key in browser, service role only on server.']\n\n## What NOT to do\n[Approaches you've already rejected. Example: 'Don't suggest Redux, we're using Zustand.']\n\n## Current Focus\n[What you're working on right now, updated as it changes.]",
+    "whyItWorks": "This is the single highest-leverage file in a Claude Code project. Most people skip it. Those who use it get dramatically better output in every session."
+  },
+  {
+    "id": 5,
+    "category": "Building",
+    "title": "Breaking a big feature into 5-minute tasks",
+    "prompt": "I want to build [FEATURE]. Before you start coding anything:\n\n1. Review the existing codebase and summarize what's relevant to this feature\n2. Break the work into tasks that would each take no more than 5 minutes\n3. Show me the full list and wait for my approval before starting\n4. Execute one task at a time, showing me the result after each\n5. If you hit something unexpected, stop and ask rather than guessing\n\nDo not touch any files outside what's necessary for this feature.",
+    "whyItWorks": "Claude Code wanders when given too much autonomy. Forcing 5-minute chunks with check-ins keeps you in control and surfaces problems before they compound."
+  }
+]
