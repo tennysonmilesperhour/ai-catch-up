@@ -32,6 +32,13 @@ export interface Domain {
 
 export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
+  // CORE (the missing center of gravity)
+  // ===========================================================
+  { id: "global-memory", label: "Global Memory", domain: "core", kind: "ghost", weight: 6,
+    desc: "The center of gravity that doesn't exist yet. A shared memory store every web-app project would talk to. memory-palace is the candidate to fill this.",
+    priority: "high" },
+
+  // ===========================================================
   // YOUR APPS (original work)
   // ===========================================================
   { id: "geck-inspect", label: "geck-inspect", domain: "apps", kind: "real", weight: 5,
@@ -185,6 +192,14 @@ export const NEXUS_NODES: NexusNode[] = [
 ];
 
 export const NEXUS_LINKS: NexusLink[] = [
+  // Web apps orbit the missing Global Memory core
+  { source: "global-memory", target: "geck-inspect", strength: 0.5 },
+  { source: "global-memory", target: "geck-data", strength: 0.4 },
+  { source: "global-memory", target: "i-ching-app", strength: 0.4 },
+  { source: "global-memory", target: "utah-forage-map", strength: 0.4 },
+  { source: "global-memory", target: "this-product", strength: 0.5 },
+  { source: "global-memory", target: "creditrepair", strength: 0.4 },
+
   // Geck Inspect ecosystem (the gravity center)
   { source: "geck-inspect", target: "geck-data", strength: 0.9 },
   { source: "geck-inspect", target: "eyeinthesky", strength: 0.7 },
@@ -214,6 +229,7 @@ export const NEXUS_LINKS: NexusLink[] = [
   { source: "seomachine", target: "creditrepair", strength: 0.6 },
 
   // AI infra connections
+  { source: "memory-palace", target: "global-memory", strength: 0.7 },
   { source: "memory-palace", target: "ai-boardroom", strength: 0.4 },
   { source: "memory-palace", target: "GeckNexus", strength: 0.4 },
   { source: "GeckNexus", target: "data-visualization", strength: 0.4 },
@@ -258,6 +274,12 @@ export const NEXUS_LINKS: NexusLink[] = [
 ];
 
 export const DOMAINS: Record<string, Domain> = {
+  "core": {
+    label: "Core",
+    color: "#c9a07a",
+    anchor: { x: 0, y: 0 },
+    note: "The missing center. Global memory that all web-app repos should orbit around."
+  },
   "apps": {
     label: "Your Apps + Products",
     color: "#d97757",
