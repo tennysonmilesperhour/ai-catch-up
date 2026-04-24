@@ -17,7 +17,10 @@ export type NexusNode = {
   kind: NexusKind;
   weight: number;
   desc: string;
-  priority?: "high";
+  priority?: "high" | "medium" | "low";
+  deployed?: boolean;
+  github?: string;
+  homepage?: string;
 };
 
 export type NexusLink = {
@@ -299,6 +302,10 @@ export function Nexus({ domains, nodes, links }: Props) {
     ? nodes.find((n) => n.id === selectedId) || null
     : null;
 
+  const hoveredNode = hoveredId
+    ? nodes.find((n) => n.id === hoveredId) || null
+    : null;
+
   const visibleNodes = useMemo(
     () => nodes.filter((n) => visibleIds.has(n.id)),
     [nodes, visibleIds]
@@ -541,6 +548,13 @@ export function Nexus({ domains, nodes, links }: Props) {
         </div>
       </div>
 
+      {hoveredNode && !selectedNode && (
+        <HoverTooltip
+          node={hoveredNode}
+          domain={domains[hoveredNode.domain]}
+        />
+      )}
+
       {selectedNode && (
         <NodeModal
           node={selectedNode}
@@ -637,6 +651,94 @@ function NodeModal({
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+function HoverTooltip({
+  node,
+  domain,
+}: {
+  node: NexusNode;
+  domain: DomainInfo | undefined;
+}) {
+  const domainColor = domain?.color ?? "#d97757";
+  const kindTag =
+    node.kind === "real"
+      ? "original"
+      : node.kind === "fork"
+        ? "fork"
+        : node.priority === "high"
+          ? "high priority gap"
+          : "gap";
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 16,
+        right: 16,
+        maxWidth: 320,
+        background: "rgba(26, 22, 18, 0.95)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        padding: "16px 18px",
+        border: `1px solid ${domainColor}`,
+        borderLeft: `3px solid ${domainColor}`,
+        pointerEvents: "none",
+        zIndex: 10,
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+          color: domainColor,
+          marginBottom: 6,
+          fontFamily: "ui-monospace, Menlo, monospace",
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 8,
+        }}
+      >
+        <span>{domain?.label ?? node.domain}</span>
+        <span style={{ opacity: 0.7 }}>{kindTag}</span>
+      </div>
+      <div
+        style={{
+          fontFamily: "ui-monospace, Menlo, monospace",
+          fontSize: 15,
+          fontWeight: 600,
+          color: "#f5efe0",
+          marginBottom: 8,
+          lineHeight: 1.2,
+        }}
+      >
+        {node.label}
+      </div>
+      <div
+        style={{
+          fontSize: 13,
+          color: "#a99c87",
+          lineHeight: 1.55,
+        }}
+      >
+        {node.desc}
+      </div>
+      {(node.github || node.homepage) && (
+        <div
+          style={{
+            fontSize: 11,
+            color: "#5a4f43",
+            marginTop: 10,
+            fontFamily: "ui-monospace, Menlo, monospace",
+          }}
+        >
+          click to open
+        </div>
+      )}
     </div>
   );
 }
