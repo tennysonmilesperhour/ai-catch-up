@@ -28,12 +28,22 @@ export default function AdminLayout({
                 admin
               </span>
             </Link>
-            <Link
-              href="/"
-              className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-cream)] transition-colors"
-            >
-              View site
-            </Link>
+            <div className="flex items-center gap-5">
+              <Link
+                href="/"
+                className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-cream)] transition-colors"
+              >
+                View site
+              </Link>
+              <form method="POST" action="/api/logout">
+                <button
+                  type="submit"
+                  className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-cream)] transition-colors bg-transparent border-0 p-0 cursor-pointer"
+                >
+                  Log out
+                </button>
+              </form>
+            </div>
           </div>
           <TabNav tabs={tabs} />
         </div>

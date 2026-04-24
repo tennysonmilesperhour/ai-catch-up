@@ -1,26 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE, verifySession } from "@/lib/session";
 
-const AUTH_COOKIE = "admin_auth";
-
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Only guard /admin/*, not the login page or the login API.
-  if (pathname.startsWith("/admin/login") || pathname === "/api/admin/login") {
-    return NextResponse.next();
-  }
 
   if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
 
-  const password = process.env.ADMIN_PASSWORD;
-  const cookie = request.cookies.get(AUTH_COOKIE)?.value;
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const session = await verifySession(token);
 
-  if (!password || cookie !== password) {
+  if (!session) {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
+    url.pathname = "/login";
     url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (session.role !== "admin") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/preview";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

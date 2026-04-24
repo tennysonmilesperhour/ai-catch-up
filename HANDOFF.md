@@ -14,6 +14,31 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-24 - Minimum-viable accounts + refresh banner
+
+Per Tennyson's direct request. Flagged the conflict with the freshly-locked v1.1 scope decision; Tennyson chose the scoped middle-path option.
+
+**Unified login + roles.**
+
+- `ADMIN_PASSWORD`-based `/admin/login` replaced with a single email-only `/login`.
+- New `ADMIN_EMAIL` env var: exact match (case-insensitive) issues an admin session. Any other email issues a user session.
+- Sessions use HMAC-SHA256 signed cookies (`ac_session`, 30 days, httpOnly, SameSite=lax). Implemented with Web Crypto so it runs in the Edge middleware.
+- New `SESSION_SECRET` env var (min 16 chars). Changing it invalidates every session.
+- Middleware guards `/admin/*`: no session → `/login?next=...`; user role → `/preview`; admin role → allow. Back-compat `admin_auth` cookies are ignored.
+- New files: `/lib/session.ts`, `/app/login/page.tsx`, `/app/api/login/route.ts`, `/app/api/logout/route.ts`, `/app/preview/page.tsx`. Removed: `/app/admin/login/page.tsx`, `/app/api/admin/login/route.ts`.
+- Admin header gained a Log out button next to View site.
+
+**/preview page** for non-admin users: shows the six admin tab titles with one-sentence blurbs, a "Locked" tag on each, a big "Unlock the onboarding" CTA pointing at the Stripe link, and Log out + Back to landing footer links.
+
+**Refresh banner.**
+
+- `/api/version` returns `{buildId}`, populated from `VERCEL_GIT_COMMIT_SHA` in production (unique per deploy) or a per-process `dev-<timestamp>` in dev.
+- `RefreshBanner` (mounted in root layout) records the first fetched build id, polls every 60s, and shows a pinned bottom-right dark card with a Refresh button when the id changes.
+
+**Env vars Tennyson needs to add on Vercel** before this stops 500-ing on admin: `ADMIN_EMAIL` (his email) and `SESSION_SECRET` (any 32-char random string). `ADMIN_PASSWORD` is no longer read.
+
+Verified: typecheck clean; `npm run build` green (16 routes); full end-to-end test (unauth → login → admin role → nexus, unauth → login → user role → preview, logout → back to login).
+
 ### 2026-04-24 - Launch Checklist (admin) + v1.1/v1.2 previews
 
 **Section 1: Admin Launch Checklist tab.**
