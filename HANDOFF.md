@@ -14,6 +14,35 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-24 - Full security / bug / UX audit (autonomous)
+
+Direct request from Tennyson: full audit, fix everything, use best judgment on trade-offs, report when done. Changes in one batch:
+
+**Security**
+
+- `SESSION_SECRET` fallback was a hardcoded string in `lib/session.ts`. Anyone with GitHub access could forge an admin cookie. Replaced with a per-process random (32 bytes via `crypto.getRandomValues`). If the env var is still missing, sessions stop being stable across serverless invocations, which is a useful pressure signal to fix the config, but the source code no longer leaks a valid secret.
+- `/api/login` `next` param now rejects external origins and protocol-relative URLs (`//evil.com`) via a `safeAdminNext` helper. Only same-origin paths under `/admin` are honored.
+- Added security response headers via `next.config.mjs`: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `X-DNS-Prefetch-Control: on`. Also disabled `X-Powered-By`.
+
+**Bugs / cleanup**
+
+- `BeforeAfter` was styling the "with" panel by hardcoded `i === 1`. Replaced with an explicit `mode: "with" | "without"` field on each scenario, so reordering can't break the styling.
+- `/api/version` had both `dynamic = "force-dynamic"` and `revalidate = 0`. Kept only `force-dynamic`.
+- Added `Viewport` export to root layout so mobile browsers don't zoom out. `themeColor` matches the cream background.
+
+**UX / site coverage**
+
+- `SiteHeader` (wordmark + Log in) now renders on `/thank-you` and `/preview` in addition to the landing page. One consistent way to find login.
+- Admin tab nav now scrolls horizontally on narrow screens instead of wrapping. Tabs get `whitespace-nowrap`.
+- Added custom `/not-found.tsx` with the site's editorial style. Previously Next's default 404.
+- Added visible focus ring (terracotta, 2px, 2px offset) via `:focus-visible` in `globals.css` for keyboard users.
+
+**SEO**
+
+- Added `app/sitemap.ts` (landing, thank-you, login) and `app/robots.ts` that disallows `/admin`, `/api`, and `/preview`. Sitemap URL is pinned to `NEXT_PUBLIC_SITE_URL`.
+
+**Verified:** typecheck clean; `npm run build` green (18 routes including `/robots.txt` and `/sitemap.xml`); security headers show up in `curl -I`; sitemap and robots render correctly; 404 page renders with site aesthetic; BeforeAfter scenarios still display correctly with the new `mode` field.
+
 ### 2026-04-24 - Minimum-viable accounts + refresh banner
 
 Per Tennyson's direct request. Flagged the conflict with the freshly-locked v1.1 scope decision; Tennyson chose the scoped middle-path option.

@@ -25,15 +25,30 @@ function b64urlDecode(s: string): Uint8Array {
 }
 
 let warnedMissingSecret = false;
-const FALLBACK_SECRET =
-  "ai-catch-up-fallback-secret-please-set-SESSION_SECRET-env-var";
+
+// If SESSION_SECRET is not set, we still want the site to serve without
+// crashing. We fall back to a random secret generated at module load. This
+// keeps the site up in "misconfigured" state, but sessions will not persist
+// across serverless invocations and will not survive a redeploy, which is a
+// useful pressure signal to set the real env var. Crucially the fallback
+// is NOT a hardcoded string, so nobody can forge a cookie by reading this
+// source file.
+const FALLBACK_SECRET = (() => {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let hex = "";
+  for (let i = 0; i < bytes.length; i++) {
+    hex += bytes[i].toString(16).padStart(2, "0");
+  }
+  return hex;
+})();
 
 function getSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 16) {
     if (!warnedMissingSecret) {
       console.warn(
-        "[session] SESSION_SECRET env var is missing or too short. Using an insecure fallback. Set SESSION_SECRET on Vercel (32+ random chars) to secure sessions."
+        "[session] SESSION_SECRET env var is missing or too short. Sessions are signed with a per-process random fallback and will not persist reliably. Set SESSION_SECRET on Vercel (32+ random chars) to fix."
       );
       warnedMissingSecret = true;
     }

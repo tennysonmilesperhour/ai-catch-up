@@ -2,6 +2,7 @@ import { loadContent } from "@/lib/content";
 
 type Scenario = {
   when: string;
+  mode?: "with" | "without";
   user_prompt: string;
   ai_response: string;
   outcome: string;
@@ -39,7 +40,7 @@ export function BeforeAfter() {
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {scenarios.map((s, i) => {
-          const isWith = i === 1;
+          const isWith = s.mode === "with";
           const labelClass = isWith
             ? "text-[var(--color-terracotta)]"
             : "text-[var(--color-muted-dark)]";
