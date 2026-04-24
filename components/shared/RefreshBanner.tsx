@@ -2,39 +2,73 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
+const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
+const FOCUS_THROTTLE_MS = 5 * 1000; // ignore focus events within 5s of last poll
 
 export function RefreshBanner() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const loadedBuildId = useRef<string | null>(null);
+  const lastPollAt = useRef<number>(0);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function poll() {
+    async function poll(reason: string) {
+      const now = Date.now();
+      lastPollAt.current = now;
       try {
         const res = await fetch("/api/version", { cache: "no-store" });
-        if (!res.ok) return;
-        const data = (await res.json()) as { buildId?: string };
-        const remote = data.buildId;
-        if (!remote) return;
-        if (loadedBuildId.current === null) {
-          loadedBuildId.current = remote;
+        if (!res.ok) {
+          console.warn(`[refresh-banner] poll(${reason}) HTTP ${res.status}`);
           return;
         }
-        if (remote !== loadedBuildId.current && !cancelled) {
-          setUpdateAvailable(true);
+        const data = (await res.json()) as {
+          buildId?: string;
+          source?: string;
+        };
+        const remote = data.buildId;
+        if (!remote) {
+          console.warn(`[refresh-banner] poll(${reason}) missing buildId`);
+          return;
         }
-      } catch {
-        // Network blip is fine; try again next tick.
+        if (loadedBuildId.current === null) {
+          loadedBuildId.current = remote;
+          console.info(
+            `[refresh-banner] baseline set buildId=${remote} source=${data.source ?? "?"}`
+          );
+          return;
+        }
+        if (remote !== loadedBuildId.current) {
+          console.info(
+            `[refresh-banner] update detected: ${loadedBuildId.current} -> ${remote}`
+          );
+          if (!cancelled) setUpdateAvailable(true);
+        } else {
+          console.debug(
+            `[refresh-banner] poll(${reason}) buildId unchanged (${remote})`
+          );
+        }
+      } catch (err) {
+        console.warn(`[refresh-banner] poll(${reason}) failed`, err);
       }
     }
 
-    void poll();
-    const id = setInterval(poll, POLL_INTERVAL_MS);
+    void poll("mount");
+    const intervalId = setInterval(() => poll("interval"), POLL_INTERVAL_MS);
+
+    const onVisibility = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastPollAt.current < FOCUS_THROTTLE_MS) return;
+      void poll("visibility");
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", onVisibility);
+
     return () => {
       cancelled = true;
-      clearInterval(id);
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", onVisibility);
     };
   }, []);
 
