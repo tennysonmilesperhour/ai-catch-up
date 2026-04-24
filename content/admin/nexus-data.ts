@@ -4,6 +4,18 @@
 export type NodeKind = "real" | "fork" | "ghost";
 export type Priority = "high" | "medium" | "low";
 
+export type ActionKind =
+  | "copy-prompt"
+  | "open-url"
+  | "copy-commands"
+  | "view-steps";
+
+export interface NodeAction {
+  kind: ActionKind;
+  label: string;
+  payload: string;
+}
+
 export interface NexusNode {
   id: string;
   label: string;
@@ -15,6 +27,7 @@ export interface NexusNode {
   deployed?: boolean;
   github?: string;
   homepage?: string;
+  actions?: NodeAction[];
 }
 
 export interface NexusLink {
@@ -60,7 +73,10 @@ export const NEXUS_NODES: NexusNode[] = [
   // Ghost apps (things that should exist but don't, or new)
   { id: "this-product", label: "The Onboarding Product", domain: "apps", kind: "ghost", weight: 5,
     desc: "The v1.0 you're building right now. Sits at the center of everything else.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "view-steps", label: "See v1.0 build plan", payload: "# Building v1.0 of the onboarding product\n\nThis node represents the product you're currently building. The full build plan lives in:\n\n- Admin → The Plan tab (strategic overview)\n- Admin → Content Schedule tab (week-by-week tasks)\n- Admin → Locked Decisions tab (decisions that are final)\n\n## Current status\n\nCheck the Content Schedule tab for what's in progress, what's blocked, and what's next.\n\n## If you're losing steam\n\nRead the Locked Decisions tab. The decisions are made. You are not re-deciding whether to build this. You are executing the build." },
+    ] },
   { id: "creditrepair", label: "CreditRepair.works", domain: "apps", kind: "ghost", weight: 4,
     desc: "Landing page exists on disk but no GitHub repo or deployment yet.",
     priority: "high" },
@@ -141,10 +157,17 @@ export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
   { id: "claude-sync", label: ".claude sync", domain: "sync", kind: "ghost", weight: 4,
     desc: "Sync ~/.claude folder between Mac mini and laptop via private GitHub repo. Highest-leverage 30 minutes you could spend.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "copy-prompt", label: "Copy Claude Code setup prompt", payload: "I want to sync my ~/.claude folder between my Mac mini and my laptop so my CLAUDE.md, skills, and custom commands are the same on both machines. Walk me through: 1) creating a private GitHub repo called 'claude-config', 2) moving ~/.claude into that repo, 3) setting up the sync so that 'claude pull' before work and 'claude push' after work becomes my habit, 4) handling the case where both machines made changes. Also suggest a shell alias to make this frictionless." },
+      { kind: "view-steps", label: "See manual walkthrough", payload: "# Syncing .claude across Macs\n\n## What you're solving\n\nRight now, if you configure Claude Code on your Mac mini, your laptop doesn't benefit. This fixes that permanently.\n\n## Steps\n\n1. On your primary Mac (the one with the most up-to-date .claude folder), open Terminal\n2. `cd ~/.claude && git init`\n3. Create a new private repo on GitHub called 'claude-config'\n4. `git remote add origin [YOUR_REPO_URL]`\n5. `git add . && git commit -m 'initial'`\n6. `git push -u origin main`\n7. On your other Mac: `cd ~ && mv .claude .claude-backup` (just in case)\n8. `git clone [YOUR_REPO_URL] .claude`\n9. Test by opening Claude Code on the second Mac and confirming your CLAUDE.md is there\n\n## Daily habit\n\nAt session start on either machine: `cd ~/.claude && git pull`\nAt session end: `cd ~/.claude && git add . && git commit -m 'updates' && git push`\n\nA shell alias makes this one command. Ask Claude Code to help you set one up." },
+    ] },
   { id: "env-sync", label: ".env secret sync", domain: "sync", kind: "ghost", weight: 4,
     desc: "API keys moved from scattered notes into 1Password dev-secrets vault. Labels per project.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "view-steps", label: "See setup walkthrough", payload: "# Setting up .env sync via 1Password\n\n## What you're solving\n\nWhen you clone a project on your laptop that you set up on your Mac mini, it won't run because .env files aren't in GitHub (correctly). This fixes that.\n\n## Steps\n\n1. Install 1Password if you haven't (see the 1Password node for that)\n2. Create a vault called 'Dev Secrets'\n3. For each project with a .env file:\n   a. Open the .env file in your editor\n   b. Copy the entire contents\n   c. In 1Password, create a new Secure Note\n   d. Title it exactly 'projectname.env' (replace projectname)\n   e. Paste the contents into the note body\n4. When setting up that project on another machine:\n   a. Clone the repo\n   b. Open the 1Password note\n   c. Create a new .env file in the project root\n   d. Paste the contents\n\n## Why this is the right shape\n\nYou can't put API keys in GitHub. You shouldn't email them to yourself. You shouldn't Slack them to yourself. 1Password gives you a secure, searchable, synced home for them." },
+    ] },
   { id: "version-mgr", label: "mise (Node/Python)", domain: "sync", kind: "ghost", weight: 2,
     desc: "Version manager so 'works on Mac mini' equals 'works on laptop'. Matters especially for Utah Forage Map (Python + Node).",
     priority: "medium" },
@@ -154,13 +177,25 @@ export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
   { id: "cursor", label: "Cursor", domain: "must-have", kind: "ghost", weight: 5,
     desc: "AI-first visual code editor. The missing piece for 'seeing what's happening' you mentioned. Complements Claude Code, doesn't replace it.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "open-url", label: "Open Cursor download", payload: "https://cursor.sh" },
+      { kind: "copy-prompt", label: "Copy post-install prompt", payload: "I just installed Cursor. Walk me through: 1) signing in with my Claude/Anthropic account, 2) opening my existing project at [PATH], 3) enabling the AI features, and 4) running my first AI-assisted edit. Assume I've never used Cursor before." },
+    ] },
   { id: "1password", label: "1Password", domain: "must-have", kind: "ghost", weight: 4,
     desc: "Secrets manager for all your API keys. Supabase, Vercel, Stripe, Mapbox, Auth0, Anthropic, Base44. Highest-leverage tool on this list.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "open-url", label: "Open 1Password signup", payload: "https://1password.com/sign-up" },
+      { kind: "view-steps", label: "See setup walkthrough", payload: "# Setting up 1Password for your dev secrets\n\n1. Sign up for a personal account ($2.99/month as of last check)\n2. Install the Mac app and browser extension\n3. Create a new vault called 'Dev Secrets'\n4. For each project, create a Secure Note titled 'projectname.env'\n5. Paste the contents of that project's .env file into the note\n6. When setting up a repo on your other machine, open the note and copy the contents into a new .env file\n\n## Why this matters\n\nAPI keys and secrets should never go into GitHub. 1Password gives you a sync mechanism between your Mac mini and laptop that's secure and effortless." },
+    ] },
   { id: "claude-projects", label: "Claude Projects", domain: "must-have", kind: "ghost", weight: 4,
     desc: "The Projects feature inside claude.ai. Folders with persistent context. Upload CONTEXT.md once, every chat has it.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "open-url", label: "Open Claude Projects", payload: "https://claude.ai/projects" },
+      { kind: "view-steps", label: "See how to set up a Project", payload: "# Setting up a Claude Project for your flagship app\n\n## Steps\n\n1. Go to claude.ai and click Projects in the sidebar\n2. Click 'Create Project'\n3. Name it after your flagship (e.g. 'Geck Inspect')\n4. In the Project Knowledge section, upload:\n   - Your CLAUDE.md file\n   - Your README.md\n   - Any DECISIONS.md or ARCHITECTURE.md you have\n   - Screenshots of current app screens if relevant\n5. In the Custom Instructions, paste the system prompt your CLAUDE.md uses\n6. Start new chats within that project instead of fresh chats for project-related work\n\n## Why this matters\n\nEvery new chat outside a project starts Claude from zero. Every chat inside the project has instant context. For active projects, this is a 10x difference in chat quality with zero ongoing effort." },
+    ] },
   { id: "raycast", label: "Raycast", domain: "must-have", kind: "ghost", weight: 3,
     desc: "Spotlight replacement with AI integration and clipboard history. Free for personal use.",
     priority: "medium" },
@@ -179,16 +214,28 @@ export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
   { id: "readmes", label: "READMEs", domain: "docs", kind: "ghost", weight: 3,
     desc: "Several repos have empty descriptions (geck-data, some forks). Fix these first. AI tools read READMEs for context.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "copy-prompt", label: "Copy README generator prompt", payload: "For each repo in my GitHub that has an empty description or a stub README, generate a proper README.md. Include: 1) one-sentence project description, 2) tech stack, 3) how to run locally, 4) deployment URL if any, 5) known issues or TODOs. Ask me for context on each repo before writing. The repos needing this work are: [LIST THEM OR SAY 'check my GitHub and tell me which ones']." },
+    ] },
   { id: "claude-md-per", label: "Per-project CLAUDE.md", domain: "docs", kind: "ghost", weight: 4,
     desc: "Each real project should have its own CLAUDE.md layered on top of your global one. Huge quality boost for every Claude Code session.",
-    priority: "high" },
+    priority: "high",
+    actions: [
+      { kind: "copy-prompt", label: "Copy CLAUDE.md generator prompt", payload: "Create a CLAUDE.md at the root of this project. This file is read by Claude Code at the start of every session. Include sections: Project (one-sentence what and who), Tech Stack (list), Conventions (naming, structure, state patterns), Known Gotchas (things I've already hit and fixed), What NOT to do (rejected approaches), Current Focus (what I'm working on right now). Keep it under 100 lines. Ask me the questions you need to fill this out." },
+    ] },
   { id: "context-md", label: "CONTEXT.md", domain: "docs", kind: "ghost", weight: 2,
     desc: "Business context (who, problem, why now). Worth writing for top 2-3 projects only. Skip for forks and experiments.",
-    priority: "medium" },
+    priority: "medium",
+    actions: [
+      { kind: "copy-prompt", label: "Copy CONTEXT.md generator prompt", payload: "Create a CONTEXT.md for this project that captures the non-technical context Claude should know. Include: who the user is, what problem this solves, why this matters now, what success looks like, and any domain-specific knowledge Claude should wear. Interview me through these sections rather than guessing." },
+    ] },
   { id: "decisions-md", label: "DECISIONS.md", domain: "docs", kind: "ghost", weight: 2,
     desc: "Running log of chosen paths with rationale. High value for geck-inspect post Base44-migration.",
-    priority: "medium" },
+    priority: "medium",
+    actions: [
+      { kind: "copy-prompt", label: "Copy DECISIONS.md starter prompt", payload: "Create a DECISIONS.md for this project. Format: each entry has a date, a decision, alternatives considered, and the reason chosen. Make the first entry about the Base44-to-Supabase migration (I made that decision because of X, alternatives were Y and Z). Then make a second entry about the current tech stack choice. Going forward, I'll append to this file whenever I make a significant technical decision so I don't relitigate them." },
+    ] },
 ];
 
 export const NEXUS_LINKS: NexusLink[] = [
