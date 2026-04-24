@@ -7,6 +7,7 @@ const tabs = [
   { label: "Nexus", href: "/admin/nexus" },
   { label: "Prompts", href: "/admin/prompts" },
   { label: "Decisions", href: "/admin/decisions" },
+  { label: "Launch Checklist", href: "/admin/checklist" },
 ];
 
 export default function AdminLayout({
