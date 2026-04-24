@@ -1,22 +1,24 @@
 import { loadContent } from "@/lib/content";
 
-type WhatYouGetItem = {
-  number?: string;
+type Layer = {
+  label: string;
   title: string;
-  text: string;
+  subtitle: string;
+  items: string[];
 };
 
 type WhatYouGetFrontmatter = {
   eyebrow?: string;
   headline?: string;
-  items?: WhatYouGetItem[];
+  intro?: string;
+  layers?: Layer[];
 };
 
 export function WhatYouGet() {
   const { frontmatter } = loadContent<WhatYouGetFrontmatter>(
     "landing/what-you-get.mdx"
   );
-  const items = frontmatter.items || [];
+  const layers = frontmatter.layers || [];
 
   return (
     <section className="px-6 md:px-12 py-16 md:py-24 max-w-6xl mx-auto">
@@ -26,27 +28,43 @@ export function WhatYouGet() {
         </p>
       )}
       {frontmatter.headline && (
-        <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-16 max-w-3xl">
+        <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-6 max-w-3xl">
           {frontmatter.headline}
         </h2>
       )}
-      <ol className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-        {items.map((item, i) => (
-          <li key={i} className="flex gap-6">
-            <span className="font-mono text-sm text-[var(--color-terracotta)] pt-1 min-w-[2rem]">
-              {item.number ?? String(i + 1).padStart(2, "0")}
-            </span>
-            <div>
-              <h3 className="font-serif text-xl text-[var(--color-dark)] mb-2">
-                {item.title}
-              </h3>
-              <p className="text-[var(--color-muted-dark)] leading-relaxed">
-                {item.text}
-              </p>
-            </div>
-          </li>
+      {frontmatter.intro && (
+        <p className="text-lg md:text-xl text-[var(--color-muted-dark)] mb-16 max-w-3xl leading-relaxed">
+          {frontmatter.intro}
+        </p>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        {layers.map((layer, i) => (
+          <article
+            key={i}
+            className="bg-white/60 border border-[var(--color-border)] p-6 md:p-8 flex flex-col"
+          >
+            <p className="label text-[var(--color-terracotta)] mb-4">
+              {layer.label}
+            </p>
+            <h3 className="font-serif text-2xl text-[var(--color-terracotta)] mb-2 leading-tight">
+              {layer.title}
+            </h3>
+            <p className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] mb-6">
+              {layer.subtitle}
+            </p>
+            <ul className="flex flex-col gap-3 text-[var(--color-muted-dark)] leading-relaxed">
+              {layer.items.map((item, j) => (
+                <li key={j} className="flex gap-3">
+                  <span className="text-[var(--color-terracotta)] mt-1.5 shrink-0">
+                    &bull;
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
         ))}
-      </ol>
+      </div>
     </section>
   );
 }
