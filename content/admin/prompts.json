@@ -131,5 +131,12 @@
     "title": "When you're overwhelmed by your own project",
     "prompt": "I'm feeling overwhelmed by [PROJECT]. There's too much to do, I don't know what to do first, and I'm starting to avoid opening the project at all.\n\nDon't give me a productivity lecture. Instead:\n\n1. Ask me what's actually on my plate - let me dump it all out messy\n2. Reflect back the themes you see\n3. Help me identify what's actually urgent vs. what just feels urgent\n4. Suggest ONE thing I could do in the next 30 minutes that would make me feel less stuck\n5. Give me permission to ignore everything else for today\n\nBe kind but not coddling.",
     "whyItWorks": "When you're overwhelmed you can't plan. This prompt bypasses the planning bottleneck by asking Claude to do the sorting for you, then narrowing to one action."
+  },
+  {
+    "id": 20,
+    "category": "When Things Feel Hard",
+    "title": "When you suspect you're on the wrong path",
+    "prompt": "I've been working on [PROJECT] for [TIME]. Something feels off and I can't articulate what.\n\nHelp me figure out if I should keep going, pivot, or stop.\n\nAsk me questions one at a time, not all at once. Questions like:\n- What did I originally imagine this would feel like by now?\n- What's actually happening vs. what I imagined?\n- What would I do if someone else showed me this project - advise them to continue, pivot, or quit?\n- What's the cost of continuing? What's the cost of stopping?\n\nDon't give me your opinion until I've answered enough questions that the pattern is obvious to both of us.",
+    "whyItWorks": "The sequential question format forces you to confront your own data instead of seeking reassurance. By the end, the answer usually becomes obvious without Claude having to state it."
   }
 ]
