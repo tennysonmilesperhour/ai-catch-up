@@ -7,8 +7,10 @@ import {
   type NexusLink,
   type NexusNode,
 } from "@/components/admin/Nexus";
+import { Nexus3D } from "@/components/admin/Nexus3D";
 
 const STORAGE_KEY = "nexus-custom-nodes-v1";
+const VIEW_STORAGE_KEY = "nexus-view-mode-v1";
 
 type CustomAddition = {
   id: string;
@@ -59,10 +61,22 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
   const [desc, setDesc] = useState("");
   const [domainKey, setDomainKey] = useState<string>("must-have");
   const [kind, setKind] = useState<"real" | "ghost" | "fork">("ghost");
+  const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
 
   useEffect(() => {
     setCustom(loadCustom());
+    if (typeof window !== "undefined") {
+      const saved = window.localStorage.getItem(VIEW_STORAGE_KEY);
+      if (saved === "3d" || saved === "2d") setViewMode(saved);
+    }
   }, []);
+
+  const switchView = (mode: "2d" | "3d") => {
+    setViewMode(mode);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, mode);
+    }
+  };
 
   const domainKeys = useMemo(() => Object.keys(domains), [domains]);
 
@@ -136,12 +150,44 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
             ? `${custom.length} local addition${custom.length === 1 ? "" : "s"} on this device`
             : "No local additions on this device yet"}
         </p>
-        <button
-          onClick={() => setFormOpen((v) => !v)}
-          className="self-start sm:self-auto font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border border-[var(--color-border)] text-[var(--color-dark)] bg-white/60 hover:border-[var(--color-terracotta)] hover:text-[var(--color-terracotta)] transition-colors"
-        >
-          {formOpen ? "Cancel" : "Add a tool or node"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            role="group"
+            aria-label="View mode"
+            className="flex border border-[var(--color-border)]"
+          >
+            <button
+              type="button"
+              onClick={() => switchView("2d")}
+              aria-pressed={viewMode === "2d"}
+              className={`font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 transition-colors ${
+                viewMode === "2d"
+                  ? "bg-[var(--color-dark)] text-[var(--color-cream)]"
+                  : "bg-transparent text-[var(--color-muted-dark)] hover:text-[var(--color-dark)]"
+              }`}
+            >
+              2D
+            </button>
+            <button
+              type="button"
+              onClick={() => switchView("3d")}
+              aria-pressed={viewMode === "3d"}
+              className={`font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border-l border-[var(--color-border)] transition-colors ${
+                viewMode === "3d"
+                  ? "bg-[var(--color-dark)] text-[var(--color-cream)]"
+                  : "bg-transparent text-[var(--color-muted-dark)] hover:text-[var(--color-dark)]"
+              }`}
+            >
+              3D
+            </button>
+          </div>
+          <button
+            onClick={() => setFormOpen((v) => !v)}
+            className="self-start sm:self-auto font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border border-[var(--color-border)] text-[var(--color-dark)] bg-white/60 hover:border-[var(--color-terracotta)] hover:text-[var(--color-terracotta)] transition-colors"
+          >
+            {formOpen ? "Cancel" : "Add a tool or node"}
+          </button>
+        </div>
       </div>
 
       {formOpen && (
@@ -272,11 +318,19 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
         </details>
       )}
 
-      <Nexus
-        domains={domains}
-        nodes={merged.nodes}
-        links={merged.links}
-      />
+      {viewMode === "3d" ? (
+        <Nexus3D
+          domains={domains}
+          nodes={merged.nodes}
+          links={merged.links}
+        />
+      ) : (
+        <Nexus
+          domains={domains}
+          nodes={merged.nodes}
+          links={merged.links}
+        />
+      )}
     </div>
   );
 }

@@ -367,7 +367,7 @@ export function Nexus({ domains, nodes, links }: Props) {
   ).length;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 nexus-2d-shell">
       <div className="flex flex-wrap gap-2">
         {FILTER_OPTIONS.map((opt) => {
           const active = filter === opt.value;
@@ -386,13 +386,16 @@ export function Nexus({ domains, nodes, links }: Props) {
           );
         })}
       </div>
-    <div className="relative w-full h-[70vh] min-h-[500px] bg-[var(--color-darker)] border border-[var(--color-border-dark)] overflow-hidden">
+    <div className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden">
       <svg
         ref={svgRef}
         viewBox={`${VIEW_X} ${VIEW_Y} ${VIEW_W} ${VIEW_H}`}
         preserveAspectRatio="xMidYMid meet"
         className="w-full h-full"
-        style={{ touchAction: "none" }}
+        style={{
+          touchAction: "none",
+          filter: "saturate(1.35) brightness(1.2)",
+        }}
       >
         <defs>
           {domainList.map((d) => (
