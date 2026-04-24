@@ -14,6 +14,26 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-24 - Launch Checklist (admin) + v1.1/v1.2 previews
+
+**Section 1: Admin Launch Checklist tab.**
+
+- New data file `/content/admin/launch-checklist.ts` with three phases (Infrastructure, Content, Launch Readiness) and 24 total items, each with optional action buttons.
+- New storage utility `/lib/checklist-storage.ts` persists per-item status and notes to `localStorage` under the versioned key `launch-checklist-state-v1`.
+- New tab at `/admin/checklist` (sixth tab, after Decisions). `LaunchChecklist.tsx` renders the three phases with: a top progress bar (done / total, percent), a per-phase progress count, per-item status dropdown (not-started / in-progress / done), description, action buttons, and an optional collapsible note field. Completed items get line-through and reduced opacity. Reset button at the bottom clears localStorage after a confirm prompt.
+- Action button pattern extracted into shared `/components/shared/ActionButton.tsx` and `/components/shared/StepsModal.tsx` so both Nexus and LaunchChecklist use the same implementation. Nexus.tsx now imports these instead of keeping inline copies.
+
+**Section 2: Landing page previews for v1.1 and v1.2.**
+
+- New section `Setup Flow Preview` sits between What You Get and Who This Is For. Five numbered phase cards (Capture your idea, Set up accounts, Install the starter package, Configure Claude, Receive your outputs) with time estimates in monospace. Copy consistently frames this as "what happens after you buy" so it previews v1.1 without promising a date.
+- Two new items in What You Get previewing the v1.2 dynamic checklist: Layer 2 gains "An ongoing personalized checklist that updates as your project grows"; Layer 3 gains "Future-proofing: your setup continues to adapt as you build". No new section created, so the page length stays calm.
+
+**Section 3: Locked Decisions.**
+
+- Appended four decisions to `/content/admin/decisions.json`: v1.0 ships admin-facing checklist only; v1.1 is the user setup flow; v1.2 is the dynamic checklist; landing page previews v1.1 and v1.2 without dates.
+
+**Scope respected.** No user setup flow or dynamic checklist built as functional features; those remain v1.1 and v1.2. Landing previews are static copy + design only.
+
 ### 2026-04-24 - Landing upgrades + Nexus tooltip action buttons
 
 **Section 1: Landing page.**

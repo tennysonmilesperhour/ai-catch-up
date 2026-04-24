@@ -8,5 +8,9 @@
   { "decision": "60-minute setup time as core promise", "rationale": "Demonstration of belief, not just information" },
   { "decision": "No em dashes in anything", "rationale": "Reads as AI-generated, breaks voice" },
   { "decision": "Claude Code owns the repo, Strategy Claude owns content", "rationale": "Prevents the two Claudes from stepping on each other's work" },
-  { "decision": "v1.0 ships landing and admin only", "rationale": "Collect emails and validate demand before building the product delivery flow" }
+  { "decision": "v1.0 ships landing and admin only", "rationale": "Collect emails and validate demand before building the product delivery flow" },
+  { "decision": "V1.0 ships with admin-facing checklist only", "rationale": "User-facing checklists are v1.1 and v1.2, not v1.0, to preserve the 2-week ship date" },
+  { "decision": "v1.1 is the User Setup Checklist (5-phase flow)", "rationale": "Real product delivery, requires user accounts and auth, scoped as its own major release" },
+  { "decision": "v1.2 is the Dynamic Checklist generated from personal Nexus", "rationale": "Depends on v1.1 existing first; speced now but built later when we have real buyer feedback" },
+  { "decision": "Landing page previews v1.1 and v1.2 features without promising delivery dates", "rationale": "Captures full vision for buyers while protecting launch timeline" }
 ]
