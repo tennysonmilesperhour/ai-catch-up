@@ -14,6 +14,14 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-24 - v1.0 prompts library
+
+Replaced `/content/admin/prompts.json` with the full 20-prompt library from Strategy Claude, spanning seven categories: Getting Unstuck, Project Setup, Building, Prompting Claude, Research & Learning, Marketing & Sales, Business Operations, Brand & Design, When Things Feel Hard.
+
+Schema: each entry has `id` (number), `category`, `title`, `prompt`, `whyItWorks`. The `PromptsList` component was updated to render the full prompt in a highlighted box plus an italic "Why it works" note underneath. Expanded state is stable across numeric or string ids.
+
+Verified: dev server renders all 20 prompt cards with categories and titles; typecheck clean.
+
 ### 2026-04-24 - v1.0 initial content
 
 Replaced the following content files per Strategy Claude's instructions:

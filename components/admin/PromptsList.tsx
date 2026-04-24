@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 
 export type Prompt = {
-  id: string;
+  id: number | string;
   title: string;
   category: string;
-  body: string;
+  prompt: string;
+  whyItWorks?: string;
 };
 
 type Props = {
@@ -52,14 +53,15 @@ export function PromptsList({ prompts, categories }: Props) {
 
       <ul className="grid gap-3">
         {filtered.map((p) => {
-          const isOpen = openIds.has(p.id);
+          const idKey = String(p.id);
+          const isOpen = openIds.has(idKey);
           return (
             <li
-              key={p.id}
+              key={idKey}
               className="bg-white/60 border border-[var(--color-border)]"
             >
               <button
-                onClick={() => toggle(p.id)}
+                onClick={() => toggle(idKey)}
                 className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-white/90 transition-colors"
               >
                 <div className="flex items-baseline gap-4">
@@ -80,8 +82,23 @@ export function PromptsList({ prompts, categories }: Props) {
                 </span>
               </button>
               {isOpen && (
-                <div className="px-6 pb-6 pt-2 text-[var(--color-muted-dark)] leading-relaxed whitespace-pre-line border-t border-[var(--color-border-light)]">
-                  {p.body}
+                <div className="px-6 pb-6 pt-5 border-t border-[var(--color-border-light)]">
+                  <p className="label text-[var(--color-muted-dark)] mb-2">
+                    Prompt
+                  </p>
+                  <div className="whitespace-pre-line text-[var(--color-dark)] leading-relaxed bg-[var(--color-cream)] border border-[var(--color-border)] p-4 mb-5">
+                    {p.prompt}
+                  </div>
+                  {p.whyItWorks && (
+                    <>
+                      <p className="label text-[var(--color-terracotta)] mb-2">
+                        Why it works
+                      </p>
+                      <p className="text-[var(--color-muted-dark)] italic leading-relaxed">
+                        {p.whyItWorks}
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </li>
