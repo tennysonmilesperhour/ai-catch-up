@@ -8,9 +8,15 @@ import {
   type NexusNode,
 } from "@/components/admin/Nexus";
 import { Nexus3D } from "@/components/admin/Nexus3D";
+import {
+  FILTER_OPTIONS,
+  filterMatches,
+  type NexusFilter,
+} from "@/lib/nexus-filter";
 
 const STORAGE_KEY = "nexus-custom-nodes-v1";
 const VIEW_STORAGE_KEY = "nexus-view-mode-v1";
+const FILTER_STORAGE_KEY = "nexus-filter-v1";
 
 type CustomAddition = {
   id: string;
@@ -62,12 +68,22 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
   const [domainKey, setDomainKey] = useState<string>("must-have");
   const [kind, setKind] = useState<"real" | "ghost" | "fork">("ghost");
   const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
+  const [filter, setFilter] = useState<NexusFilter>("everything");
 
   useEffect(() => {
     setCustom(loadCustom());
     if (typeof window !== "undefined") {
-      const saved = window.localStorage.getItem(VIEW_STORAGE_KEY);
-      if (saved === "3d" || saved === "2d") setViewMode(saved);
+      const savedView = window.localStorage.getItem(VIEW_STORAGE_KEY);
+      if (savedView === "3d" || savedView === "2d") setViewMode(savedView);
+      const savedFilter = window.localStorage.getItem(FILTER_STORAGE_KEY);
+      if (
+        savedFilter === "everything" ||
+        savedFilter === "have" ||
+        savedFilter === "missing" ||
+        savedFilter === "sync-tools"
+      ) {
+        setFilter(savedFilter);
+      }
     }
   }, []);
 
@@ -75,6 +91,13 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
     setViewMode(mode);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(VIEW_STORAGE_KEY, mode);
+    }
+  };
+
+  const switchFilter = (f: NexusFilter) => {
+    setFilter(f);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(FILTER_STORAGE_KEY, f);
     }
   };
 
@@ -95,6 +118,25 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
       links,
     };
   }, [custom, nodes, links]);
+
+  const visible = useMemo(() => {
+    const vNodes = merged.nodes.filter((n) => filterMatches(filter, n));
+    const vIds = new Set(vNodes.map((n) => n.id));
+    const vLinks = merged.links.filter(
+      (l) => vIds.has(l.source) && vIds.has(l.target)
+    );
+    return { nodes: vNodes, links: vLinks };
+  }, [merged, filter]);
+
+  const stats = useMemo(() => {
+    const real = visible.nodes.filter((n) => n.kind === "real").length;
+    const ghost = visible.nodes.filter((n) => n.kind === "ghost").length;
+    const fork = visible.nodes.filter((n) => n.kind === "fork").length;
+    const priority = visible.nodes.filter(
+      (n) => n.kind === "ghost" && n.priority === "high"
+    ).length;
+    return { total: visible.nodes.length, real, ghost, fork, priority };
+  }, [visible.nodes]);
 
   const resetForm = () => {
     setLabel("");
@@ -318,19 +360,66 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
         </details>
       )}
 
+      <div className="flex flex-wrap gap-2">
+        {FILTER_OPTIONS.map((opt) => {
+          const active = filter === opt.value;
+          return (
+            <button
+              key={opt.value}
+              onClick={() => switchFilter(opt.value)}
+              className={`font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border transition-colors ${
+                active
+                  ? "bg-[var(--color-dark)] text-[var(--color-cream)] border-[var(--color-dark)]"
+                  : "bg-transparent text-[var(--color-muted-dark)] border-[var(--color-border)] hover:border-[var(--color-dark)]"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+
       {viewMode === "3d" ? (
         <Nexus3D
           domains={domains}
-          nodes={merged.nodes}
-          links={merged.links}
+          nodes={visible.nodes}
+          links={visible.links}
         />
       ) : (
         <Nexus
           domains={domains}
-          nodes={merged.nodes}
-          links={merged.links}
+          nodes={visible.nodes}
+          links={visible.links}
         />
       )}
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between font-mono text-xs text-[var(--color-muted-dark)]">
+        <div className="flex flex-wrap gap-x-5 gap-y-1">
+          <span>
+            <span className="text-[var(--color-dark)]">{stats.total}</span>{" "}
+            nodes
+          </span>
+          <span>
+            <span className="text-[var(--color-dark)]">{stats.real}</span> real
+          </span>
+          <span>
+            <span className="text-[var(--color-dark)]">{stats.ghost}</span> ghost
+          </span>
+          <span>
+            <span className="text-[var(--color-dark)]">{stats.fork}</span> fork
+          </span>
+          <span>
+            <span className="text-[var(--color-terracotta)]">
+              {stats.priority}
+            </span>{" "}
+            high-priority gaps
+          </span>
+        </div>
+        <p className="text-[var(--color-muted)]">
+          Click any node for details. Hover to see neighbors. Drag to
+          rearrange.
+        </p>
+      </div>
     </div>
   );
 }

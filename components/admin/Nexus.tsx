@@ -93,28 +93,6 @@ function nodeRadius(n: NexusNode) {
   return 6 + n.weight * 1.5;
 }
 
-export type NexusFilter =
-  | "everything"
-  | "have"
-  | "missing"
-  | "sync-tools";
-
-const FILTER_OPTIONS: { value: NexusFilter; label: string }[] = [
-  { value: "everything", label: "Everything" },
-  { value: "have", label: "What I have" },
-  { value: "missing", label: "What's missing" },
-  { value: "sync-tools", label: "Sync and tools only" },
-];
-
-function filterMatches(filter: NexusFilter, n: NexusNode): boolean {
-  if (filter === "everything") return true;
-  if (filter === "have") return n.kind === "real";
-  if (filter === "missing") return n.kind === "ghost";
-  if (filter === "sync-tools")
-    return n.domain === "sync" || n.domain === "must-have";
-  return true;
-}
-
 export function Nexus({ domains, nodes, links }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const positionsRef = useRef<Map<string, Pos>>(new Map());
@@ -125,18 +103,9 @@ export function Nexus({ domains, nodes, links }: Props) {
   const [pinnedId, setPinnedId] = useState<string | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [didDrag, setDidDrag] = useState(false);
-  const [filter, setFilter] = useState<NexusFilter>("everything");
   const [stepsModalContent, setStepsModalContent] = useState<string | null>(
     null
   );
-
-  const visibleIds = useMemo(() => {
-    const set = new Set<string>();
-    for (const n of nodes) {
-      if (filterMatches(filter, n)) set.add(n.id);
-    }
-    return set;
-  }, [nodes, filter]);
 
   const domainList = useMemo(
     () =>
@@ -334,6 +303,8 @@ export function Nexus({ domains, nodes, links }: Props) {
   const activeNode = pinnedNode || hoveredNode;
   const isPinned = pinnedNode !== null;
 
+  const visibleIds = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes]);
+
   // While pinned, click outside the tooltip (and not on a node) closes it.
   useEffect(() => {
     if (!isPinned) return;
@@ -355,37 +326,7 @@ export function Nexus({ domains, nodes, links }: Props) {
     };
   }, [isPinned]);
 
-  const visibleNodes = useMemo(
-    () => nodes.filter((n) => visibleIds.has(n.id)),
-    [nodes, visibleIds]
-  );
-  const realCount = visibleNodes.filter((n) => n.kind === "real").length;
-  const ghostCount = visibleNodes.filter((n) => n.kind === "ghost").length;
-  const forkCount = visibleNodes.filter((n) => n.kind === "fork").length;
-  const highPriorityGapCount = visibleNodes.filter(
-    (n) => n.kind === "ghost" && n.priority === "high"
-  ).length;
-
   return (
-    <div className="flex flex-col gap-4 nexus-2d-shell">
-      <div className="flex flex-wrap gap-2">
-        {FILTER_OPTIONS.map((opt) => {
-          const active = filter === opt.value;
-          return (
-            <button
-              key={opt.value}
-              onClick={() => setFilter(opt.value)}
-              className={`font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border transition-colors ${
-                active
-                  ? "bg-[var(--color-dark)] text-[var(--color-cream)] border-[var(--color-dark)]"
-                  : "bg-transparent text-[var(--color-muted-dark)] border-[var(--color-border)] hover:border-[var(--color-dark)]"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
     <div className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden">
       <svg
         ref={svgRef}
@@ -632,35 +573,6 @@ export function Nexus({ domains, nodes, links }: Props) {
           onClose={() => setStepsModalContent(null)}
         />
       )}
-    </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between font-mono text-xs text-[var(--color-muted-dark)]">
-        <div className="flex flex-wrap gap-x-5 gap-y-1">
-          <span>
-            <span className="text-[var(--color-dark)]">{visibleNodes.length}</span>{" "}
-            nodes
-          </span>
-          <span>
-            <span className="text-[var(--color-dark)]">{realCount}</span> real
-          </span>
-          <span>
-            <span className="text-[var(--color-dark)]">{ghostCount}</span> ghost
-          </span>
-          <span>
-            <span className="text-[var(--color-dark)]">{forkCount}</span> fork
-          </span>
-          <span>
-            <span className="text-[var(--color-terracotta)]">
-              {highPriorityGapCount}
-            </span>{" "}
-            high-priority gaps
-          </span>
-        </div>
-        <p className="text-[var(--color-muted)]">
-          Click any node for details. Hover a node to see what it connects to.
-          Drag nodes to rearrange.
-        </p>
-      </div>
     </div>
   );
 }
