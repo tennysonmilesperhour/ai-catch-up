@@ -124,5 +124,12 @@
     "title": "Writing a brand voice guide you'll actually use",
     "prompt": "Create a brand voice guide for [PROJECT] that I'll actually reference, not a 40-page deck that sits in a drawer.\n\nIt should fit on one page and include:\n1. Three words that describe how this brand sounds\n2. Three words that describe how it does NOT sound\n3. 5 example phrases that sound exactly right\n4. 5 example phrases that sound exactly wrong (and why)\n5. Specific words to use and avoid\n6. How it handles humor (if at all)\n7. How it handles vulnerability (if at all)\n\nBase this on: [DESCRIBE THE BRAND, OR PASTE EXAMPLES OF WRITING YOU LIKE]",
     "whyItWorks": "The forced brevity and the 'right vs wrong' examples create a reference you'll actually use. The wrong examples teach the model what not to do for all future writing."
+  },
+  {
+    "id": 19,
+    "category": "When Things Feel Hard",
+    "title": "When you're overwhelmed by your own project",
+    "prompt": "I'm feeling overwhelmed by [PROJECT]. There's too much to do, I don't know what to do first, and I'm starting to avoid opening the project at all.\n\nDon't give me a productivity lecture. Instead:\n\n1. Ask me what's actually on my plate - let me dump it all out messy\n2. Reflect back the themes you see\n3. Help me identify what's actually urgent vs. what just feels urgent\n4. Suggest ONE thing I could do in the next 30 minutes that would make me feel less stuck\n5. Give me permission to ignore everything else for today\n\nBe kind but not coddling.",
+    "whyItWorks": "When you're overwhelmed you can't plan. This prompt bypasses the planning bottleneck by asking Claude to do the sorting for you, then narrowing to one action."
   }
 ]
