@@ -1,5 +1,6 @@
 import { EmailCaptureForm } from "@/components/shared/EmailCaptureForm";
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { CommunityCTA } from "@/components/shared/CommunityCTA";
 
 export const metadata = {
   title: "Thank you",
@@ -32,7 +33,7 @@ export default function ThankYouPage() {
           </p>
         </div>
 
-        <div>
+        <div className="mb-12">
           <p className="label text-[var(--color-muted-dark)] mb-4">
             Get notified
           </p>
@@ -42,6 +43,8 @@ export default function ThankYouPage() {
             successMessage="Got it, I will reach out when the video is live."
           />
         </div>
+
+        <CommunityCTA tone="light" />
       </div>
     </main>
   );
