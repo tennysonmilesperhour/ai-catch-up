@@ -117,5 +117,12 @@
     "title": "Picking an aesthetic direction that isn't generic",
     "prompt": "I'm designing [PROJECT]. It's for [BUYER] and it's about [CORE IDEA].\n\nHelp me commit to a bold aesthetic direction. Don't give me safe options.\n\nConsider these possible flavors: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, or something else you'd suggest.\n\nFor the top 3 directions you think fit:\n1. Name the direction and describe the feeling\n2. Propose a color palette (specific hex codes)\n3. Propose typography (specific font names)\n4. Give me one sentence describing the vibe\n5. Name a brand or product that lives in this aesthetic world\n\nThen tell me which of the three you'd pick and why.",
     "whyItWorks": "Most design advice from AI defaults to safe tech-startup gray. Giving explicit permission for bold directions and demanding specificity produces moodboard-level output."
+  },
+  {
+    "id": 18,
+    "category": "Brand & Design",
+    "title": "Writing a brand voice guide you'll actually use",
+    "prompt": "Create a brand voice guide for [PROJECT] that I'll actually reference, not a 40-page deck that sits in a drawer.\n\nIt should fit on one page and include:\n1. Three words that describe how this brand sounds\n2. Three words that describe how it does NOT sound\n3. 5 example phrases that sound exactly right\n4. 5 example phrases that sound exactly wrong (and why)\n5. Specific words to use and avoid\n6. How it handles humor (if at all)\n7. How it handles vulnerability (if at all)\n\nBase this on: [DESCRIBE THE BRAND, OR PASTE EXAMPLES OF WRITING YOU LIKE]",
+    "whyItWorks": "The forced brevity and the 'right vs wrong' examples create a reference you'll actually use. The wrong examples teach the model what not to do for all future writing."
   }
 ]
