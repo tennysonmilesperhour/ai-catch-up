@@ -110,5 +110,12 @@
     "title": "Figuring out taxes for a solo business",
     "prompt": "I'm a solo operator in [STATE/COUNTRY]. I [DESCRIBE YOUR SITUATION - e.g., just made my first sales, am planning to launch soon, have been operating for X months].\n\nI need to understand:\n1. What legal entity I should operate under, if any (sole prop, LLC, other)\n2. What I need to track for tax purposes starting now\n3. What I'll owe and when\n4. What software would handle this so I don't have to think about it\n5. When I should actually talk to a human accountant vs. handle this myself\n\nBe specific to [STATE/COUNTRY]. Don't give me generic tax advice. Cite current rules where relevant and flag where I need to verify with a professional.",
     "whyItWorks": "Tax questions are high-stakes and regional. The explicit request for locality-specific info and clear delineation between 'do it yourself' and 'see a human' keeps the answer actionable."
+  },
+  {
+    "id": 17,
+    "category": "Brand & Design",
+    "title": "Picking an aesthetic direction that isn't generic",
+    "prompt": "I'm designing [PROJECT]. It's for [BUYER] and it's about [CORE IDEA].\n\nHelp me commit to a bold aesthetic direction. Don't give me safe options.\n\nConsider these possible flavors: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, or something else you'd suggest.\n\nFor the top 3 directions you think fit:\n1. Name the direction and describe the feeling\n2. Propose a color palette (specific hex codes)\n3. Propose typography (specific font names)\n4. Give me one sentence describing the vibe\n5. Name a brand or product that lives in this aesthetic world\n\nThen tell me which of the three you'd pick and why.",
+    "whyItWorks": "Most design advice from AI defaults to safe tech-startup gray. Giving explicit permission for bold directions and demanding specificity produces moodboard-level output."
   }
 ]
