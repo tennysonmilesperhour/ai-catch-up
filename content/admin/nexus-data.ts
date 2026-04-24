@@ -1,0 +1,48 @@
+export const NEXUS_NODES = [
+  { id: "geck-inspect", label: "geck-inspect", domain: "apps", kind: "real", weight: 5, desc: "Crested gecko breeding management, your flagship and the demo example" },
+  { id: "geck-data", label: "geck-data", domain: "apps", kind: "real", weight: 3, desc: "Geck Inspect data layer" },
+  { id: "i-ching-app", label: "i-ching-app", domain: "apps", kind: "real", weight: 3, desc: "Simple I Ching app" },
+  { id: "utah-forage-map", label: "utah-forage-map", domain: "apps", kind: "real", weight: 3, desc: "Collaborative mushroom foraging map" },
+  { id: "creditrepair", label: "CreditRepair.works", domain: "apps", kind: "ghost", weight: 4, desc: "Landing page exists, no repo yet", priority: "high" },
+  { id: "this-product", label: "The Onboarding Product", domain: "apps", kind: "ghost", weight: 5, desc: "What we're building right now", priority: "high" },
+  { id: "memory-palace", label: "memory-palace", domain: "ai-infra", kind: "fork", weight: 3, desc: "Open-source AI memory system" },
+  { id: "GeckNexus", label: "GeckNexus", domain: "ai-infra", kind: "fork", weight: 3, desc: "Browser-based code knowledge graph" },
+  { id: "everything-claude-code", label: "everything-claude-code", domain: "claude-workflow", kind: "fork", weight: 3, desc: "Agent harness optimization" },
+  { id: "lean-geck", label: "lean-geck", domain: "claude-workflow", kind: "fork", weight: 3, desc: "MCP Server + Shell Hook" },
+  { id: "claude-behave", label: "claude-behave", domain: "claude-workflow", kind: "fork", weight: 2, desc: "CLAUDE.md improvements" },
+  { id: "claude-sync", label: ".claude sync", domain: "sync", kind: "ghost", weight: 4, desc: "Sync ~/.claude across Macs via private repo", priority: "high" },
+  { id: "env-sync", label: ".env secret sync", domain: "sync", kind: "ghost", weight: 4, desc: "API keys synced via 1Password", priority: "high" },
+  { id: "cursor", label: "Cursor", domain: "must-have", kind: "ghost", weight: 5, desc: "AI-first code editor. Lets you SEE what's happening.", priority: "high" },
+  { id: "1password", label: "1Password", domain: "must-have", kind: "ghost", weight: 4, desc: "Secrets manager", priority: "high" },
+  { id: "claude-projects", label: "Claude Projects", domain: "must-have", kind: "ghost", weight: 4, desc: "Use the Projects feature in claude.ai", priority: "high" },
+  { id: "readmes", label: "READMEs", domain: "docs", kind: "ghost", weight: 3, desc: "Several repos have empty descriptions", priority: "high" },
+  { id: "claude-md-per", label: "Per-project CLAUDE.md", domain: "docs", kind: "ghost", weight: 4, desc: "Each real project needs one", priority: "high" },
+];
+
+export const NEXUS_LINKS = [
+  { source: "geck-inspect", target: "geck-data", strength: 0.9 },
+  { source: "geck-inspect", target: "this-product", strength: 0.9 },
+  { source: "this-product", target: "creditrepair", strength: 0.5 },
+  { source: "claude-sync", target: "geck-inspect", strength: 0.6 },
+  { source: "claude-sync", target: "this-product", strength: 0.7 },
+  { source: "env-sync", target: "geck-inspect", strength: 0.6 },
+  { source: "cursor", target: "geck-inspect", strength: 0.5 },
+  { source: "cursor", target: "this-product", strength: 0.6 },
+  { source: "1password", target: "env-sync", strength: 0.8 },
+  { source: "claude-projects", target: "this-product", strength: 0.7 },
+  { source: "claude-md-per", target: "geck-inspect", strength: 0.7 },
+  { source: "readmes", target: "geck-data", strength: 0.7 },
+  { source: "everything-claude-code", target: "this-product", strength: 0.5 },
+  { source: "lean-geck", target: "this-product", strength: 0.4 },
+  { source: "claude-behave", target: "this-product", strength: 0.4 },
+  { source: "memory-palace", target: "GeckNexus", strength: 0.4 },
+];
+
+export const DOMAINS = {
+  "apps": { label: "Your Apps + Products", color: "#d97757", anchor: { x: 0, y: 0 } },
+  "ai-infra": { label: "AI Infrastructure", color: "#6b7a8f", anchor: { x: -300, y: -180 } },
+  "claude-workflow": { label: "Claude Workflow", color: "#8a7f6b", anchor: { x: 300, y: -180 } },
+  "sync": { label: "Sync Gaps", color: "#c96442", anchor: { x: -180, y: -300 } },
+  "must-have": { label: "Must-Have Tools", color: "#b08840", anchor: { x: 180, y: -300 } },
+  "docs": { label: "Documentation", color: "#7a8a6b", anchor: { x: 0, y: 280 } },
+};
