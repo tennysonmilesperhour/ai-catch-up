@@ -49,21 +49,47 @@ type Pos = {
 
 const DOMAIN_ANCHOR_PULL = 0.008;
 const LINK_STIFFNESS = 0.01;
-const LINK_TARGET = 110;
-const REPULSION = 600;
+const LINK_TARGET = 130;
+const REPULSION = 800;
 const DAMPING = 0.82;
 
-const VIEW_W = 1000;
-const VIEW_H = 700;
-const CX = VIEW_W / 2;
-const CY = VIEW_H / 2;
+// viewBox is centered on (0, 0): -700..700 horizontally, -500..500 vertically.
+// Domain anchor coords are used directly without offset.
+const VIEW_X = -700;
+const VIEW_Y = -500;
+const VIEW_W = 1400;
+const VIEW_H = 1000;
+const HALF_W = VIEW_W / 2;
+const HALF_H = VIEW_H / 2;
 
 function anchorFor(d: DomainInfo) {
-  return { x: CX + d.anchor.x, y: CY + d.anchor.y };
+  return { x: d.anchor.x, y: d.anchor.y };
 }
 
 function nodeRadius(n: NexusNode) {
   return 6 + n.weight * 1.5;
+}
+
+export type NexusFilter =
+  | "everything"
+  | "have"
+  | "missing"
+  | "sync-tools";
+
+const FILTER_OPTIONS: { value: NexusFilter; label: string }[] = [
+  { value: "everything", label: "Everything" },
+  { value: "have", label: "What I have" },
+  { value: "missing", label: "What's missing" },
+  { value: "sync-tools", label: "Sync and tools only" },
+];
+
+function filterMatches(filter: NexusFilter, n: NexusNode): boolean {
+  if (filter === "everything") return true;
+  if (filter === "have") return n.kind === "real";
+  if (filter === "missing") return n.kind === "ghost";
+  if (filter === "sync-tools")
+    return n.domain === "sync" || n.domain === "must-have";
+  return true;
 }
 
 export function Nexus({ domains, nodes, links }: Props) {
@@ -75,6 +101,15 @@ export function Nexus({ domains, nodes, links }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [didDrag, setDidDrag] = useState(false);
+  const [filter, setFilter] = useState<NexusFilter>("everything");
+
+  const visibleIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const n of nodes) {
+      if (filterMatches(filter, n)) set.add(n.id);
+    }
+    return set;
+  }, [nodes, filter]);
 
   const domainList = useMemo(
     () =>
@@ -103,7 +138,7 @@ export function Nexus({ domains, nodes, links }: Props) {
       const d = domains[n.domain];
       const { x: cx, y: cy } = d
         ? anchorFor(d)
-        : { x: CX, y: CY };
+        : { x: 0, y: 0 };
       const angle = Math.random() * Math.PI * 2;
       const r = 30 + Math.random() * 40;
       positions.set(n.id, {
@@ -184,18 +219,18 @@ export function Nexus({ domains, nodes, links }: Props) {
         p.vy *= DAMPING;
         p.x += p.vx;
         p.y += p.vy;
-        if (p.x < 20) {
-          p.x = 20;
+        if (p.x < -HALF_W + 20) {
+          p.x = -HALF_W + 20;
           p.vx = 0;
-        } else if (p.x > VIEW_W - 20) {
-          p.x = VIEW_W - 20;
+        } else if (p.x > HALF_W - 20) {
+          p.x = HALF_W - 20;
           p.vx = 0;
         }
-        if (p.y < 20) {
-          p.y = 20;
+        if (p.y < -HALF_H + 20) {
+          p.y = -HALF_H + 20;
           p.vy = 0;
-        } else if (p.y > VIEW_H - 20) {
-          p.y = VIEW_H - 20;
+        } else if (p.y > HALF_H - 20) {
+          p.y = HALF_H - 20;
           p.vy = 0;
         }
       }
@@ -264,11 +299,41 @@ export function Nexus({ domains, nodes, links }: Props) {
     ? nodes.find((n) => n.id === selectedId) || null
     : null;
 
+  const visibleNodes = useMemo(
+    () => nodes.filter((n) => visibleIds.has(n.id)),
+    [nodes, visibleIds]
+  );
+  const realCount = visibleNodes.filter((n) => n.kind === "real").length;
+  const ghostCount = visibleNodes.filter((n) => n.kind === "ghost").length;
+  const forkCount = visibleNodes.filter((n) => n.kind === "fork").length;
+  const highPriorityGapCount = visibleNodes.filter(
+    (n) => n.kind === "ghost" && n.priority === "high"
+  ).length;
+
   return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2">
+        {FILTER_OPTIONS.map((opt) => {
+          const active = filter === opt.value;
+          return (
+            <button
+              key={opt.value}
+              onClick={() => setFilter(opt.value)}
+              className={`font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border transition-colors ${
+                active
+                  ? "bg-[var(--color-dark)] text-[var(--color-cream)] border-[var(--color-dark)]"
+                  : "bg-transparent text-[var(--color-muted-dark)] border-[var(--color-border)] hover:border-[var(--color-dark)]"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
     <div className="relative w-full h-[70vh] min-h-[500px] bg-[var(--color-darker)] border border-[var(--color-border-dark)] overflow-hidden">
       <svg
         ref={svgRef}
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+        viewBox={`${VIEW_X} ${VIEW_Y} ${VIEW_W} ${VIEW_H}`}
         preserveAspectRatio="xMidYMid meet"
         className="w-full h-full"
         style={{ touchAction: "none" }}
@@ -327,8 +392,10 @@ export function Nexus({ domains, nodes, links }: Props) {
           })}
         </g>
 
-        <g stroke="#d4cdbf" strokeOpacity="0.25">
+        <g>
           {links.map((l, i) => {
+            if (!visibleIds.has(l.source) || !visibleIds.has(l.target))
+              return null;
             const a = positionsRef.current.get(l.source);
             const b = positionsRef.current.get(l.target);
             if (!a || !b) return null;
@@ -343,7 +410,8 @@ export function Nexus({ domains, nodes, links }: Props) {
                 y1={a.y}
                 x2={b.x}
                 y2={b.y}
-                strokeOpacity={dimmed ? 0.08 : isHighlighted ? 0.7 : 0.25}
+                stroke={isHighlighted ? "#d97757" : "#d4cdbf"}
+                strokeOpacity={dimmed ? 0.08 : isHighlighted ? 0.9 : 0.25}
                 strokeWidth={isHighlighted ? 1.8 : 1}
               />
             );
@@ -352,6 +420,7 @@ export function Nexus({ domains, nodes, links }: Props) {
 
         <g>
           {nodes.map((n) => {
+            if (!visibleIds.has(n.id)) return null;
             const p = positionsRef.current.get(n.id);
             if (!p) return null;
             const d = domains[n.domain];
@@ -479,6 +548,35 @@ export function Nexus({ domains, nodes, links }: Props) {
           onClose={() => setSelectedId(null)}
         />
       )}
+    </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between font-mono text-xs text-[var(--color-muted-dark)]">
+        <div className="flex flex-wrap gap-x-5 gap-y-1">
+          <span>
+            <span className="text-[var(--color-dark)]">{visibleNodes.length}</span>{" "}
+            nodes
+          </span>
+          <span>
+            <span className="text-[var(--color-dark)]">{realCount}</span> real
+          </span>
+          <span>
+            <span className="text-[var(--color-dark)]">{ghostCount}</span> ghost
+          </span>
+          <span>
+            <span className="text-[var(--color-dark)]">{forkCount}</span> fork
+          </span>
+          <span>
+            <span className="text-[var(--color-terracotta)]">
+              {highPriorityGapCount}
+            </span>{" "}
+            high-priority gaps
+          </span>
+        </div>
+        <p className="text-[var(--color-muted)]">
+          Click any node for details. Hover a node to see what it connects to.
+          Drag nodes to rearrange.
+        </p>
+      </div>
     </div>
   );
 }
