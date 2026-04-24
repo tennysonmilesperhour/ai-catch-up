@@ -103,5 +103,12 @@
     "title": "Figuring out what to charge",
     "prompt": "Help me figure out what to charge for [PRODUCT].\n\nHere's what it does: [DESCRIPTION]\nHere's who it's for: [BUYER]\nHere's what similar products charge: [IF YOU KNOW]\nHere's what I'd like to charge: [IF YOU HAVE AN INSTINCT]\n\nWalk me through:\n1. What pricing models make sense here (one-time, subscription, freemium, tiered)\n2. What the market will bear for this buyer type\n3. Where my instinct might be wrong (too low? too high?)\n4. A specific price and model you'd recommend, with reasoning\n5. How I'd know if I got it wrong in the first month\n\nBe direct. Don't hedge.",
     "whyItWorks": "Pricing is where solo builders self-sabotage most. Forcing Claude to recommend a specific number with reasoning cuts through your own anxiety."
+  },
+  {
+    "id": 16,
+    "category": "Business Operations",
+    "title": "Figuring out taxes for a solo business",
+    "prompt": "I'm a solo operator in [STATE/COUNTRY]. I [DESCRIBE YOUR SITUATION - e.g., just made my first sales, am planning to launch soon, have been operating for X months].\n\nI need to understand:\n1. What legal entity I should operate under, if any (sole prop, LLC, other)\n2. What I need to track for tax purposes starting now\n3. What I'll owe and when\n4. What software would handle this so I don't have to think about it\n5. When I should actually talk to a human accountant vs. handle this myself\n\nBe specific to [STATE/COUNTRY]. Don't give me generic tax advice. Cite current rules where relevant and flag where I need to verify with a professional.",
+    "whyItWorks": "Tax questions are high-stakes and regional. The explicit request for locality-specific info and clear delineation between 'do it yourself' and 'see a human' keeps the answer actionable."
   }
 ]
