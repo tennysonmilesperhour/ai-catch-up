@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  forwardRef,
   useCallback,
   useEffect,
   useMemo,
@@ -120,7 +121,8 @@ export function Nexus({ domains, nodes, links }: Props) {
   const rafRef = useRef<number | null>(null);
   const [, setTick] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pinnedId, setPinnedId] = useState<string | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [didDrag, setDidDrag] = useState(false);
   const [filter, setFilter] = useState<NexusFilter>("everything");
   const [stepsModalContent, setStepsModalContent] = useState<string | null>(
@@ -315,17 +317,42 @@ export function Nexus({ domains, nodes, links }: Props) {
     (e.currentTarget as Element).releasePointerCapture?.(e.pointerId);
     if (draggingRef.current === nodeId) {
       draggingRef.current = null;
-      if (!didDrag) setSelectedId(nodeId);
+      if (!didDrag) setPinnedId(nodeId);
     }
   };
 
-  const selectedNode = selectedId
-    ? nodes.find((n) => n.id === selectedId) || null
+  const pinnedNode = pinnedId
+    ? nodes.find((n) => n.id === pinnedId) || null
     : null;
 
   const hoveredNode = hoveredId
     ? nodes.find((n) => n.id === hoveredId) || null
     : null;
+
+  // Pinned takes precedence over hover. Hover is ignored while pinned.
+  const activeNode = pinnedNode || hoveredNode;
+  const isPinned = pinnedNode !== null;
+
+  // While pinned, click outside the tooltip (and not on a node) closes it.
+  useEffect(() => {
+    if (!isPinned) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+      if (!target) return;
+      if (tooltipRef.current && tooltipRef.current.contains(target)) return;
+      if (target.closest("[data-nexus-node]")) return;
+      setPinnedId(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPinnedId(null);
+    };
+    document.addEventListener("click", handler);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", handler);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isPinned]);
 
   const visibleNodes = useMemo(
     () => nodes.filter((n) => visibleIds.has(n.id)),
@@ -464,6 +491,7 @@ export function Nexus({ domains, nodes, links }: Props) {
             return (
               <g
                 key={n.id}
+                data-nexus-node={n.id}
                 transform={`translate(${p.x}, ${p.y})`}
                 style={{
                   cursor: "pointer",
@@ -569,13 +597,17 @@ export function Nexus({ domains, nodes, links }: Props) {
         </div>
       </div>
 
-      {hoveredNode && !selectedNode && (
+      {activeNode && (
         <HoverTooltip
-          node={hoveredNode}
-          domain={domains[hoveredNode.domain]}
+          ref={tooltipRef}
+          node={activeNode}
+          domain={domains[activeNode.domain]}
+          pinned={isPinned}
+          onClose={() => setPinnedId(null)}
           onViewSteps={(payload) => {
             setStepsModalContent(payload);
             setHoveredId(null);
+            setPinnedId(null);
           }}
         />
       )}
@@ -584,14 +616,6 @@ export function Nexus({ domains, nodes, links }: Props) {
         <StepsModal
           content={stepsModalContent}
           onClose={() => setStepsModalContent(null)}
-        />
-      )}
-
-      {selectedNode && (
-        <NodeModal
-          node={selectedNode}
-          domain={domains[selectedNode.domain]}
-          onClose={() => setSelectedId(null)}
         />
       )}
     </div>
@@ -627,75 +651,19 @@ export function Nexus({ domains, nodes, links }: Props) {
   );
 }
 
-function NodeModal({
-  node,
-  domain,
-  onClose,
-}: {
-  node: NexusNode;
-  domain: DomainInfo | undefined;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  const kindLabel =
-    node.kind === "real"
-      ? "In the onboarding"
-      : node.kind === "fork"
-        ? "Fork / adjacent"
-        : "Coming soon";
-
-  return (
-    <div
-      className="absolute inset-0 flex items-center justify-center bg-black/50 z-10"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[var(--color-cream)] text-[var(--color-dark)] max-w-md w-[90%] p-8 border border-[var(--color-border)] relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-4 font-mono text-sm text-[var(--color-muted-dark)] hover:text-[var(--color-dark)]"
-          aria-label="Close"
-        >
-          X
-        </button>
-        <p className="label mb-3" style={{ color: domain?.color }}>
-          {domain?.label || node.domain} &middot; {kindLabel}
-        </p>
-        <h2 className="font-serif text-2xl md:text-3xl mb-4">
-          {node.label}
-        </h2>
-        {node.desc ? (
-          <p className="text-[var(--color-muted-dark)] leading-relaxed">
-            {node.desc}
-          </p>
-        ) : (
-          <p className="italic text-[var(--color-muted)]">
-            TODO: Description pending.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function HoverTooltip({
-  node,
-  domain,
-  onViewSteps,
-}: {
-  node: NexusNode;
-  domain: DomainInfo | undefined;
-  onViewSteps: (payload: string) => void;
-}) {
+const HoverTooltip = forwardRef<
+  HTMLDivElement,
+  {
+    node: NexusNode;
+    domain: DomainInfo | undefined;
+    pinned: boolean;
+    onClose: () => void;
+    onViewSteps: (payload: string) => void;
+  }
+>(function HoverTooltip(
+  { node, domain, pinned, onClose, onViewSteps },
+  ref
+) {
   const domainColor = domain?.color ?? "#d97757";
   const kindTag =
     node.kind === "real"
@@ -709,6 +677,7 @@ function HoverTooltip({
 
   return (
     <div
+      ref={ref}
       style={{
         position: "absolute",
         top: 16,
@@ -720,11 +689,37 @@ function HoverTooltip({
         padding: "16px 18px",
         border: `1px solid ${domainColor}`,
         borderLeft: `3px solid ${domainColor}`,
-        pointerEvents: hasActions ? "auto" : "none",
+        pointerEvents: pinned || hasActions ? "auto" : "none",
         zIndex: 10,
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
+        boxShadow: pinned
+          ? "0 8px 28px rgba(0, 0, 0, 0.55)"
+          : "0 4px 20px rgba(0, 0, 0, 0.4)",
       }}
     >
+      {pinned && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          aria-label="Close"
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            background: "transparent",
+            border: 0,
+            color: "#8a7f6b",
+            fontSize: 16,
+            fontFamily: "ui-monospace, Menlo, monospace",
+            cursor: "pointer",
+            padding: 4,
+            lineHeight: 1,
+          }}
+        >
+          &times;
+        </button>
+      )}
       <div
         style={{
           fontSize: 10,
@@ -797,4 +792,4 @@ function HoverTooltip({
       )}
     </div>
   );
-}
+});
