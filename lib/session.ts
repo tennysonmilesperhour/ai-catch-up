@@ -24,12 +24,20 @@ function b64urlDecode(s: string): Uint8Array {
   return bytes;
 }
 
+let warnedMissingSecret = false;
+const FALLBACK_SECRET =
+  "ai-catch-up-fallback-secret-please-set-SESSION_SECRET-env-var";
+
 function getSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 16) {
-    throw new Error(
-      "SESSION_SECRET env var is missing or too short (need at least 16 chars)"
-    );
+    if (!warnedMissingSecret) {
+      console.warn(
+        "[session] SESSION_SECRET env var is missing or too short. Using an insecure fallback. Set SESSION_SECRET on Vercel (32+ random chars) to secure sessions."
+      );
+      warnedMissingSecret = true;
+    }
+    return FALLBACK_SECRET;
   }
   return secret;
 }

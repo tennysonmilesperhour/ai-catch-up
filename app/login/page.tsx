@@ -7,7 +7,11 @@ type Props = {
 export default async function LoginPage({ searchParams }: Props) {
   const { error, next } = await searchParams;
   const errorMessage =
-    error === "email" ? "Please enter a valid email." : null;
+    error === "email"
+      ? "Please enter a valid email."
+      : error === "server"
+        ? "Something went wrong signing you in. Try again in a moment."
+        : null;
 
   return (
     <main className="min-h-screen bg-[var(--color-darker)] text-[var(--color-cream)] flex items-center justify-center px-6">
