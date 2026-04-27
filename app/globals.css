@@ -463,3 +463,94 @@ textarea:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .site-header { transition: none; }
 }
+
+/* ============================================================
+   Admin dashboard polish (2026-04-27)
+   ============================================================ */
+
+/* Editorial page header used by every admin tab. */
+.admin-header {
+  position: relative;
+  padding-bottom: 1.25rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.admin-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 64px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(251, 191, 36, 1),
+    rgba(255, 95, 179, 1)
+  );
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+}
+
+/* Status pills used by Schedule + Launch Checklist. Layered on
+   top of the existing .border / color utility set. */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: rgba(13, 28, 52, 0.5);
+}
+.status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+.status-pill.is-not-started { color: var(--color-muted); background: transparent; }
+.status-pill.is-not-started::before { box-shadow: none; opacity: 0.6; }
+.status-pill.is-in-progress { color: var(--color-terracotta); }
+.status-pill.is-done        { color: var(--color-organic); }
+.status-pill.is-blocked     { color: var(--color-magenta); }
+
+/* Index numerals on Plan / Decisions cards: large, ghosted. */
+.idx-numeral {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.85),
+    rgba(255, 95, 179, 0.65)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.55;
+}
+
+/* Prompt card chevron: replaces the rotating "+". */
+.chev {
+  width: 14px;
+  height: 14px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.chev.is-open {
+  transform: rotate(225deg);
+}
+
+/* Subtle row stagger for any list inside [data-stagger]. The
+   IntersectionObserver in Reveal.tsx still fires per row; this
+   just tunes the per-index delay without per-row markup. */
+[data-stagger] > * { transition-delay: var(--row-delay, 0ms); }
