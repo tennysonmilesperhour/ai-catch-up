@@ -46,10 +46,10 @@ export function BeforeAfter() {
             : "text-[var(--color-muted-dark)]";
           const panelClass = isWith
             ? "bg-[var(--color-cream)] border-[var(--color-terracotta)]"
-            : "bg-[var(--color-surface)]/35 border-[var(--color-border)]";
+            : "glass-card-static border-[var(--color-border)]";
           const userBubbleClass = isWith
             ? "bg-white border border-[var(--color-border)] text-[var(--color-dark)]"
-            : "bg-[var(--color-surface)]/55 border border-[var(--color-border)] text-[var(--color-muted-dark)]";
+            : "glass-card text-[var(--color-muted-dark)]";
           const aiBubbleClass = isWith
             ? "bg-[var(--color-terracotta)]/10 border border-[var(--color-terracotta)] text-[var(--color-dark)]"
             : "bg-[var(--color-muted)]/10 border border-[var(--color-muted)] text-[var(--color-muted-dark)]";

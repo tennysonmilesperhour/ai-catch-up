@@ -26,7 +26,7 @@ export default function DecisionsPage() {
         {decisions.map((d, i) => (
           <li
             key={i}
-            className="bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-6 md:p-7"
+            className="glass-card p-6 md:p-7"
           >
             <div className="flex items-start justify-between gap-4 mb-3">
               <h2 className="font-serif text-lg md:text-xl text-[var(--color-dark)]">

@@ -6,32 +6,22 @@
     monospace;
 
   /*
-   * Cyber-cosmic palette. Variable names kept stable from the original warm
-   * editorial theme so existing component classes continue to work without
-   * mass renames. Roles below describe what each variable does NOW:
-   *
-   *   --color-cream:        deep space — primary page background
-   *   --color-dark:         bright ink — primary foreground / body text
-   *   --color-darker:       near-black void — deepest panels (e.g. footer)
-   *   --color-surface:      lifted card surface — used with /opacity suffix
-   *   --color-terracotta:   glowing primary accent (orange-red)
-   *   --color-rust:         hotter secondary accent
-   *   --color-cyan:         electric cosmic accent (pairs with terracotta)
-   *   --color-violet:       deep cosmic highlight
-   *   --color-muted:        dim cool gray — low-emphasis labels
-   *   --color-muted-dark:   lighter cool gray — body copy on dark bg
-   *   --color-border:       standard border on dark surfaces
-   *   --color-border-light: very subtle divider
-   *   --color-border-dark:  prominent border (visible on darker sections)
+   * Cyber-cosmic / organic palette. Variable names retained from the original
+   * warm editorial theme so component classes still work; only hex values
+   * change. The palette pairs deep-space backgrounds with plasma-orange and
+   * organic-green accents (life forms in cosmic spaces) plus a cyan companion
+   * for cybernetic moments.
    */
-  --color-cream: #07071a;
-  --color-dark: #f3ecdb;
-  --color-darker: #03030d;
-  --color-surface: #14143a;
-  --color-terracotta: #ff8a4c;
-  --color-rust: #ff6b3a;
-  --color-cyan: #4dd0e1;
-  --color-violet: #b794f4;
+  --color-cream: #07071a;          /* deep space — primary page background */
+  --color-dark: #f3ecdb;           /* bright ink — primary foreground */
+  --color-darker: #03030d;         /* near-black void — deepest panels */
+  --color-surface: #14143a;        /* lifted card surface */
+  --color-terracotta: #ff8a4c;     /* glowing primary accent (plasma orange) */
+  --color-rust: #ff6b3a;           /* hot secondary */
+  --color-cyan: #4dd0e1;           /* electric cosmic accent */
+  --color-violet: #b794f4;         /* deep cosmic highlight */
+  --color-organic: #8fd6a4;        /* alive green — for life-forward elements */
+  --color-organic-deep: #4caf7a;   /* deeper organic */
   --color-muted: #6a6a8c;
   --color-muted-dark: #b0b0d0;
   --color-border: #2a2a4e;
@@ -48,24 +38,55 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Cool to warm tone bleed across the page. */
 }
 
-/* Subtle starfield + nebula gradient. Pure CSS, no images. */
+/*
+ * Layered background:
+ *   1. A deep-space base
+ *   2. Slow-drifting nebula glows (terracotta + cyan + violet + organic green)
+ *   3. A starfield of pinpoint pixels at varying brightness
+ * Background-attachment: fixed makes the field stay still while content scrolls.
+ */
 body {
   background-color: var(--color-cream);
   background-image:
-    radial-gradient(at 20% 15%, rgba(183, 148, 244, 0.08) 0px, transparent 55%),
-    radial-gradient(at 80% 85%, rgba(255, 138, 76, 0.07) 0px, transparent 55%),
+    radial-gradient(at 18% 12%, rgba(183, 148, 244, 0.10) 0px, transparent 55%),
+    radial-gradient(at 82% 88%, rgba(255, 138, 76, 0.10) 0px, transparent 55%),
+    radial-gradient(at 12% 78%, rgba(143, 214, 164, 0.07) 0px, transparent 55%),
+    radial-gradient(at 88% 22%, rgba(77, 208, 225, 0.08) 0px, transparent 55%),
     radial-gradient(at 50% 50%, rgba(77, 208, 225, 0.04) 0px, transparent 70%),
-    radial-gradient(1px 1px at 12% 22%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
-    radial-gradient(1px 1px at 38% 71%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
-    radial-gradient(1px 1px at 67% 18%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-    radial-gradient(1px 1px at 88% 44%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
-    radial-gradient(1px 1px at 22% 88%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-    radial-gradient(1px 1px at 73% 92%, rgba(255, 255, 255, 0.35) 50%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 5% 55%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
-    radial-gradient(1px 1px at 95% 8%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,0.65) 50%, transparent 100%),
+    radial-gradient(1px 1px at 38% 71%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 67% 18%, rgba(255,255,255,0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 88% 44%, rgba(255,255,255,0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 22% 88%, rgba(255,255,255,0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 73% 92%, rgba(255,255,255,0.4) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 5% 55%, rgba(255,255,255,0.7) 50%, transparent 100%),
+    radial-gradient(1px 1px at 95% 8%, rgba(255,255,255,0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 30% 5%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 60% 60%, rgba(255,255,255,0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 8% 38%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 92% 70%, rgba(255,255,255,0.5) 50%, transparent 100%);
   background-attachment: fixed;
+  background-size:
+    140% 140%, 140% 140%, 140% 140%, 140% 140%, 100% 100%,
+    100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%,
+    100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  animation: nebula-drift 90s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+  0% {
+    background-position:
+      0% 0%, 100% 100%, 0% 100%, 100% 0%, 50% 50%,
+      0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+  100% {
+    background-position:
+      6% 4%, 94% 96%, 4% 95%, 95% 5%, 50% 50%,
+      0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
 }
 
 .font-mono,
@@ -106,13 +127,169 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-/* Cosmic glow utility — used on key CTA buttons and accent text. */
+/*
+ * Liquid-glass card: backdrop-blurred, saturated, with a chromatic gradient
+ * overlay (oranges to cyans). 1px luminous edge plus inner highlight at the
+ * top of the card to sell the glass curvature, the way Apple's Liquid Glass
+ * does. Smooth hover lift.
+ */
+.glass-card {
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(255, 138, 76, 0.06) 0%, rgba(20, 20, 58, 0.45) 50%, rgba(77, 208, 225, 0.05) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.30),
+    0 4px 24px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(at 0% 0%, rgba(255, 138, 76, 0.12), transparent 55%),
+    radial-gradient(at 100% 100%, rgba(143, 214, 164, 0.08), transparent 55%);
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 220ms ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 138, 76, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 16px 40px rgba(255, 138, 76, 0.12),
+    0 0 0 1px rgba(255, 138, 76, 0.18);
+}
+
+.glass-card:hover::before {
+  opacity: 1;
+}
+
+/* Static glass — same look but no hover lift (for non-interactive panels). */
+.glass-card-static {
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(255, 138, 76, 0.05) 0%, rgba(20, 20, 58, 0.45) 50%, rgba(77, 208, 225, 0.04) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 24px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+/*
+ * Liquid-glass primary button: glowing plasma core with soft refractive edge,
+ * gentle press behavior. Use for any CTA that maps to a buy/unlock/proceed.
+ */
+.glass-button-primary {
+  background:
+    linear-gradient(135deg, rgba(255, 138, 76, 0.95) 0%, rgba(255, 107, 58, 0.95) 100%);
+  color: #0a0a18;
+  border: 1px solid rgba(255, 175, 130, 0.55);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 6px 22px rgba(255, 138, 76, 0.35),
+    0 0 0 0 rgba(255, 138, 76, 0);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              filter 180ms ease;
+  font-weight: 600;
+}
+
+.glass-button-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 10px 30px rgba(255, 138, 76, 0.50),
+    0 0 0 4px rgba(255, 138, 76, 0.12);
+}
+
+.glass-button-primary:active {
+  transform: translateY(0);
+}
+
+/* Liquid-glass secondary / ghost button. */
+.glass-button {
+  background: rgba(20, 20, 58, 0.45);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  color: var(--color-dark);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 180ms ease,
+              background 180ms ease;
+}
+
+.glass-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 138, 76, 0.40);
+  background: rgba(20, 20, 58, 0.65);
+}
+
+/* Cosmic glow utilities */
 .cosmic-glow {
-  text-shadow: 0 0 12px rgba(255, 138, 76, 0.45);
+  text-shadow:
+    0 0 12px rgba(255, 138, 76, 0.50),
+    0 0 32px rgba(255, 138, 76, 0.18);
 }
 
 .cosmic-glow-soft {
   box-shadow:
     0 0 0 1px rgba(255, 138, 76, 0.25),
-    0 0 18px rgba(255, 138, 76, 0.18);
+    0 0 24px rgba(255, 138, 76, 0.18);
+}
+
+/* Subtle continuous breathing pulse for hero CTAs and feature elements. */
+@keyframes breath {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.012); }
+}
+
+.breath {
+  animation: breath 4.5s ease-in-out infinite;
+}
+
+/* Twinkle — fades a star between dim and bright. */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.95; }
+}
+
+/* Star particle utility — tiny pinpoint that twinkles. */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+/* Slow rotating cosmic ring decoration. */
+@keyframes orbit-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.orbit-ring {
+  animation: orbit-rotate 120s linear infinite;
 }

@@ -2,13 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
-const FOCUS_THROTTLE_MS = 5 * 1000; // ignore focus events within 5s of last poll
+const POLL_INTERVAL_MS = 15 * 1000; // 15 seconds
+const FOCUS_THROTTLE_MS = 5 * 1000;
 
 export function RefreshBanner() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const loadedBuildId = useRef<string | null>(null);
   const lastPollAt = useRef<number>(0);
+
+  // Verification escape hatch: ?force-banner=1 in the URL forces the toast
+  // to render. Useful for confirming the component is mounted and styled
+  // correctly without waiting for a real deploy.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("force-banner") === "1") {
+      setUpdateAvailable(true);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,22 +89,19 @@ export function RefreshBanner() {
     <div
       role="status"
       aria-live="polite"
+      className="glass-card"
       style={{
         position: "fixed",
         bottom: 24,
         right: 24,
         maxWidth: 360,
-        background: "#1a1612",
-        color: "#f5efe0",
-        border: "1px solid #3a342c",
-        borderLeft: "3px solid #d97757",
         padding: "14px 18px",
         zIndex: 200,
-        boxShadow: "0 8px 28px rgba(0, 0, 0, 0.35)",
         display: "flex",
         gap: 14,
         alignItems: "center",
         justifyContent: "space-between",
+        borderLeft: "3px solid #ff8a4c",
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -103,7 +111,7 @@ export function RefreshBanner() {
             fontSize: 10,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "#d97757",
+            color: "#ff8a4c",
             marginBottom: 4,
           }}
         >
@@ -114,7 +122,7 @@ export function RefreshBanner() {
             fontFamily: "Georgia, serif",
             fontSize: 14,
             lineHeight: 1.4,
-            color: "#e5ddd0",
+            color: "#f3ecdb",
           }}
         >
           This page is out of date. Refresh to pick up the latest.
@@ -122,10 +130,8 @@ export function RefreshBanner() {
       </div>
       <button
         onClick={() => window.location.reload()}
+        className="glass-button-primary"
         style={{
-          background: "#d97757",
-          color: "#faf7f2",
-          border: "1px solid #d97757",
           padding: "8px 14px",
           fontSize: 12,
           fontFamily: "ui-monospace, Menlo, monospace",

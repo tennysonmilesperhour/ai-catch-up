@@ -96,7 +96,7 @@ export function LaunchChecklist() {
 
   return (
     <div>
-      <div className="mb-10 bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-5 md:p-6">
+      <div className="mb-10 glass-card p-5 md:p-6">
         <div className="flex items-baseline justify-between gap-4 mb-3">
           <p className="label text-[var(--color-muted-dark)]">
             Overall progress
@@ -205,7 +205,7 @@ function ChecklistRow({
 
   return (
     <li
-      className="bg-[var(--color-surface)]/55 border border-[var(--color-border)] flex flex-col"
+      className="glass-card flex flex-col"
       style={{
         borderLeft: `3px solid ${borderColor}`,
         opacity: isDone ? 0.7 : 1,

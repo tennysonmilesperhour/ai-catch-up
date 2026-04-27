@@ -41,7 +41,7 @@ export default function PlanPage() {
           sections.map((s, i) => (
             <article
               key={i}
-              className="bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-6 md:p-8"
+              className="glass-card p-6 md:p-8"
             >
               <p className="label text-[var(--color-terracotta)] mb-3">
                 {String(i + 1).padStart(2, "0")} &middot; {s.title}

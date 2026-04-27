@@ -25,7 +25,7 @@ export default function PromptsPage() {
         </p>
       </header>
       {prompts.length === 0 ? (
-        <div className="bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-8 md:p-10">
+        <div className="glass-card p-8 md:p-10">
           <p className="label text-[var(--color-terracotta)] mb-3">
             Empty for now
           </p>

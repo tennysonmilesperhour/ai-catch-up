@@ -26,7 +26,7 @@ export function Hero() {
           <span className="block">{frontmatter.headline_line_2}</span>
         )}
         {frontmatter.headline_line_3 && (
-          <span className="block italic text-[var(--color-terracotta)]">
+          <span className="block italic text-[var(--color-terracotta)] cosmic-glow">
             {frontmatter.headline_line_3}
           </span>
         )}

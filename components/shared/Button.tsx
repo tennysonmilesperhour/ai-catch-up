@@ -4,15 +4,13 @@ import type { ComponentProps, ReactNode } from "react";
 type Variant = "primary" | "secondary" | "ghost";
 
 const baseClasses =
-  "inline-flex items-center justify-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em] transition-colors duration-200 border";
+  "inline-flex items-center justify-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em]";
 
 const variantClasses: Record<Variant, string> = {
-  primary:
-    "bg-[var(--color-terracotta)] text-[var(--color-cream)] border-[var(--color-terracotta)] hover:bg-[var(--color-rust)] hover:border-[var(--color-rust)]",
-  secondary:
-    "bg-transparent text-[var(--color-dark)] border-[var(--color-dark)] hover:bg-[var(--color-dark)] hover:text-[var(--color-cream)]",
+  primary: "glass-button-primary",
+  secondary: "glass-button",
   ghost:
-    "bg-transparent text-[var(--color-dark)] border-[var(--color-border)] hover:border-[var(--color-dark)]",
+    "bg-transparent text-[var(--color-dark)] border border-[var(--color-border)] rounded-[10px] hover:border-[var(--color-terracotta)] transition-colors",
 };
 
 type CommonProps = {
