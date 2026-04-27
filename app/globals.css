@@ -554,3 +554,41 @@ textarea:focus-visible {
    IntersectionObserver in Reveal.tsx still fires per row; this
    just tunes the per-index delay without per-row markup. */
 [data-stagger] > * { transition-delay: var(--row-delay, 0ms); }
+
+/* Settings tone slider: gradient-filled track (amber to magenta) up to
+   the current value, muted track after. Cross-browser handled via the
+   range pseudo-elements. */
+.tone-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(251, 191, 36, 1) 0%,
+    rgba(255, 95, 179, 1) var(--tone-pct, 50%),
+    rgba(13, 28, 52, 0.55) var(--tone-pct, 50%),
+    rgba(13, 28, 52, 0.55) 100%
+  );
+  outline: none;
+}
+.tone-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-dark);
+  border: 2px solid rgba(251, 191, 36, 1);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.55);
+  cursor: pointer;
+}
+.tone-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-dark);
+  border: 2px solid rgba(251, 191, 36, 1);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.55);
+  cursor: pointer;
+}

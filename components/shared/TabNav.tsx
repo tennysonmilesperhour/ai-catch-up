@@ -19,7 +19,8 @@ export function TabNav({ tabs }: Props) {
     <nav className="flex gap-1 border-b border-[var(--color-border-dark)] overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0">
       {tabs.map((tab) => {
         const isActive =
-          pathname === tab.href || pathname.startsWith(tab.href + "/");
+          pathname === tab.href ||
+          (tab.href !== "/admin" && pathname.startsWith(tab.href + "/"));
         return (
           <Link
             key={tab.href}

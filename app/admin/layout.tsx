@@ -1,14 +1,27 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminMobileNav } from "@/components/admin/AdminMobileNav";
 
-const tabs = [
-  { label: "Plan", href: "/admin/plan" },
-  { label: "Schedule", href: "/admin/schedule" },
-  { label: "Nexus", href: "/admin/nexus" },
-  { label: "Prompts", href: "/admin/prompts" },
-  { label: "Decisions", href: "/admin/decisions" },
-  { label: "Launch Checklist", href: "/admin/checklist" },
+const tabGroups = [
+  {
+    heading: "Workspace",
+    tabs: [
+      { label: "Overview", href: "/admin" },
+      { label: "Plan", href: "/admin/plan" },
+      { label: "Schedule", href: "/admin/schedule" },
+      { label: "Nexus map", href: "/admin/nexus" },
+      { label: "Prompts", href: "/admin/prompts" },
+      { label: "Decisions", href: "/admin/decisions" },
+      { label: "Launch checklist", href: "/admin/checklist" },
+      { label: "CLAUDE.md", href: "/admin/claude-md" },
+    ],
+  },
+  {
+    heading: "Account",
+    tabs: [{ label: "Settings", href: "/admin/settings" }],
+  },
 ];
+
+const flatTabs = tabGroups.flatMap((g) => g.tabs);
 
 export default function AdminLayout({
   children,
@@ -17,9 +30,9 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[var(--color-cream)]">
-      <AdminSidebar tabs={tabs} />
+      <AdminSidebar groups={tabGroups} />
       <div className="flex-1 flex flex-col min-w-0">
-        <AdminMobileNav tabs={tabs} />
+        <AdminMobileNav tabs={flatTabs} />
         <main className="flex-1 px-6 md:px-10 py-10 md:py-12 max-w-5xl w-full">
           {children}
         </main>
