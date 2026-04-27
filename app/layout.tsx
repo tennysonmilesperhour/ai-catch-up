@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Cormorant_Garamond, Space_Mono } from "next/font/google";
+import { Outfit, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { RefreshBanner } from "@/components/shared/RefreshBanner";
 
@@ -11,16 +11,15 @@ const outfit = Outfit({
   display: "swap",
 });
 
-// Body: organic serif with more cosmic personality than Georgia.
-const cormorant = Cormorant_Garamond({
+// Body: Inter — gold standard for app readability on screen.
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-body",
   display: "swap",
 });
 
-// Mono: cosmic monospace for labels, code, and technical UI.
+// Mono: technical labels, code, file lists.
 const spaceMono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -34,7 +33,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#0a0820",
+  themeColor: "#06101e",
 };
 
 export const metadata: Metadata = {
@@ -61,7 +60,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${cormorant.variable} ${spaceMono.variable}`}
+      className={`${outfit.variable} ${inter.variable} ${spaceMono.variable}`}
     >
       <body>
         {children}

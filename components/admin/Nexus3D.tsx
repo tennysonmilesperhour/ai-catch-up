@@ -100,13 +100,10 @@ export function Nexus3D({ domains, nodes, links }: Props) {
 
   const graphData = useMemo(() => {
     const layout = buildOrbitalLayout(domains, nodes);
-    const planetKeys = Object.keys(domains).filter(
-      (k) => k !== "core" && k !== "apps"
-    );
+    const planetKeys = layout.planets.map((p) => p.id);
     // Give each planet a z-offset so the solar system reads as 3D, not flat.
     const planetZ = new Map<string, number>();
     planetKeys.forEach((k, i) => {
-      // Alternating up/down with a gentle envelope.
       const sign = i % 2 === 0 ? 1 : -1;
       const magnitude = 60 + (i % 3) * 30;
       planetZ.set(k, sign * magnitude);
@@ -114,7 +111,7 @@ export function Nexus3D({ domains, nodes, links }: Props) {
 
     const gNodes: GraphNode[] = nodes.map((n) => {
       const domain = layout.domains[n.domain];
-      const base = domain?.color ?? "#d97757";
+      const base = domain?.color ?? "#fbbf24";
       const seeded = layout.initialPositions.get(n.id);
       const planetOffsetZ = planetZ.get(n.domain) ?? 0;
       return {
@@ -125,9 +122,6 @@ export function Nexus3D({ domains, nodes, links }: Props) {
         desc: n.desc,
         color: brighten(base, 1.35),
         val: Math.max(2, n.weight ?? 3),
-        // Seed orbital position. Pin x and y so the structure holds, let z
-        // settle so the simulation can give nodes a little depth around
-        // their planet.
         x: seeded?.x ?? 0,
         y: seeded?.y ?? 0,
         z: planetOffsetZ + (Math.random() - 0.5) * 30,
@@ -135,6 +129,43 @@ export function Nexus3D({ domains, nodes, links }: Props) {
         fy: seeded?.y,
       };
     });
+
+    // Sun pseudo-node: huge golden sphere at the origin, locked in place.
+    gNodes.push({
+      id: "__sun__",
+      label: "Projects",
+      domain: "core",
+      kind: "real",
+      desc: "Projects core (Global Memory + your apps)",
+      color: "#ffd966",
+      val: 60,
+      x: 0,
+      y: 0,
+      z: 0,
+      fx: 0,
+      fy: 0,
+    });
+
+    // Planet pseudo-nodes: large shaded spheres at each outer-ring anchor,
+    // labeled with the category name (visible on hover via nodeLabel).
+    for (const p of layout.planets) {
+      const z = planetZ.get(p.id) ?? 0;
+      gNodes.push({
+        id: `__planet_${p.id}__`,
+        label: p.label,
+        domain: p.id,
+        kind: "real",
+        desc: p.label,
+        color: brighten(p.color, 1.25),
+        val: 30,
+        x: p.x,
+        y: p.y,
+        z,
+        fx: p.x,
+        fy: p.y,
+      });
+    }
+
     const nodeIds = new Set(gNodes.map((n) => n.id));
     const gLinks: GraphLink[] = links
       .filter((l) => nodeIds.has(l.source) && nodeIds.has(l.target))
@@ -201,10 +232,17 @@ export function Nexus3D({ domains, nodes, links }: Props) {
           linkDirectionalParticles={0}
           enableNodeDrag={true}
           onNodeHover={(n: object | null) => {
-            setHoveredId(n ? (n as GraphNode).id : null);
+            const id = n ? (n as GraphNode).id : null;
+            // Don't show hover details for sun/planet decorations.
+            if (id && id.startsWith("__")) {
+              setHoveredId(null);
+              return;
+            }
+            setHoveredId(id);
           }}
           onNodeClick={(n: object) => {
             const g = n as GraphNode;
+            if (g.id.startsWith("__")) return;
             const original = nodes.find((x) => x.id === g.id);
             if (original) setSelected(original);
           }}

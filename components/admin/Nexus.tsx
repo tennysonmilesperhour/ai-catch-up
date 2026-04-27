@@ -96,6 +96,27 @@ function nodeRadius(n: NexusNode) {
   return 6 + n.weight * 1.5;
 }
 
+// Channel-wise tweaks for shading planets.
+function lighten(hex: string, amount = 0.4): string {
+  const c = hex.replace("#", "");
+  if (c.length !== 6) return hex;
+  const mix = (n: number) =>
+    Math.min(255, Math.round(n + (255 - n) * amount));
+  const r = mix(parseInt(c.slice(0, 2), 16));
+  const g = mix(parseInt(c.slice(2, 4), 16));
+  const b = mix(parseInt(c.slice(4, 6), 16));
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+function darken(hex: string, amount = 0.5): string {
+  const c = hex.replace("#", "");
+  if (c.length !== 6) return hex;
+  const r = Math.round(parseInt(c.slice(0, 2), 16) * (1 - amount));
+  const g = Math.round(parseInt(c.slice(2, 4), 16) * (1 - amount));
+  const b = Math.round(parseInt(c.slice(4, 6), 16) * (1 - amount));
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
 export function Nexus({ domains, nodes, links }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const positionsRef = useRef<Map<string, Pos>>(new Map());
@@ -355,19 +376,44 @@ export function Nexus({ domains, nodes, links }: Props) {
         }}
       >
         <defs>
+          {/* Halo gradients (broad atmospheric color wash). */}
           {domainList.map((d) => (
             <radialGradient
-              key={d.id}
+              key={`halo-${d.id}`}
               id={`halo-${d.id}`}
               cx="50%"
               cy="50%"
               r="50%"
             >
-              <stop offset="0%" stopColor={d.color} stopOpacity="0.28" />
-              <stop offset="60%" stopColor={d.color} stopOpacity="0.06" />
+              <stop offset="0%" stopColor={d.color} stopOpacity="0.22" />
+              <stop offset="60%" stopColor={d.color} stopOpacity="0.05" />
               <stop offset="100%" stopColor={d.color} stopOpacity="0" />
             </radialGradient>
           ))}
+
+          {/* Sphere gradients for visible planets — light side / dark side. */}
+          {layout.planets.map((p) => (
+            <radialGradient
+              key={`planet-${p.id}`}
+              id={`planet-${p.id}`}
+              cx="35%"
+              cy="32%"
+              r="75%"
+            >
+              <stop offset="0%" stopColor={lighten(p.color, 0.5)} stopOpacity="1" />
+              <stop offset="40%" stopColor={p.color} stopOpacity="0.95" />
+              <stop offset="100%" stopColor={darken(p.color, 0.6)} stopOpacity="1" />
+            </radialGradient>
+          ))}
+
+          {/* Sun gradient — bright core fading to the brand-warm. */}
+          <radialGradient id="sun-core" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fff8e1" stopOpacity="1" />
+            <stop offset="35%" stopColor="#fbbf24" stopOpacity="0.95" />
+            <stop offset="80%" stopColor="#f59e0b" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+          </radialGradient>
+
           <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge>
@@ -375,37 +421,115 @@ export function Nexus({ domains, nodes, links }: Props) {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
+          <filter id="planetGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
+        {/* Concentric orbital rings — faint, like a star atlas. */}
+        <g stroke="rgba(125,138,173,0.18)" strokeDasharray="3 6" fill="none">
+          {layout.ringRadii.map((r) => (
+            <circle key={`ring-${r}`} cx={0} cy={0} r={r} />
+          ))}
+        </g>
+
+        {/* Atmospheric halos for each visible planet. */}
         <g>
-          {domainList.map((d) => {
-            const { x, y } = anchorFor(d);
-            return (
-              <g key={d.id}>
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={180}
-                  fill={`url(#halo-${d.id})`}
-                />
-                <text
-                  x={x}
-                  y={y - 150}
-                  textAnchor="middle"
-                  fill={d.color}
-                  style={{
-                    fontFamily: "ui-monospace, Menlo, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                    opacity: 0.8,
-                  }}
-                >
-                  {d.label}
-                </text>
-              </g>
-            );
-          })}
+          {layout.planets.map((p) => (
+            <circle
+              key={`halo-circle-${p.id}`}
+              cx={p.x}
+              cy={p.y}
+              r={170}
+              fill={`url(#halo-${p.id})`}
+            />
+          ))}
+        </g>
+
+        {/* The sun: Projects core at the origin. */}
+        <g>
+          <circle cx={0} cy={0} r={140} fill="url(#sun-core)" filter="url(#planetGlow)" />
+          <circle
+            cx={0}
+            cy={0}
+            r={26}
+            fill="#fff8e1"
+            opacity={0.92}
+            filter="url(#planetGlow)"
+          />
+          <text
+            x={0}
+            y={-180}
+            textAnchor="middle"
+            fill="#fde68a"
+            style={{
+              fontFamily: "var(--font-display), Outfit, system-ui, sans-serif",
+              fontSize: 13,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              opacity: 0.9,
+            }}
+          >
+            Projects
+          </text>
+        </g>
+
+        {/* Visible planets: shaded spheres with their category name on top. */}
+        <g>
+          {layout.planets.map((p) => (
+            <g key={`planet-g-${p.id}`}>
+              {/* Shadow side / outer ring */}
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={56}
+                fill="none"
+                stroke={p.color}
+                strokeOpacity={0.35}
+                strokeWidth={1}
+              />
+              {/* The shaded planet body */}
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={50}
+                fill={`url(#planet-${p.id})`}
+                filter="url(#planetGlow)"
+              />
+              {/* Specular highlight */}
+              <ellipse
+                cx={p.x - 12}
+                cy={p.y - 18}
+                rx={14}
+                ry={6}
+                fill="rgba(255,255,255,0.30)"
+                style={{ pointerEvents: "none" }}
+              />
+              {/* Planet name tag, above the planet, glowing in domain color */}
+              <text
+                x={p.x}
+                y={p.y - 70}
+                textAnchor="middle"
+                fill={p.color}
+                style={{
+                  fontFamily: "var(--font-display), Outfit, system-ui, sans-serif",
+                  fontSize: 12,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  opacity: 0.95,
+                }}
+              >
+                {p.label}
+              </text>
+            </g>
+          ))}
         </g>
 
         <g>
