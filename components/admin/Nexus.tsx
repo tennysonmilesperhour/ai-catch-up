@@ -64,29 +64,35 @@ type Props = {
   links: NexusLink[];
 };
 
-type Pos = {
-  x: number;
+type OrbitState = {
+  cx: number;       // orbit center x (planet anchor or origin)
+  cy: number;       // orbit center y
+  radius: number;   // distance from center
+  angle: number;    // current angular position (radians)
+  speed: number;    // angular velocity in rad/ms (signed: + = ccw, - = cw)
+  x: number;        // computed cartesian
   y: number;
-  vx: number;
-  vy: number;
+  frozen: boolean;  // true while user is dragging this node
 };
 
-// Bumped pull + reduced inter-node repulsion so the orbital layout holds:
-// each node stays close to its planet anchor instead of drifting.
-const DOMAIN_ANCHOR_PULL = 0.025;
-const LINK_STIFFNESS = 0.01;
-const LINK_TARGET = 100;
-const REPULSION = 500;
-const DAMPING = 0.82;
+// Slow, meditative orbital speeds (radians per millisecond).
+// Smaller = slower. These produce ~3-7 minute revolutions.
+const APPS_INNER_SPEED = 0.00006;   // ~104 sec / revolution
+const APPS_MID_SPEED   = 0.00005;   // ~125 sec
+const ORPHAN_SPEED     = 0.00004;   // ~157 sec
+const PLANET_SPEED     = 0.00003;   // ~210 sec around each planet
+
+// Orbit ring radii (must match the layout helper's spacing).
+const APPS_INNER_RADIUS = 90;
+const APPS_MID_RADIUS = 175;
+const ORPHAN_RING_RADIUS = 290;
+const PLANET_NODE_RADIUS = 110;
 
 // viewBox is centered on (0, 0): -700..700 horizontally, -500..500 vertically.
-// Domain anchor coords are used directly without offset.
 const VIEW_X = -700;
 const VIEW_Y = -500;
 const VIEW_W = 1400;
 const VIEW_H = 1000;
-const HALF_W = VIEW_W / 2;
-const HALF_H = VIEW_H / 2;
 
 function anchorFor(d: DomainInfo) {
   return { x: d.anchor.x, y: d.anchor.y };
@@ -119,7 +125,7 @@ function darken(hex: string, amount = 0.5): string {
 
 export function Nexus({ domains, nodes, links }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const positionsRef = useRef<Map<string, Pos>>(new Map());
+  const positionsRef = useRef<Map<string, OrbitState>>(new Map());
   const draggingRef = useRef<string | null>(null);
   const rafRef = useRef<number | null>(null);
   const [, setTick] = useState(0);
@@ -130,6 +136,14 @@ export function Nexus({ domains, nodes, links }: Props) {
   const [stepsModalContent, setStepsModalContent] = useState<string | null>(
     null
   );
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const panStateRef = useRef<{
+    startX: number;
+    startY: number;
+    pan: { x: number; y: number };
+  } | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Solar-system layout: core at origin, apps inner ring, other domains as
   // planets on an outer circle.
@@ -158,116 +172,198 @@ export function Nexus({ domains, nodes, links }: Props) {
     return m;
   }, [nodes, links]);
 
-  // Initialize positions near domain anchors using the orbital layout.
+  // Initialize orbital state per node based on which "ring" they belong to.
   useEffect(() => {
     const positions = positionsRef.current;
+    const planetSet = new Set(layout.planets.map((p) => p.id));
+    const orphanDomainKeys = new Set(
+      Object.keys(domains).filter(
+        (k) => k !== "core" && k !== "apps" && !planetSet.has(k)
+      )
+    );
+
+    // Bucket nodes by domain so we can spread initial angles within each ring.
+    const byDomain = new Map<string, NexusNode[]>();
     for (const n of nodes) {
-      if (positions.has(n.id)) continue;
-      const seeded = layout.initialPositions.get(n.id);
-      if (seeded) {
-        positions.set(n.id, { x: seeded.x, y: seeded.y, vx: 0, vy: 0 });
+      if (!byDomain.has(n.domain)) byDomain.set(n.domain, []);
+      byDomain.get(n.domain)!.push(n);
+    }
+
+    // Track running angle index for the orphan ring so multiple orphan
+    // domains spread around the sun instead of stacking.
+    let orphanRingIndex = 0;
+    const orphanCount = Array.from(byDomain.entries())
+      .filter(([k]) => orphanDomainKeys.has(k))
+      .reduce((sum, [, list]) => sum + list.length, 0);
+
+    let planetIndex = 0;
+    for (const [domain, list] of byDomain.entries()) {
+      // Core domain (Global Memory) sits on the sun, no orbit.
+      if (domain === "core") {
+        for (const n of list) {
+          if (positions.has(n.id)) continue;
+          positions.set(n.id, {
+            cx: 0, cy: 0, radius: 0, angle: 0, speed: 0,
+            x: 0, y: 0, frozen: false,
+          });
+        }
         continue;
       }
-      const d = orbitalDomains[n.domain];
-      const { x: cx, y: cy } = d
-        ? anchorFor(d)
-        : { x: 0, y: 0 };
-      const angle = Math.random() * Math.PI * 2;
-      const r = 30 + Math.random() * 40;
-      positions.set(n.id, {
-        x: cx + Math.cos(angle) * r,
-        y: cy + Math.sin(angle) * r,
-        vx: 0,
-        vy: 0,
+
+      // Apps: real / high-priority on inner ring, others on mid ring.
+      if (domain === "apps") {
+        const inner = list.filter(
+          (n) => n.kind === "real" || (n.kind === "ghost" && n.priority === "high")
+        );
+        const mid = list.filter(
+          (n) => !(n.kind === "real" || (n.kind === "ghost" && n.priority === "high"))
+        );
+        inner.forEach((n, i) => {
+          if (positions.has(n.id)) return;
+          const a = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(inner.length, 1);
+          positions.set(n.id, {
+            cx: 0, cy: 0,
+            radius: APPS_INNER_RADIUS,
+            angle: a,
+            speed: APPS_INNER_SPEED,
+            x: Math.cos(a) * APPS_INNER_RADIUS,
+            y: Math.sin(a) * APPS_INNER_RADIUS,
+            frozen: false,
+          });
+        });
+        mid.forEach((n, i) => {
+          if (positions.has(n.id)) return;
+          const a =
+            -Math.PI / 2 +
+            Math.PI / 4 +
+            (2 * Math.PI * i) / Math.max(mid.length, 1);
+          positions.set(n.id, {
+            cx: 0, cy: 0,
+            radius: APPS_MID_RADIUS,
+            angle: a,
+            speed: APPS_MID_SPEED,
+            x: Math.cos(a) * APPS_MID_RADIUS,
+            y: Math.sin(a) * APPS_MID_RADIUS,
+            frozen: false,
+          });
+        });
+        continue;
+      }
+
+      // Orphan domains (single-node categories like security): orbit the sun
+      // on the orphan ring, distributed evenly across the ring.
+      if (orphanDomainKeys.has(domain)) {
+        list.forEach((n) => {
+          if (positions.has(n.id)) return;
+          const a =
+            -Math.PI / 2 +
+            (2 * Math.PI * orphanRingIndex) / Math.max(orphanCount, 1);
+          positions.set(n.id, {
+            cx: 0, cy: 0,
+            radius: ORPHAN_RING_RADIUS,
+            angle: a,
+            speed: ORPHAN_SPEED,
+            x: Math.cos(a) * ORPHAN_RING_RADIUS,
+            y: Math.sin(a) * ORPHAN_RING_RADIUS,
+            frozen: false,
+          });
+          orphanRingIndex += 1;
+        });
+        continue;
+      }
+
+      // Planet domain: nodes orbit the planet anchor.
+      const d = orbitalDomains[domain];
+      if (!d) continue;
+      const dirSign = planetIndex % 2 === 0 ? 1 : -1;
+      planetIndex += 1;
+      const planetAnchor = anchorFor(d);
+      list.forEach((n, i) => {
+        if (positions.has(n.id)) return;
+        const a = (2 * Math.PI * i) / Math.max(list.length, 1);
+        positions.set(n.id, {
+          cx: planetAnchor.x,
+          cy: planetAnchor.y,
+          radius: PLANET_NODE_RADIUS,
+          angle: a,
+          speed: PLANET_SPEED * dirSign,
+          x: planetAnchor.x + Math.cos(a) * PLANET_NODE_RADIUS,
+          y: planetAnchor.y + Math.sin(a) * PLANET_NODE_RADIUS,
+          frozen: false,
+        });
       });
     }
-  }, [nodes, domains]);
+  }, [nodes, domains, layout, orbitalDomains]);
 
-  // Simulation loop
+  // Wheel-to-zoom + drag-to-pan, attached non-passively so wheel preventDefault
+  // works (React's onWheel is passive by default, can't preventDefault).
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = -e.deltaY;
+      setZoom((z) => {
+        const next = z * (1 + delta * 0.001);
+        return Math.max(0.4, Math.min(3, next));
+      });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const onCanvasPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    // Don't start a pan if the pointer is on a node — that's a drag-the-node
+    // gesture and the node's own handler will set draggingRef.
+    const target = e.target as Element | null;
+    if (target?.closest("[data-nexus-node]")) return;
+    panStateRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      pan: { ...pan },
+    };
+    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+  };
+
+  const onCanvasPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const p = panStateRef.current;
+    if (!p) return;
+    setPan({
+      x: p.pan.x + (e.clientX - p.startX),
+      y: p.pan.y + (e.clientY - p.startY),
+    });
+  };
+
+  const onCanvasPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    panStateRef.current = null;
+    (e.currentTarget as Element).releasePointerCapture?.(e.pointerId);
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  // Orbital motion loop: advance each node's angle and recompute its position.
   useEffect(() => {
     const positions = positionsRef.current;
+    let last = performance.now();
 
-    const step = () => {
-      for (const n of nodes) {
-        if (draggingRef.current === n.id) continue;
-        const p = positions.get(n.id);
-        if (!p) continue;
-        const d = orbitalDomains[n.domain];
-        if (!d) continue;
-        const { x: ax, y: ay } = anchorFor(d);
-        p.vx += (ax - p.x) * DOMAIN_ANCHOR_PULL;
-        p.vy += (ay - p.y) * DOMAIN_ANCHOR_PULL;
+    const step = (now: number) => {
+      const dt = now - last;
+      last = now;
+      for (const o of positions.values()) {
+        if (o.frozen) continue;
+        if (o.radius === 0) {
+          // Pinned at center (sun).
+          o.x = o.cx;
+          o.y = o.cy;
+          continue;
+        }
+        o.angle += o.speed * dt;
+        o.x = o.cx + Math.cos(o.angle) * o.radius;
+        o.y = o.cy + Math.sin(o.angle) * o.radius;
       }
-
-      for (const l of links) {
-        const a = positions.get(l.source);
-        const b = positions.get(l.target);
-        if (!a || !b) continue;
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
-        const diff = dist - LINK_TARGET;
-        const k = LINK_STIFFNESS * l.strength;
-        const fx = (dx / dist) * diff * k;
-        const fy = (dy / dist) * diff * k;
-        if (draggingRef.current !== l.source) {
-          a.vx += fx;
-          a.vy += fy;
-        }
-        if (draggingRef.current !== l.target) {
-          b.vx -= fx;
-          b.vy -= fy;
-        }
-      }
-
-      for (let i = 0; i < nodes.length; i++) {
-        const a = positions.get(nodes[i].id);
-        if (!a) continue;
-        for (let j = i + 1; j < nodes.length; j++) {
-          const b = positions.get(nodes[j].id);
-          if (!b) continue;
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const distSq = Math.max(dx * dx + dy * dy, 25);
-          const dist = Math.sqrt(distSq);
-          const force = REPULSION / distSq;
-          const fx = (dx / dist) * force;
-          const fy = (dy / dist) * force;
-          if (draggingRef.current !== nodes[i].id) {
-            a.vx -= fx;
-            a.vy -= fy;
-          }
-          if (draggingRef.current !== nodes[j].id) {
-            b.vx += fx;
-            b.vy += fy;
-          }
-        }
-      }
-
-      for (const n of nodes) {
-        if (draggingRef.current === n.id) continue;
-        const p = positions.get(n.id);
-        if (!p) continue;
-        p.vx *= DAMPING;
-        p.vy *= DAMPING;
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < -HALF_W + 20) {
-          p.x = -HALF_W + 20;
-          p.vx = 0;
-        } else if (p.x > HALF_W - 20) {
-          p.x = HALF_W - 20;
-          p.vx = 0;
-        }
-        if (p.y < -HALF_H + 20) {
-          p.y = -HALF_H + 20;
-          p.vy = 0;
-        } else if (p.y > HALF_H - 20) {
-          p.y = HALF_H - 20;
-          p.vy = 0;
-        }
-      }
-
       setTick((t) => (t + 1) % 1000000);
       rafRef.current = requestAnimationFrame(step);
     };
@@ -276,7 +372,7 @@ export function Nexus({ domains, nodes, links }: Props) {
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [nodes, links, domains]);
+  }, []);
 
   const clientToSvg = useCallback((clientX: number, clientY: number) => {
     const svg = svgRef.current;
@@ -298,6 +394,8 @@ export function Nexus({ domains, nodes, links }: Props) {
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     draggingRef.current = nodeId;
     setDidDrag(false);
+    const o = positionsRef.current.get(nodeId);
+    if (o) o.frozen = true;
   };
 
   const onNodePointerMove = (
@@ -306,15 +404,13 @@ export function Nexus({ domains, nodes, links }: Props) {
   ) => {
     if (draggingRef.current !== nodeId) return;
     const { x, y } = clientToSvg(e.clientX, e.clientY);
-    const p = positionsRef.current.get(nodeId);
-    if (!p) return;
-    const dx = x - p.x;
-    const dy = y - p.y;
+    const o = positionsRef.current.get(nodeId);
+    if (!o) return;
+    const dx = x - o.x;
+    const dy = y - o.y;
     if (dx * dx + dy * dy > 4) setDidDrag(true);
-    p.x = x;
-    p.y = y;
-    p.vx = 0;
-    p.vy = 0;
+    o.x = x;
+    o.y = y;
   };
 
   const onNodePointerUp = (
@@ -324,6 +420,16 @@ export function Nexus({ domains, nodes, links }: Props) {
     (e.currentTarget as Element).releasePointerCapture?.(e.pointerId);
     if (draggingRef.current === nodeId) {
       draggingRef.current = null;
+      const o = positionsRef.current.get(nodeId);
+      if (o) {
+        // Re-derive orbital radius and angle from drop position so the node
+        // resumes orbiting from where it was let go.
+        const dx = o.x - o.cx;
+        const dy = o.y - o.cy;
+        o.radius = Math.sqrt(dx * dx + dy * dy);
+        o.angle = Math.atan2(dy, dx);
+        o.frozen = false;
+      }
       if (!didDrag) setPinnedId(nodeId);
     }
   };
@@ -364,7 +470,10 @@ export function Nexus({ domains, nodes, links }: Props) {
   }, [isPinned]);
 
   return (
-    <div className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden"
+    >
       <svg
         ref={svgRef}
         viewBox={`${VIEW_X} ${VIEW_Y} ${VIEW_W} ${VIEW_H}`}
@@ -373,8 +482,15 @@ export function Nexus({ domains, nodes, links }: Props) {
         style={{
           touchAction: "none",
           filter: "saturate(1.35) brightness(1.2)",
+          cursor: panStateRef.current ? "grabbing" : "grab",
         }}
+        onPointerDown={onCanvasPointerDown}
+        onPointerMove={onCanvasPointerMove}
+        onPointerUp={onCanvasPointerUp}
       >
+        <g
+          transform={`translate(${pan.x / zoom} ${pan.y / zoom}) scale(${zoom})`}
+        >
         <defs>
           {/* Halo gradients (broad atmospheric color wash). */}
           {domainList.map((d) => (
@@ -665,7 +781,33 @@ export function Nexus({ domains, nodes, links }: Props) {
             );
           })}
         </g>
+        </g>
       </svg>
+
+      {/* Zoom controls */}
+      <div className="absolute top-4 right-4 flex flex-col gap-1 font-mono text-xs">
+        <button
+          onClick={() => setZoom((z) => Math.min(3, z * 1.2))}
+          aria-label="Zoom in"
+          className="w-9 h-9 flex items-center justify-center text-[var(--color-dark)] glass-button text-base leading-none"
+        >
+          +
+        </button>
+        <button
+          onClick={() => setZoom((z) => Math.max(0.4, z / 1.2))}
+          aria-label="Zoom out"
+          className="w-9 h-9 flex items-center justify-center text-[var(--color-dark)] glass-button text-base leading-none"
+        >
+          −
+        </button>
+        <button
+          onClick={resetView}
+          aria-label="Reset view"
+          className="w-9 h-9 flex items-center justify-center text-[var(--color-dark)] glass-button text-[10px] leading-none uppercase tracking-[0.05em]"
+        >
+          1:1
+        </button>
+      </div>
 
       <div className="absolute top-4 left-4 flex flex-col gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--color-muted)]">
         <div className="flex items-center gap-2">
