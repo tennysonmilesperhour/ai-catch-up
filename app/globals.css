@@ -5,17 +5,38 @@
   --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Roboto Mono",
     monospace;
 
-  /* Warm editorial palette */
-  --color-cream: #faf7f2;
-  --color-dark: #2a2520;
-  --color-darker: #1a1612;
-  --color-terracotta: #d97757;
-  --color-rust: #c96442;
-  --color-muted: #8a7f6b;
-  --color-muted-dark: #5c5248;
-  --color-border: #d4cdbf;
-  --color-border-light: #e5ddd0;
-  --color-border-dark: #3a342c;
+  /*
+   * Cyber-cosmic palette. Variable names kept stable from the original warm
+   * editorial theme so existing component classes continue to work without
+   * mass renames. Roles below describe what each variable does NOW:
+   *
+   *   --color-cream:        deep space — primary page background
+   *   --color-dark:         bright ink — primary foreground / body text
+   *   --color-darker:       near-black void — deepest panels (e.g. footer)
+   *   --color-surface:      lifted card surface — used with /opacity suffix
+   *   --color-terracotta:   glowing primary accent (orange-red)
+   *   --color-rust:         hotter secondary accent
+   *   --color-cyan:         electric cosmic accent (pairs with terracotta)
+   *   --color-violet:       deep cosmic highlight
+   *   --color-muted:        dim cool gray — low-emphasis labels
+   *   --color-muted-dark:   lighter cool gray — body copy on dark bg
+   *   --color-border:       standard border on dark surfaces
+   *   --color-border-light: very subtle divider
+   *   --color-border-dark:  prominent border (visible on darker sections)
+   */
+  --color-cream: #07071a;
+  --color-dark: #f3ecdb;
+  --color-darker: #03030d;
+  --color-surface: #14143a;
+  --color-terracotta: #ff8a4c;
+  --color-rust: #ff6b3a;
+  --color-cyan: #4dd0e1;
+  --color-violet: #b794f4;
+  --color-muted: #6a6a8c;
+  --color-muted-dark: #b0b0d0;
+  --color-border: #2a2a4e;
+  --color-border-light: #161630;
+  --color-border-dark: #3a3a6e;
 }
 
 html,
@@ -27,6 +48,24 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle starfield + nebula gradient. Pure CSS, no images. */
+body {
+  background-color: var(--color-cream);
+  background-image:
+    radial-gradient(at 20% 15%, rgba(183, 148, 244, 0.08) 0px, transparent 55%),
+    radial-gradient(at 80% 85%, rgba(255, 138, 76, 0.07) 0px, transparent 55%),
+    radial-gradient(at 50% 50%, rgba(77, 208, 225, 0.04) 0px, transparent 70%),
+    radial-gradient(1px 1px at 12% 22%, rgba(255, 255, 255, 0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 38% 71%, rgba(255, 255, 255, 0.45) 50%, transparent 100%),
+    radial-gradient(1px 1px at 67% 18%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 88% 44%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 22% 88%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 73% 92%, rgba(255, 255, 255, 0.35) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 5% 55%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+    radial-gradient(1px 1px at 95% 8%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+  background-attachment: fixed;
 }
 
 .font-mono,
@@ -50,7 +89,7 @@ a {
 
 ::selection {
   background: var(--color-terracotta);
-  color: var(--color-cream);
+  color: var(--color-darker);
 }
 
 :focus-visible {
@@ -65,4 +104,15 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--color-terracotta);
   outline-offset: 2px;
+}
+
+/* Cosmic glow utility — used on key CTA buttons and accent text. */
+.cosmic-glow {
+  text-shadow: 0 0 12px rgba(255, 138, 76, 0.45);
+}
+
+.cosmic-glow-soft {
+  box-shadow:
+    0 0 0 1px rgba(255, 138, 76, 0.25),
+    0 0 18px rgba(255, 138, 76, 0.18);
 }

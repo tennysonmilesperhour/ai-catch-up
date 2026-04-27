@@ -225,7 +225,7 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
           </div>
           <button
             onClick={() => setFormOpen((v) => !v)}
-            className="self-start sm:self-auto font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border border-[var(--color-border)] text-[var(--color-dark)] bg-white/60 hover:border-[var(--color-terracotta)] hover:text-[var(--color-terracotta)] transition-colors"
+            className="self-start sm:self-auto font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border border-[var(--color-border)] text-[var(--color-dark)] bg-[var(--color-surface)]/55 hover:border-[var(--color-terracotta)] hover:text-[var(--color-terracotta)] transition-colors"
           >
             {formOpen ? "Cancel" : "Add a tool or node"}
           </button>
@@ -235,7 +235,7 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
       {formOpen && (
         <form
           onSubmit={handleSubmit}
-          className="bg-white/60 border border-[var(--color-border)] p-5 md:p-6 flex flex-col gap-4"
+          className="bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-5 md:p-6 flex flex-col gap-4"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="flex flex-col gap-1">
@@ -330,7 +330,7 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
       )}
 
       {custom.length > 0 && (
-        <details className="bg-white/40 border border-[var(--color-border-light)] p-4">
+        <details className="bg-[var(--color-surface)]/35 border border-[var(--color-border-light)] p-4">
           <summary className="font-mono text-xs uppercase tracking-[0.1em] text-[var(--color-muted-dark)] cursor-pointer">
             Manage local additions
           </summary>

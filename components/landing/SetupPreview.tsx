@@ -45,7 +45,7 @@ export function SetupPreview() {
         {phases.map((p, i) => (
           <li
             key={i}
-            className="relative bg-white/60 border border-[var(--color-border)] p-5 md:p-6 flex gap-4 md:gap-6 items-start"
+            className="relative bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-5 md:p-6 flex gap-4 md:gap-6 items-start"
           >
             <span className="relative z-10 shrink-0 w-9 h-9 rounded-full bg-[var(--color-cream)] border border-[var(--color-terracotta)] flex items-center justify-center font-mono text-xs text-[var(--color-terracotta)]">
               {p.number}

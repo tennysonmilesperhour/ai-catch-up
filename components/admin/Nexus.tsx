@@ -13,6 +13,7 @@ import {
   type Action,
 } from "@/components/shared/ActionButton";
 import { StepsModal } from "@/components/shared/StepsModal";
+import { buildOrbitalLayout } from "@/lib/nexus-layout";
 
 export type NexusKind = "real" | "ghost" | "fork";
 
@@ -70,10 +71,12 @@ type Pos = {
   vy: number;
 };
 
-const DOMAIN_ANCHOR_PULL = 0.008;
+// Bumped pull + reduced inter-node repulsion so the orbital layout holds:
+// each node stays close to its planet anchor instead of drifting.
+const DOMAIN_ANCHOR_PULL = 0.025;
 const LINK_STIFFNESS = 0.01;
-const LINK_TARGET = 130;
-const REPULSION = 800;
+const LINK_TARGET = 100;
+const REPULSION = 500;
 const DAMPING = 0.82;
 
 // viewBox is centered on (0, 0): -700..700 horizontally, -500..500 vertically.
@@ -107,13 +110,21 @@ export function Nexus({ domains, nodes, links }: Props) {
     null
   );
 
+  // Solar-system layout: core at origin, apps inner ring, other domains as
+  // planets on an outer circle.
+  const layout = useMemo(
+    () => buildOrbitalLayout(domains, nodes),
+    [domains, nodes]
+  );
+  const orbitalDomains = layout.domains;
+
   const domainList = useMemo(
     () =>
-      Object.entries(domains).map(([id, info]) => ({
+      Object.entries(orbitalDomains).map(([id, info]) => ({
         id,
         ...info,
       })),
-    [domains]
+    [orbitalDomains]
   );
 
   const neighborsOf = useMemo(() => {
@@ -126,12 +137,17 @@ export function Nexus({ domains, nodes, links }: Props) {
     return m;
   }, [nodes, links]);
 
-  // Initialize positions near domain anchors
+  // Initialize positions near domain anchors using the orbital layout.
   useEffect(() => {
     const positions = positionsRef.current;
     for (const n of nodes) {
       if (positions.has(n.id)) continue;
-      const d = domains[n.domain];
+      const seeded = layout.initialPositions.get(n.id);
+      if (seeded) {
+        positions.set(n.id, { x: seeded.x, y: seeded.y, vx: 0, vy: 0 });
+        continue;
+      }
+      const d = orbitalDomains[n.domain];
       const { x: cx, y: cy } = d
         ? anchorFor(d)
         : { x: 0, y: 0 };
@@ -155,7 +171,7 @@ export function Nexus({ domains, nodes, links }: Props) {
         if (draggingRef.current === n.id) continue;
         const p = positions.get(n.id);
         if (!p) continue;
-        const d = domains[n.domain];
+        const d = orbitalDomains[n.domain];
         if (!d) continue;
         const { x: ax, y: ay } = anchorFor(d);
         p.vx += (ax - p.x) * DOMAIN_ANCHOR_PULL;
@@ -423,7 +439,7 @@ export function Nexus({ domains, nodes, links }: Props) {
             if (!visibleIds.has(n.id)) return null;
             const p = positionsRef.current.get(n.id);
             if (!p) return null;
-            const d = domains[n.domain];
+            const d = orbitalDomains[n.domain];
             const color = d?.color ?? "#d97757";
             const isHovered = hoveredId === n.id;
             const isNeighbor =

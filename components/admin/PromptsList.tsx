@@ -58,11 +58,11 @@ export function PromptsList({ prompts, categories }: Props) {
           return (
             <li
               key={idKey}
-              className="bg-white/60 border border-[var(--color-border)]"
+              className="bg-[var(--color-surface)]/55 border border-[var(--color-border)]"
             >
               <button
                 onClick={() => toggle(idKey)}
-                className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-white/90 transition-colors"
+                className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-[var(--color-surface)]/75 transition-colors"
               >
                 <div className="flex items-baseline gap-4">
                   <span className="label text-[var(--color-terracotta)]">

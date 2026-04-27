@@ -5,7 +5,7 @@ export function Pricing() {
 
   return (
     <section className="px-6 md:px-12 py-16 md:py-20 max-w-5xl mx-auto">
-      <div className="border border-[var(--color-border)] bg-white/40 p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+      <div className="border border-[var(--color-border)] bg-[var(--color-surface)]/35 p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
         <div>
           <p className="label text-[var(--color-muted-dark)] mb-3">Pricing</p>
           <p className="font-serif text-5xl md:text-6xl text-[var(--color-dark)] leading-none">

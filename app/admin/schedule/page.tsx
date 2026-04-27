@@ -52,7 +52,7 @@ export default function SchedulePage() {
         {weeks.map((w, i) => (
           <section
             key={i}
-            className="bg-white/60 border border-[var(--color-border)] p-6 md:p-8"
+            className="bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-6 md:p-8"
           >
             <div className="flex items-baseline gap-4 mb-5">
               <p className="font-mono text-xs uppercase tracking-[0.1em] text-[var(--color-terracotta)]">

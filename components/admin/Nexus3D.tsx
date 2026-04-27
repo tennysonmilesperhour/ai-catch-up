@@ -9,6 +9,7 @@ import type {
 } from "@/components/admin/Nexus";
 import { ActionButton, type Action } from "@/components/shared/ActionButton";
 import { StepsModal } from "@/components/shared/StepsModal";
+import { buildOrbitalLayout } from "@/lib/nexus-layout";
 
 // three.js and the force graph library are heavy — lazy-load only when 3D
 // mode is toggled on.
@@ -31,6 +32,11 @@ type GraphNode = {
   desc: string;
   color: string;
   val: number;
+  x?: number;
+  y?: number;
+  z?: number;
+  fx?: number;
+  fy?: number;
 };
 
 type GraphLink = {
@@ -93,9 +99,24 @@ export function Nexus3D({ domains, nodes, links }: Props) {
   }, [nodes, links]);
 
   const graphData = useMemo(() => {
+    const layout = buildOrbitalLayout(domains, nodes);
+    const planetKeys = Object.keys(domains).filter(
+      (k) => k !== "core" && k !== "apps"
+    );
+    // Give each planet a z-offset so the solar system reads as 3D, not flat.
+    const planetZ = new Map<string, number>();
+    planetKeys.forEach((k, i) => {
+      // Alternating up/down with a gentle envelope.
+      const sign = i % 2 === 0 ? 1 : -1;
+      const magnitude = 60 + (i % 3) * 30;
+      planetZ.set(k, sign * magnitude);
+    });
+
     const gNodes: GraphNode[] = nodes.map((n) => {
-      const domain = domains[n.domain];
+      const domain = layout.domains[n.domain];
       const base = domain?.color ?? "#d97757";
+      const seeded = layout.initialPositions.get(n.id);
+      const planetOffsetZ = planetZ.get(n.domain) ?? 0;
       return {
         id: n.id,
         label: n.label,
@@ -104,6 +125,14 @@ export function Nexus3D({ domains, nodes, links }: Props) {
         desc: n.desc,
         color: brighten(base, 1.35),
         val: Math.max(2, n.weight ?? 3),
+        // Seed orbital position. Pin x and y so the structure holds, let z
+        // settle so the simulation can give nodes a little depth around
+        // their planet.
+        x: seeded?.x ?? 0,
+        y: seeded?.y ?? 0,
+        z: planetOffsetZ + (Math.random() - 0.5) * 30,
+        fx: seeded?.x,
+        fy: seeded?.y,
       };
     });
     const nodeIds = new Set(gNodes.map((n) => n.id));

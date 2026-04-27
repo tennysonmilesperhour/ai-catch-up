@@ -41,7 +41,7 @@ export function WhatYouGet() {
         {layers.map((layer, i) => (
           <article
             key={i}
-            className="bg-white/60 border border-[var(--color-border)] p-6 md:p-8 flex flex-col"
+            className="bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-6 md:p-8 flex flex-col"
           >
             <p className="label text-[var(--color-terracotta)] mb-4">
               {layer.label}

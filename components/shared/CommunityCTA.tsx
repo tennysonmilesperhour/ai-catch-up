@@ -22,7 +22,7 @@ export function CommunityCTA({ tone = "light" }: Props) {
   const isDark = tone === "dark";
   const bgClass = isDark
     ? "bg-[var(--color-dark)] text-[var(--color-cream)]"
-    : "bg-white/60 border border-[var(--color-border)] text-[var(--color-dark)]";
+    : "bg-[var(--color-surface)]/55 border border-[var(--color-border)] text-[var(--color-dark)]";
   const bodyClass = isDark
     ? "text-[var(--color-cream)]/80"
     : "text-[var(--color-muted-dark)]";

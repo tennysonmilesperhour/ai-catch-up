@@ -60,7 +60,7 @@ export default function PreviewPage() {
           {tabs.map((t) => (
             <article
               key={t.name}
-              className="relative bg-white/60 border border-[var(--color-border)] p-5 md:p-6"
+              className="relative bg-[var(--color-surface)]/55 border border-[var(--color-border)] p-5 md:p-6"
             >
               <div className="absolute top-4 right-5 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--color-muted)]">
                 Locked
