@@ -14,6 +14,46 @@ _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
 
+### 2026-04-27 - Login two-pane restyle + admin sidebar shell
+
+Companion to the polish pass. Visual + structural redesign of two surfaces, no auth/middleware logic changes, no `/content/` edits.
+
+- `app/login/page.tsx` rewritten as a two-pane layout. Left pane is editorial (hidden < md): brand label, blockquote in `headline-gradient`, footer line, with the `Starfield` and `orbit-stack` decorations layered behind. Right pane is the form, same `POST /api/login` action, same `email` + `next` fields, same `?error=email` / `?error=server` contract. Submit button promoted to `glass-button-primary` with rounded corners.
+- New `components/admin/AdminSidebar.tsx` (md+): persistent left rail with the wordmark up top, the six tabs (Plan / Schedule / Nexus / Prompts / Decisions / Launch Checklist) as vertical pills, an amber active indicator bar with `cosmic-glow-soft`, and View-site + Log-out actions footer-pinned. Background `rgba(2,6,14,0.65)` with `backdrop-blur-md` reads as a workspace shell, not a marketing nav.
+- New `components/admin/AdminMobileNav.tsx` (< md): preserves the prior compact top-bar + horizontal `TabNav` strip so narrow screens don't lose navigation.
+- `app/admin/layout.tsx` replaced: `flex md:flex-row` shell with `<AdminSidebar>` then `<AdminMobileNav>` + main, content `max-w-5xl` (down from `max-w-7xl` since the sidebar reclaims ~240px).
+
+Verified: `npx tsc --noEmit` clean, `npm run build` green; `/login` shows two columns desktop / single column mobile, posts to `/api/login`; `/admin/*` pages render inside the new sidebar shell with the active-tab amber accent and working logout.
+
+### 2026-04-27 - Landing polish pass (motion + magnetic CTA + starfield)
+
+Visual + motion polish on the public landing only. No `/content/` edits, no copy changes, no admin/login changes.
+
+Motion primitives appended to `app/globals.css`:
+
+- `[data-reveal]` / `[data-revealed]` — opacity + translate scroll-reveal pair, paired with `Reveal.tsx`.
+- `.magnetic` / `.magnetic-inner` — CSS shell for the magnetic-pull-on-hover button effect, plus an amber/magenta hover halo.
+- `.hotwire` — vertical gradient pulse animation for the SetupPreview connector line.
+- `.headline-gradient` — amber → orange → magenta text gradient.
+- `.orbit-stack` / `.orbit` — concentric ring decoration behind the Hero (4 rings at 520 / 820 / 1180 / 1620px).
+- `.site-header` / `.site-header-hidden` — auto-hide-on-scroll helper.
+- All motion respects `prefers-reduced-motion`.
+
+New shared components:
+
+- `components/shared/Reveal.tsx` — one-shot IntersectionObserver wrapper with a polymorphic `as` prop. Implemented via `React.createElement` because React 19 / Next 15 don't expose the global `JSX` namespace without explicit import; this avoids the namespace and keeps the polymorphic API.
+- `components/shared/MagneticButton.tsx` — wraps a Next `Link` with a span that pulls toward the cursor on hover (default 14px @ 80px range).
+- `components/landing/Starfield.tsx` — DPR-aware parallax canvas, 4-color stars (white / amber / violet / cyan), density-driven, RAF-animated, cleans up on unmount.
+
+Replaced landing components:
+
+- `Hero.tsx` — starfield + orbit stack behind the headline, gradient on the third headline line, `Reveal` on each block.
+- `SetupPreview.tsx` — hot-wire pulse running through the timeline, `cosmic-glow-soft` on each step pip, `Reveal` on every step.
+- `FinalCTA.tsx` — gradient on the second headline line, button wrapped in `MagneticButton`, `Reveal` on every block.
+- `SiteHeader.tsx` — auto-hide on scroll-down past 80px, return on scroll-up.
+
+Verified: typecheck clean, `npm run build` green (all routes still emit), spot-checks pass.
+
 ### 2026-04-24 - Nexus auto-sync (GitHub + local tool adds)
 
 Direct request: "I want the nexus to auto update every time I add a new repo to github. I also want it to be able to autoupdate essentially any time I download or integrate a new tool - within the scope of possibility and relevance."
