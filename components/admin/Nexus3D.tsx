@@ -130,15 +130,15 @@ export function Nexus3D({ domains, nodes, links }: Props) {
       };
     });
 
-    // Sun pseudo-node: huge golden sphere at the origin, locked in place.
+    // Sun pseudo-node: muted golden sphere at the origin, locked in place.
     gNodes.push({
       id: "__sun__",
       label: "Projects",
       domain: "core",
       kind: "real",
       desc: "Projects core (Global Memory + your apps)",
-      color: "#ffd966",
-      val: 60,
+      color: "#fbbf24",
+      val: 28,
       x: 0,
       y: 0,
       z: 0,
@@ -146,7 +146,7 @@ export function Nexus3D({ domains, nodes, links }: Props) {
       fy: 0,
     });
 
-    // Planet pseudo-nodes: large shaded spheres at each outer-ring anchor,
+    // Planet pseudo-nodes: small shaded spheres at each outer-ring anchor,
     // labeled with the category name (visible on hover via nodeLabel).
     for (const p of layout.planets) {
       const z = planetZ.get(p.id) ?? 0;
@@ -156,8 +156,8 @@ export function Nexus3D({ domains, nodes, links }: Props) {
         domain: p.id,
         kind: "real",
         desc: p.label,
-        color: brighten(p.color, 1.25),
-        val: 30,
+        color: p.color,
+        val: 14,
         x: p.x,
         y: p.y,
         z,

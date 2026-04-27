@@ -451,26 +451,19 @@ export function Nexus({ domains, nodes, links }: Props) {
           ))}
         </g>
 
-        {/* The sun: Projects core at the origin. */}
+        {/* The sun: Projects core at the origin. Smaller, no glow filter. */}
         <g>
-          <circle cx={0} cy={0} r={140} fill="url(#sun-core)" filter="url(#planetGlow)" />
-          <circle
-            cx={0}
-            cy={0}
-            r={26}
-            fill="#fff8e1"
-            opacity={0.92}
-            filter="url(#planetGlow)"
-          />
+          <circle cx={0} cy={0} r={70} fill="url(#sun-core)" opacity={0.85} />
+          <circle cx={0} cy={0} r={14} fill="#fde68a" opacity={0.85} />
           <text
             x={0}
-            y={-180}
+            y={-100}
             textAnchor="middle"
             fill="#fde68a"
             style={{
               fontFamily: "var(--font-display), Outfit, system-ui, sans-serif",
-              fontSize: 13,
-              letterSpacing: "0.18em",
+              fontSize: 12,
+              letterSpacing: "0.16em",
               textTransform: "uppercase",
               fontWeight: 600,
               opacity: 0.9,
@@ -480,50 +473,56 @@ export function Nexus({ domains, nodes, links }: Props) {
           </text>
         </g>
 
-        {/* Visible planets: shaded spheres with their category name on top. */}
+        {/* Per-planet orbital path ring — shows where this planet's nodes orbit. */}
+        <g fill="none" strokeDasharray="2 5">
+          {layout.planets.map((p) => (
+            <circle
+              key={`orbit-${p.id}`}
+              cx={p.x}
+              cy={p.y}
+              r={110}
+              stroke={p.color}
+              strokeOpacity={0.18}
+              strokeWidth={1}
+            />
+          ))}
+        </g>
+
+        {/* Visible planets: muted shaded spheres, no specular glare. */}
         <g>
           {layout.planets.map((p) => (
             <g key={`planet-g-${p.id}`}>
-              {/* Shadow side / outer ring */}
+              {/* Soft outline ring */}
               <circle
                 cx={p.x}
                 cy={p.y}
-                r={56}
+                r={38}
                 fill="none"
                 stroke={p.color}
-                strokeOpacity={0.35}
+                strokeOpacity={0.30}
                 strokeWidth={1}
               />
-              {/* The shaded planet body */}
+              {/* Planet body — shaded sphere, lower opacity for less glare */}
               <circle
                 cx={p.x}
                 cy={p.y}
-                r={50}
+                r={34}
                 fill={`url(#planet-${p.id})`}
-                filter="url(#planetGlow)"
+                opacity={0.78}
               />
-              {/* Specular highlight */}
-              <ellipse
-                cx={p.x - 12}
-                cy={p.y - 18}
-                rx={14}
-                ry={6}
-                fill="rgba(255,255,255,0.30)"
-                style={{ pointerEvents: "none" }}
-              />
-              {/* Planet name tag, above the planet, glowing in domain color */}
+              {/* Planet name tag, above the planet */}
               <text
                 x={p.x}
-                y={p.y - 70}
+                y={p.y - 52}
                 textAnchor="middle"
                 fill={p.color}
                 style={{
                   fontFamily: "var(--font-display), Outfit, system-ui, sans-serif",
-                  fontSize: 12,
+                  fontSize: 11,
                   letterSpacing: "0.16em",
                   textTransform: "uppercase",
                   fontWeight: 600,
-                  opacity: 0.95,
+                  opacity: 0.92,
                 }}
               >
                 {p.label}
@@ -650,11 +649,13 @@ export function Nexus({ domains, nodes, links }: Props) {
                   x={0}
                   y={r + 16}
                   textAnchor="middle"
-                  fill="#faf7f2"
+                  fill="#f0f4ff"
                   fontStyle={n.kind === "ghost" ? "italic" : "normal"}
                   style={{
-                    fontFamily: "Georgia, serif",
-                    fontSize: 12,
+                    fontFamily: "var(--font-display), Outfit, system-ui, sans-serif",
+                    fontSize: 11,
+                    letterSpacing: "0.04em",
+                    fontWeight: 500,
                     pointerEvents: "none",
                   }}
                 >

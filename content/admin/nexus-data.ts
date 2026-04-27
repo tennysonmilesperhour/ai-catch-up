@@ -321,63 +321,64 @@ export const NEXUS_LINKS: NexusLink[] = [
 ];
 
 export const DOMAINS: Record<string, Domain> = {
+  // Cosmic-organic palette pulled from the reference images.
   "core": {
     label: "Core",
-    color: "#c9a07a",
+    color: "#fbbf24",
     anchor: { x: 0, y: 0 },
     note: "The missing center. Global memory that all web-app repos should orbit around."
   },
   "apps": {
     label: "Your Apps + Products",
-    color: "#d97757",
+    color: "#fbbf24",
     anchor: { x: 0, y: 0 },
     note: "Your own original work and the products you're building"
   },
   "ai-infra": {
     label: "AI Infrastructure",
-    color: "#6b7a8f",
+    color: "#5fffd7",
     anchor: { x: -380, y: -250 },
     note: "Forks of AI systems (memory, agents, knowledge graphs)"
   },
   "claude-workflow": {
     label: "Claude Workflow",
-    color: "#8a7f6b",
+    color: "#c084fc",
     anchor: { x: 380, y: -250 },
     note: "Forks improving how you work with Claude Code"
   },
   "experimental": {
     label: "Experimental ML",
-    color: "#7a6a8a",
+    color: "#ff5fb3",
     anchor: { x: -450, y: 180 },
     note: "Heavy ML forks with unclear integration path"
   },
   "libraries": {
     label: "Libraries",
-    color: "#5c7a6b",
+    color: "#4ade80",
     anchor: { x: 450, y: 180 },
     note: "General-purpose utility tools"
   },
   "security": {
     label: "Security",
-    color: "#8a6b6b",
+    color: "#ff7849",
     anchor: { x: 520, y: 0 },
     note: "Security and supply-chain tooling"
   },
   "sync": {
     label: "Sync Gaps",
-    color: "#c96442",
+    color: "#f59e0b",
     anchor: { x: -200, y: -380 },
     note: "Missing infrastructure between your Mac mini and laptop"
   },
   "must-have": {
     label: "Must-Have Tools",
-    color: "#b08840",
+    color: "#67e8f9",
     anchor: { x: 200, y: -380 },
     note: "Widely-adopted tools you haven't installed yet"
   },
   "docs": {
     label: "Documentation",
-    color: "#7a8a6b",
+    color: "#22c55e",
     anchor: { x: 0, y: 380 },
     note: "Per-project markdown files that unlock better AI assistance"
   },
