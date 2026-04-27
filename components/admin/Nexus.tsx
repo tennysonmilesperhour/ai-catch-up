@@ -86,7 +86,7 @@ const PLANET_SPEED     = 0.00003;   // ~210 sec around each planet
 const APPS_INNER_RADIUS = 90;
 const APPS_MID_RADIUS = 175;
 const ORPHAN_RING_RADIUS = 290;
-const PLANET_NODE_RADIUS = 110;
+const PLANET_NODE_RADIUS = 130;
 
 // viewBox is centered on (0, 0): -700..700 horizontally, -500..500 vertically.
 const VIEW_X = -700;
@@ -112,6 +112,33 @@ function lighten(hex: string, amount = 0.4): string {
   const g = mix(parseInt(c.slice(2, 4), 16));
   const b = mix(parseInt(c.slice(4, 6), 16));
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+// Split a label into 1-2 lines and pick a font size that fits inside a
+// circle of the given radius. Two-line if the label has two or three words;
+// otherwise single line.
+function fitPlanetLabel(
+  label: string,
+  innerRadius: number
+): { lines: string[]; fontSize: number; lineHeight: number } {
+  const words = label.split(/\s+/);
+  let lines: string[];
+  if (words.length <= 1) {
+    lines = [label];
+  } else if (words.length === 2) {
+    lines = words;
+  } else {
+    const mid = Math.ceil(words.length / 2);
+    lines = [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
+  }
+  const longest = Math.max(...lines.map((l) => l.length));
+  // 0.58 is a rough average glyph-width-to-font-size ratio for Outfit caps.
+  // 1.7 = padding factor inside the circle so text doesn't touch the rim.
+  const fontSize = Math.max(
+    7,
+    Math.min(12, (innerRadius * 1.7) / Math.max(longest, 1))
+  );
+  return { lines, fontSize, lineHeight: fontSize * 1.05 };
 }
 
 function darken(hex: string, amount = 0.5): string {
@@ -472,7 +499,8 @@ export function Nexus({ domains, nodes, links }: Props) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden"
+      className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden select-none"
+      style={{ userSelect: "none", WebkitUserSelect: "none" }}
     >
       <svg
         ref={svgRef}
@@ -512,13 +540,30 @@ export function Nexus({ domains, nodes, links }: Props) {
             <radialGradient
               key={`planet-${p.id}`}
               id={`planet-${p.id}`}
-              cx="35%"
-              cy="32%"
-              r="75%"
+              cx="32%"
+              cy="28%"
+              r="80%"
             >
-              <stop offset="0%" stopColor={lighten(p.color, 0.5)} stopOpacity="1" />
-              <stop offset="40%" stopColor={p.color} stopOpacity="0.95" />
-              <stop offset="100%" stopColor={darken(p.color, 0.6)} stopOpacity="1" />
+              <stop offset="0%" stopColor={lighten(p.color, 0.55)} stopOpacity="1" />
+              <stop offset="35%" stopColor={p.color} stopOpacity="1" />
+              <stop offset="80%" stopColor={darken(p.color, 0.45)} stopOpacity="1" />
+              <stop offset="100%" stopColor={darken(p.color, 0.75)} stopOpacity="1" />
+            </radialGradient>
+          ))}
+
+          {/* Inner-shadow / terminator overlay per planet — sits on top of the
+              body, casts the dark side at the bottom-right. */}
+          {layout.planets.map((p) => (
+            <radialGradient
+              key={`shadow-${p.id}`}
+              id={`shadow-${p.id}`}
+              cx="75%"
+              cy="78%"
+              r="65%"
+            >
+              <stop offset="0%" stopColor="#000000" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="#000000" stopOpacity="0.10" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
             </radialGradient>
           ))}
 
@@ -596,55 +641,131 @@ export function Nexus({ domains, nodes, links }: Props) {
               key={`orbit-${p.id}`}
               cx={p.x}
               cy={p.y}
-              r={110}
+              r={130}
               stroke={p.color}
-              strokeOpacity={0.18}
+              strokeOpacity={0.20}
               strokeWidth={1}
             />
           ))}
         </g>
 
-        {/* Visible planets: muted shaded spheres, no specular glare. */}
+        {/* Visible planets: layered shaded sphere with the category name
+            embossed inside. */}
         <g>
-          {layout.planets.map((p) => (
-            <g key={`planet-g-${p.id}`}>
-              {/* Soft outline ring */}
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={38}
-                fill="none"
-                stroke={p.color}
-                strokeOpacity={0.30}
-                strokeWidth={1}
-              />
-              {/* Planet body — shaded sphere, lower opacity for less glare */}
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={34}
-                fill={`url(#planet-${p.id})`}
-                opacity={0.78}
-              />
-              {/* Planet name tag, above the planet */}
-              <text
-                x={p.x}
-                y={p.y - 52}
-                textAnchor="middle"
-                fill={p.color}
-                style={{
-                  fontFamily: "var(--font-display), Outfit, system-ui, sans-serif",
-                  fontSize: 11,
-                  letterSpacing: "0.16em",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                  opacity: 0.92,
-                }}
-              >
-                {p.label}
-              </text>
-            </g>
-          ))}
+          {layout.planets.map((p, idx) => {
+            const r = 58;
+            const { lines, fontSize, lineHeight } = fitPlanetLabel(
+              p.label.toUpperCase(),
+              r
+            );
+            // Saturn-style ring on every other planet for visual variety.
+            const hasRing = idx % 2 === 0;
+            return (
+              <g key={`planet-g-${p.id}`}>
+                {/* Atmospheric outer glow */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={r + 14}
+                  fill={p.color}
+                  opacity={0.06}
+                />
+                {/* Optional Saturn-like ring (drawn behind the body) */}
+                {hasRing && (
+                  <ellipse
+                    cx={p.x}
+                    cy={p.y + 4}
+                    rx={r + 22}
+                    ry={9}
+                    fill="none"
+                    stroke={p.color}
+                    strokeOpacity={0.30}
+                    strokeWidth={1.5}
+                    transform={`rotate(-12 ${p.x} ${p.y})`}
+                  />
+                )}
+                {/* Planet body — radial-shaded sphere */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={r}
+                  fill={`url(#planet-${p.id})`}
+                  opacity={0.92}
+                />
+                {/* Inner shadow pass on the bottom-right (terminator hint) */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={r}
+                  fill={`url(#shadow-${p.id})`}
+                  style={{ pointerEvents: "none" }}
+                />
+                {/* Atmospheric rim — subtle bright ring on the top edge */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={r}
+                  fill="none"
+                  stroke={lighten(p.color, 0.5)}
+                  strokeOpacity={0.55}
+                  strokeWidth={1.2}
+                />
+                {/* Front half of Saturn-ring (drawn ON TOP of body) */}
+                {hasRing && (
+                  <ellipse
+                    cx={p.x}
+                    cy={p.y + 4}
+                    rx={r + 22}
+                    ry={9}
+                    fill="none"
+                    stroke={p.color}
+                    strokeOpacity={0.55}
+                    strokeWidth={1.5}
+                    strokeDasharray={`${(r + 22) * Math.PI * 0.8} 9999`}
+                    transform={`rotate(-12 ${p.x} ${p.y})`}
+                  />
+                )}
+                {/* Category label, centered INSIDE the planet */}
+                <g style={{ pointerEvents: "none" }}>
+                  <text
+                    x={p.x}
+                    y={p.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="#ffffff"
+                    style={{
+                      fontFamily:
+                        "var(--font-display), Outfit, system-ui, sans-serif",
+                      fontSize,
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                      fontWeight: 700,
+                      paintOrder: "stroke fill",
+                    }}
+                    stroke="rgba(0,0,0,0.55)"
+                    strokeWidth={2}
+                    strokeLinejoin="round"
+                  >
+                    {lines.length === 1 ? (
+                      lines[0]
+                    ) : (
+                      <>
+                        <tspan
+                          x={p.x}
+                          dy={`-${(lineHeight / 2).toFixed(2)}`}
+                        >
+                          {lines[0]}
+                        </tspan>
+                        <tspan x={p.x} dy={`${lineHeight.toFixed(2)}`}>
+                          {lines[1]}
+                        </tspan>
+                      </>
+                    )}
+                  </text>
+                </g>
+              </g>
+            );
+          })}
         </g>
 
         <g>
