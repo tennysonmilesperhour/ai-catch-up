@@ -48,9 +48,11 @@
   --color-border-dark: #2c4866;
 }
 
+html {
+  background: var(--color-cream);
+}
 html,
 body {
-  background: var(--color-cream);
   color: var(--color-dark);
   font-family: var(--font-serif);
   font-size: 16px;
@@ -65,9 +67,11 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
 
-/* Cosmic background: layered nebula glows + starfield pinpoints. */
+/* Cosmic background: layered nebula glows + starfield pinpoints. The
+   solid color lives on `html` so PageBackdrop images can show through
+   when present. */
 body {
-  background-color: var(--color-cream);
+  background-color: transparent;
   background-image:
     radial-gradient(at 18% 18%, rgba(255, 95, 179, 0.13) 0px, transparent 55%),
     radial-gradient(at 82% 82%, rgba(95, 255, 215, 0.13) 0px, transparent 55%),

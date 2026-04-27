@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type Prompt = {
   id: number | string;
@@ -12,25 +12,62 @@ export type Prompt = {
 
 type Props = { prompts: Prompt[]; categories: string[] };
 
-const STORAGE_KEY = "admin-prompts-open-ids-v1";
+const STORAGE_KEY = "admin-prompts-open-id-v2";
+
+// Per-category accent color, matched to the WRT/PLN/DBG/IDE/COD/PRO
+// pattern shown on the reference design. Falls back to muted gray.
+const CATEGORY_COLORS: Record<string, string> = {
+  WRT: "var(--color-terracotta)",
+  PLN: "var(--color-cyan)",
+  DBG: "var(--color-magenta)",
+  IDE: "var(--color-violet)",
+  COD: "var(--color-organic)",
+  PRO: "var(--color-rust)",
+};
+
+function shortTag(category: string): string {
+  return category.slice(0, 3).toUpperCase();
+}
+
+function colorFor(category: string): string {
+  return CATEGORY_COLORS[shortTag(category)] ?? "var(--color-muted-dark)";
+}
+
+function snippet(text: string, max = 140): string {
+  const oneLine = text.replace(/\s+/g, " ").trim();
+  if (oneLine.length <= max) return oneLine;
+  return oneLine.slice(0, max).trimEnd() + "...";
+}
 
 export function PromptsList({ prompts, categories }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
 
-  // Hydrate open IDs from localStorage.
+  // Hydrate last-open prompt from localStorage so Tennyson can deep-link
+  // to the modal across sessions if he wants to.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setOpenIds(new Set(JSON.parse(raw)));
+      if (raw) setOpenId(raw);
     } catch {}
   }, []);
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...openIds]));
+      if (openId) localStorage.setItem(STORAGE_KEY, openId);
+      else localStorage.removeItem(STORAGE_KEY);
     } catch {}
-  }, [openIds]);
+  }, [openId]);
+
+  // Close the modal on Escape.
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && openId) setOpenId(null);
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [openId]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -45,18 +82,24 @@ export function PromptsList({ prompts, categories }: Props) {
     });
   }, [prompts, activeCategory, query]);
 
-  const toggle = (id: string) => {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const openPrompt = useMemo(
+    () => prompts.find((p) => String(p.id) === openId) ?? null,
+    [prompts, openId]
+  );
+
+  async function handleCopy(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 1800);
+    } catch {
+      setCopyState("idle");
+    }
+  }
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
+    <>
+      <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-8">
         <div className="flex flex-wrap gap-2">
           <FilterButton
             label="All"
@@ -81,64 +124,132 @@ export function PromptsList({ prompts, categories }: Props) {
         />
       </div>
 
-      <ul className="grid gap-3" data-stagger>
-        {filtered.map((p, i) => {
+      <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {filtered.map((p) => {
           const idKey = String(p.id);
-          const isOpen = openIds.has(idKey);
-          const rowStyle = {
-            "--row-delay": `${Math.min(i, 8) * 30}ms`,
-          } as CSSProperties;
+          const tag = shortTag(p.category);
+          const color = colorFor(p.category);
           return (
-            <li
-              key={idKey}
-              className="glass-card"
-              style={rowStyle}
-            >
+            <li key={idKey}>
               <button
-                onClick={() => toggle(idKey)}
-                className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-[rgba(251,191,36,0.04)] transition-colors"
-                aria-expanded={isOpen}
+                type="button"
+                onClick={() => setOpenId(idKey)}
+                className="group h-full w-full text-left glass-card p-5 md:p-6 flex flex-col gap-4 transition-colors hover:bg-[rgba(251,191,36,0.04)] cursor-pointer"
               >
-                <div className="flex items-baseline gap-4 min-w-0">
-                  <span className="label text-[var(--color-terracotta)] whitespace-nowrap">
-                    {p.category}
+                <div className="flex items-baseline justify-between gap-3">
+                  <span
+                    className="font-mono text-[10px] uppercase tracking-[0.14em] px-2 py-1 rounded-[4px] border"
+                    style={{
+                      color,
+                      borderColor: color,
+                      backgroundColor: `color-mix(in oklab, ${color} 10%, transparent)`,
+                    }}
+                  >
+                    {tag}
                   </span>
-                  <span className="font-serif text-lg text-[var(--color-dark)] truncate">
-                    {p.title}
+                  <span className="font-mono text-[10px] uppercase tracking-[0.10em] text-[var(--color-muted)]">
+                    #{String(p.id).padStart(2, "0")}
                   </span>
                 </div>
-                <span
-                  className={`chev text-[var(--color-muted-dark)] ${isOpen ? "is-open" : ""}`}
-                  aria-hidden
-                />
+                <h3 className="font-serif text-lg md:text-xl text-[var(--color-dark)] leading-snug">
+                  {p.title}
+                </h3>
+                {p.whyItWorks && (
+                  <p className="text-sm text-[var(--color-muted-dark)] leading-relaxed line-clamp-2">
+                    {p.whyItWorks}
+                  </p>
+                )}
+                <div className="mt-auto rounded-[8px] border border-[var(--color-border)] bg-[rgba(2,6,14,0.55)] px-3 py-2.5">
+                  <p className="font-mono text-[11px] leading-snug text-[var(--color-muted-dark)] line-clamp-2">
+                    {snippet(p.prompt)}
+                  </p>
+                </div>
               </button>
-              {isOpen && (
-                <div className="px-6 pb-6 pt-5 border-t border-[var(--color-border-light)]">
-                  <p className="label text-[var(--color-muted-dark)] mb-2">Prompt</p>
-                  <div className="whitespace-pre-line text-[var(--color-dark)] leading-relaxed bg-[rgba(2,6,14,0.5)] border border-[var(--color-border)] rounded-[10px] p-4 mb-5 font-mono text-sm">
-                    {p.prompt}
-                  </div>
-                  {p.whyItWorks && (
-                    <>
-                      <p className="label text-[var(--color-terracotta)] mb-2">Why it works</p>
-                      <p className="text-[var(--color-muted-dark)] italic leading-relaxed">
-                        {p.whyItWorks}
-                      </p>
-                    </>
-                  )}
-                </div>
-              )}
             </li>
           );
         })}
       </ul>
 
       {filtered.length === 0 && (
-        <p className="italic text-[var(--color-muted)] mt-6">
+        <p className="italic text-[var(--color-muted)] mt-8 text-center">
           No prompts match this filter.
         </p>
       )}
-    </div>
+
+      {openPrompt && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setOpenId(null)}
+        >
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[rgba(2,6,14,0.7)] backdrop-blur-sm"
+          />
+          <div
+            className="relative glass-card max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 md:p-8 flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <span
+                  className="self-start font-mono text-[10px] uppercase tracking-[0.14em] px-2 py-1 rounded-[4px] border"
+                  style={{
+                    color: colorFor(openPrompt.category),
+                    borderColor: colorFor(openPrompt.category),
+                  }}
+                >
+                  {openPrompt.category}
+                </span>
+                <h2 className="font-serif text-2xl md:text-3xl text-[var(--color-dark)] leading-tight">
+                  {openPrompt.title}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenId(null)}
+                aria-label="Close"
+                className="font-mono text-xl text-[var(--color-muted)] hover:text-[var(--color-dark)] cursor-pointer leading-none"
+              >
+                ×
+              </button>
+            </header>
+
+            <section>
+              <div className="flex items-baseline justify-between mb-2">
+                <p className="label text-[var(--color-muted-dark)]">Prompt</p>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(openPrompt.prompt)}
+                  className={`font-mono text-[10px] uppercase tracking-[0.10em] px-3 py-1.5 rounded-[6px] border transition-colors cursor-pointer ${
+                    copyState === "copied"
+                      ? "border-[var(--color-organic)] text-[var(--color-organic)]"
+                      : "border-[var(--color-border-dark)] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] hover:border-[var(--color-terracotta)]"
+                  }`}
+                >
+                  {copyState === "copied" ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <div className="whitespace-pre-line text-[var(--color-dark)] leading-relaxed bg-[rgba(2,6,14,0.7)] border border-[var(--color-border)] rounded-[10px] p-4 font-mono text-sm">
+                {openPrompt.prompt}
+              </div>
+            </section>
+
+            {openPrompt.whyItWorks && (
+              <section>
+                <p className="label text-[var(--color-terracotta)] mb-2">
+                  Why it works
+                </p>
+                <p className="text-[var(--color-muted-dark)] italic leading-relaxed">
+                  {openPrompt.whyItWorks}
+                </p>
+              </section>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -154,9 +265,9 @@ function FilterButton({
   return (
     <button
       onClick={onClick}
-      className={`font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 rounded-[8px] border transition-colors ${
+      className={`font-mono text-[11px] uppercase tracking-[0.10em] px-3.5 py-1.5 rounded-full border transition-colors ${
         active
-          ? "bg-[var(--color-dark)] text-[var(--color-darker)] border-[var(--color-dark)]"
+          ? "bg-[var(--color-terracotta)] text-[var(--color-darker)] border-[var(--color-terracotta)]"
           : "bg-transparent text-[var(--color-muted-dark)] border-[var(--color-border)] hover:border-[var(--color-terracotta)] hover:text-[var(--color-dark)]"
       }`}
     >

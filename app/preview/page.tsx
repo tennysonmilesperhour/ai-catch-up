@@ -42,7 +42,7 @@ export default function PreviewPage() {
   const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
 
   return (
-    <main className="min-h-screen bg-[var(--color-cream)]">
+    <main className="min-h-screen">
       <PageBackdrop variant="stars" />
       <SiteHeader />
       <div className="px-6 md:px-12 py-16 md:py-20 max-w-5xl mx-auto">

@@ -608,7 +608,7 @@ export function Nexus({ domains, nodes, links }: Props) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden select-none"
+      className="relative w-full h-[calc(100vh-13rem)] min-h-[600px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden select-none"
       style={{ userSelect: "none", WebkitUserSelect: "none" }}
     >
       <svg

@@ -29,11 +29,11 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[var(--color-cream)]">
+    <div className="min-h-screen flex flex-col md:flex-row">
       <AdminSidebar groups={tabGroups} />
       <div className="flex-1 flex flex-col min-w-0">
         <AdminMobileNav tabs={flatTabs} />
-        <main className="flex-1 px-6 md:px-10 py-10 md:py-12 max-w-5xl w-full">
+        <main className="flex-1 px-6 md:px-10 py-10 md:py-12 w-full min-w-0">
           {children}
         </main>
       </div>

@@ -215,7 +215,7 @@ export function Nexus3D({ domains, nodes, links }: Props) {
   const tooltipNode = selected ?? hovered;
 
   return (
-    <div className="relative w-full h-[70vh] min-h-[500px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden">
+    <div className="relative w-full h-[calc(100vh-13rem)] min-h-[600px] bg-[#05030a] border border-[var(--color-border-dark)] overflow-hidden">
       <div ref={containerRef} className="absolute inset-0">
         <ForceGraph3D
           graphData={graphData}

@@ -5,9 +5,16 @@ import { useEffect, useRef, useState } from "react";
 const POLL_INTERVAL_MS = 15 * 1000; // 15 seconds
 const FOCUS_THROTTLE_MS = 5 * 1000;
 
+// BUILD_ID is baked into the client bundle at build time via
+// next.config.mjs (env.NEXT_PUBLIC_BUILD_ID). On Vercel this resolves
+// to VERCEL_GIT_COMMIT_SHA. The poll compares this CONSTANT (frozen at
+// build) against /api/version (live at request time). The instant the
+// server's id differs from the bundle's id, the user is on a stale
+// page and the banner fires — even if they just opened the tab.
+const BUILD_ID = (process.env.NEXT_PUBLIC_BUILD_ID as string | undefined) || "";
+
 export function RefreshBanner() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const loadedBuildId = useRef<string | null>(null);
   const lastPollAt = useRef<number>(0);
 
   // Verification escape hatch: ?force-banner=1 in the URL forces the toast
@@ -42,21 +49,22 @@ export function RefreshBanner() {
           console.warn(`[refresh-banner] poll(${reason}) missing buildId`);
           return;
         }
-        if (loadedBuildId.current === null) {
-          loadedBuildId.current = remote;
-          console.info(
-            `[refresh-banner] baseline set buildId=${remote} source=${data.source ?? "?"}`
+        if (!BUILD_ID) {
+          // No bundle id: we can't compare, so skip silently. This only
+          // happens in dev where NEXT_PUBLIC_BUILD_ID isn't set.
+          console.debug(
+            `[refresh-banner] poll(${reason}) no bundle BUILD_ID, skipping compare`
           );
           return;
         }
-        if (remote !== loadedBuildId.current) {
+        if (remote !== BUILD_ID) {
           console.info(
-            `[refresh-banner] update detected: ${loadedBuildId.current} -> ${remote}`
+            `[refresh-banner] update detected: bundle=${BUILD_ID} server=${remote} source=${data.source ?? "?"}`
           );
           if (!cancelled) setUpdateAvailable(true);
         } else {
           console.debug(
-            `[refresh-banner] poll(${reason}) buildId unchanged (${remote})`
+            `[refresh-banner] poll(${reason}) buildId matches (${remote})`
           );
         }
       } catch (err) {
