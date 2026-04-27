@@ -155,25 +155,79 @@ function seededRand(id: string) {
 }
 
 type PlanetBand = {
-  cy: number; // y offset from planet center
-  ry: number; // ellipse half-height (band thickness)
+  cy: number;
+  ry: number;
   isLight: boolean;
   opacity: number;
 };
 
 function planetBands(id: string, r: number): PlanetBand[] {
   const next = seededRand(id);
-  const numBands = 5 + Math.floor(next() * 3); // 5..7 bands
+  const numBands = 5 + Math.floor(next() * 3);
   const bands: PlanetBand[] = [];
   for (let i = 0; i < numBands; i++) {
     const t = (i + 1) / (numBands + 1);
-    const cy = (t - 0.5) * r * 1.6; // distribute across visible diameter
+    const cy = (t - 0.5) * r * 1.6;
     const ry = 2 + next() * 4.5;
     const isLight = next() > 0.5;
     const opacity = 0.28 + next() * 0.30;
     bands.push({ cy, ry, isLight, opacity });
   }
   return bands;
+}
+
+type PlasmaSpot = {
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+  isHot: boolean;
+  opacity: number;
+};
+
+// Convection-cell granulation across the star surface — small irregular
+// bright/dark blobs that suggest a plasma photosphere.
+function plasmaSpots(id: string, r: number): PlasmaSpot[] {
+  const next = seededRand(`${id}-plasma`);
+  const count = 8 + Math.floor(next() * 5); // 8..12 spots
+  const spots: PlasmaSpot[] = [];
+  for (let i = 0; i < count; i++) {
+    // Distribute spots within ~80% of the radius (so they don't crowd the rim)
+    const angle = next() * Math.PI * 2;
+    const dist = next() * r * 0.78;
+    spots.push({
+      cx: Math.cos(angle) * dist,
+      cy: Math.sin(angle) * dist,
+      rx: 3 + next() * 6,
+      ry: 2 + next() * 4,
+      isHot: next() > 0.4,
+      opacity: 0.25 + next() * 0.30,
+    });
+  }
+  return spots;
+}
+
+type SolarFlare = {
+  angle: number;
+  length: number;
+  width: number;
+  opacity: number;
+};
+
+// Flare tendrils that extend outward past the photosphere edge.
+function solarFlares(id: string, r: number): SolarFlare[] {
+  const next = seededRand(`${id}-flares`);
+  const count = 2 + Math.floor(next() * 3); // 2..4 flares
+  const flares: SolarFlare[] = [];
+  for (let i = 0; i < count; i++) {
+    flares.push({
+      angle: next() * Math.PI * 2,
+      length: r * (0.18 + next() * 0.22),
+      width: 1.5 + next() * 1.5,
+      opacity: 0.45 + next() * 0.30,
+    });
+  }
+  return flares;
 }
 
 function darken(hex: string, amount = 0.5): string {
@@ -570,39 +624,40 @@ export function Nexus({ domains, nodes, links }: Props) {
             </radialGradient>
           ))}
 
-          {/* Sphere gradients for visible planets — light side / dark side. */}
+          {/* Star body gradient — bright center, slight limb darkening at the
+              edge (opposite of planet shading: stars emit light, not reflect). */}
           {layout.planets.map((p) => (
             <radialGradient
               key={`planet-${p.id}`}
               id={`planet-${p.id}`}
-              cx="32%"
-              cy="28%"
-              r="80%"
+              cx="50%"
+              cy="50%"
+              r="55%"
             >
-              <stop offset="0%" stopColor={lighten(p.color, 0.55)} stopOpacity="1" />
-              <stop offset="35%" stopColor={p.color} stopOpacity="1" />
-              <stop offset="80%" stopColor={darken(p.color, 0.45)} stopOpacity="1" />
-              <stop offset="100%" stopColor={darken(p.color, 0.75)} stopOpacity="1" />
+              <stop offset="0%" stopColor={lighten(p.color, 0.85)} stopOpacity="1" />
+              <stop offset="35%" stopColor={lighten(p.color, 0.40)} stopOpacity="1" />
+              <stop offset="75%" stopColor={p.color} stopOpacity="1" />
+              <stop offset="100%" stopColor={darken(p.color, 0.30)} stopOpacity="1" />
             </radialGradient>
           ))}
 
-          {/* Inner-shadow / terminator overlay per planet — sits on top of the
-              body, casts the dark side at the bottom-right. */}
+          {/* Corona gradient — outward soft halo around each star. */}
           {layout.planets.map((p) => (
             <radialGradient
-              key={`shadow-${p.id}`}
-              id={`shadow-${p.id}`}
-              cx="75%"
-              cy="78%"
-              r="65%"
+              key={`corona-${p.id}`}
+              id={`corona-${p.id}`}
+              cx="50%"
+              cy="50%"
+              r="50%"
             >
-              <stop offset="0%" stopColor="#000000" stopOpacity="0.55" />
-              <stop offset="60%" stopColor="#000000" stopOpacity="0.10" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+              <stop offset="0%" stopColor={p.color} stopOpacity="0.45" />
+              <stop offset="30%" stopColor={p.color} stopOpacity="0.20" />
+              <stop offset="70%" stopColor={p.color} stopOpacity="0.06" />
+              <stop offset="100%" stopColor={p.color} stopOpacity="0" />
             </radialGradient>
           ))}
 
-          {/* Per-planet clip path so atmospheric bands stay inside the body. */}
+          {/* Per-planet clip path so plasma granulation stays inside the body. */}
           {layout.planets.map((p) => (
             <clipPath key={`clip-${p.id}`} id={`clip-${p.id}`}>
               <circle cx={p.x} cy={p.y} r={58} />
@@ -654,13 +709,87 @@ export function Nexus({ domains, nodes, links }: Props) {
           ))}
         </g>
 
-        {/* The sun: Projects core at the origin. Smaller, no glow filter. */}
+        {/* The central sun: bigger but same visual language as the orbiting
+            stars — corona halo, plasma granulation, solar flares. */}
         <g>
-          <circle cx={0} cy={0} r={70} fill="url(#sun-core)" opacity={0.85} />
-          <circle cx={0} cy={0} r={14} fill="#fde68a" opacity={0.85} />
+          {(() => {
+            const sunR = 70;
+            const sunColor = "#fbbf24";
+            const flares = solarFlares("__center-sun__", sunR);
+            const spots = plasmaSpots("__center-sun__", sunR);
+            return (
+              <>
+                {/* Outer corona */}
+                <circle
+                  cx={0}
+                  cy={0}
+                  r={sunR * 2.4}
+                  fill={sunColor}
+                  opacity={0.10}
+                />
+                {/* Mid corona */}
+                <circle
+                  cx={0}
+                  cy={0}
+                  r={sunR * 1.5}
+                  fill={sunColor}
+                  opacity={0.18}
+                />
+                {/* Solar flares */}
+                {flares.map((f, fi) => {
+                  const cx = Math.cos(f.angle) * (sunR + f.length * 0.45);
+                  const cy = Math.sin(f.angle) * (sunR + f.length * 0.45);
+                  return (
+                    <ellipse
+                      key={fi}
+                      cx={cx}
+                      cy={cy}
+                      rx={f.length}
+                      ry={f.width}
+                      fill={lighten(sunColor, 0.6)}
+                      opacity={f.opacity}
+                      transform={`rotate(${(f.angle * 180) / Math.PI} ${cx} ${cy})`}
+                    />
+                  );
+                })}
+                {/* Body with plasma granulation */}
+                <clipPath id="clip-sun">
+                  <circle cx={0} cy={0} r={sunR} />
+                </clipPath>
+                <g clipPath="url(#clip-sun)">
+                  <circle cx={0} cy={0} r={sunR} fill="url(#sun-core)" />
+                  {spots.map((s, si) => (
+                    <ellipse
+                      key={si}
+                      cx={s.cx}
+                      cy={s.cy}
+                      rx={s.rx}
+                      ry={s.ry}
+                      fill={
+                        s.isHot
+                          ? lighten(sunColor, 0.7)
+                          : darken(sunColor, 0.20)
+                      }
+                      opacity={s.opacity}
+                    />
+                  ))}
+                </g>
+                {/* Limb darkening rim */}
+                <circle
+                  cx={0}
+                  cy={0}
+                  r={sunR}
+                  fill="none"
+                  stroke={darken(sunColor, 0.45)}
+                  strokeOpacity={0.35}
+                  strokeWidth={1.2}
+                />
+              </>
+            );
+          })()}
           <text
             x={0}
-            y={-100}
+            y={-110}
             textAnchor="middle"
             fill="#fde68a"
             style={{
@@ -691,97 +820,89 @@ export function Nexus({ domains, nodes, links }: Props) {
           ))}
         </g>
 
-        {/* Visible planets: layered shaded sphere with the category name
-            embossed inside. */}
+        {/* Visible "planets" rendered as mini suns: corona halo, plasma
+            surface granulation, solar flares, limb-darkened body. */}
         <g>
-          {layout.planets.map((p, idx) => {
+          {layout.planets.map((p) => {
             const r = 58;
             const { lines, fontSize, lineHeight } = fitPlanetLabel(
               p.label.toUpperCase(),
               r
             );
-            // Saturn-style ring on every other planet for visual variety.
-            const hasRing = idx % 2 === 0;
+            const flares = solarFlares(p.id, r);
+            const spots = plasmaSpots(p.id, r);
             return (
               <g key={`planet-g-${p.id}`}>
-                {/* Atmospheric outer glow */}
+                {/* Outer corona — large soft halo */}
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={r + 14}
-                  fill={p.color}
-                  opacity={0.06}
+                  r={r * 2.1}
+                  fill={`url(#corona-${p.id})`}
                 />
-                {/* Optional Saturn-like ring (drawn behind the body) */}
-                {hasRing && (
-                  <ellipse
-                    cx={p.x}
-                    cy={p.y + 4}
-                    rx={r + 22}
-                    ry={9}
-                    fill="none"
-                    stroke={p.color}
-                    strokeOpacity={0.30}
-                    strokeWidth={1.5}
-                    transform={`rotate(-12 ${p.x} ${p.y})`}
-                  />
-                )}
-                {/* Planet body — radial-shaded sphere with horizontal cloud
-                    bands (Jupiter-like) clipped to the circle. */}
+                {/* Inner corona — tighter glow */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={r * 1.35}
+                  fill={p.color}
+                  opacity={0.12}
+                />
+                {/* Solar flares — tendrils extending past the photosphere edge */}
+                {flares.map((f, fi) => {
+                  const cx = p.x + Math.cos(f.angle) * (r + f.length * 0.45);
+                  const cy = p.y + Math.sin(f.angle) * (r + f.length * 0.45);
+                  return (
+                    <ellipse
+                      key={fi}
+                      cx={cx}
+                      cy={cy}
+                      rx={f.length}
+                      ry={f.width}
+                      fill={lighten(p.color, 0.6)}
+                      opacity={f.opacity}
+                      transform={`rotate(${(f.angle * 180) / Math.PI} ${cx} ${cy})`}
+                    />
+                  );
+                })}
+                {/* Star body with plasma surface granulation, clipped to
+                    the photosphere disc. */}
                 <g clipPath={`url(#clip-${p.id})`}>
+                  {/* Bright limb-darkened body */}
                   <circle
                     cx={p.x}
                     cy={p.y}
                     r={r}
                     fill={`url(#planet-${p.id})`}
                   />
-                  {planetBands(p.id, r).map((b, bi) => (
+                  {/* Convection-cell granulation — small irregular blobs */}
+                  {spots.map((s, si) => (
                     <ellipse
-                      key={bi}
-                      cx={p.x}
-                      cy={p.y + b.cy}
-                      rx={r * 1.05}
-                      ry={b.ry}
+                      key={si}
+                      cx={p.x + s.cx}
+                      cy={p.y + s.cy}
+                      rx={s.rx}
+                      ry={s.ry}
                       fill={
-                        b.isLight ? lighten(p.color, 0.45) : darken(p.color, 0.55)
+                        s.isHot
+                          ? lighten(p.color, 0.7)
+                          : darken(p.color, 0.25)
                       }
-                      opacity={b.opacity}
+                      opacity={s.opacity}
                     />
                   ))}
-                  {/* Inner shadow / terminator (still inside clip) */}
-                  <circle
-                    cx={p.x}
-                    cy={p.y}
-                    r={r}
-                    fill={`url(#shadow-${p.id})`}
-                  />
                 </g>
-                {/* Atmospheric rim — subtle bright ring on the top edge */}
+                {/* Limb darkening rim — subtle dark ring at the very edge */}
                 <circle
                   cx={p.x}
                   cy={p.y}
                   r={r}
                   fill="none"
-                  stroke={lighten(p.color, 0.5)}
-                  strokeOpacity={0.55}
+                  stroke={darken(p.color, 0.55)}
+                  strokeOpacity={0.40}
                   strokeWidth={1.2}
                 />
-                {/* Front half of Saturn-ring (drawn ON TOP of body) */}
-                {hasRing && (
-                  <ellipse
-                    cx={p.x}
-                    cy={p.y + 4}
-                    rx={r + 22}
-                    ry={9}
-                    fill="none"
-                    stroke={p.color}
-                    strokeOpacity={0.55}
-                    strokeWidth={1.5}
-                    strokeDasharray={`${(r + 22) * Math.PI * 0.8} 9999`}
-                    transform={`rotate(-12 ${p.x} ${p.y})`}
-                  />
-                )}
-                {/* Category label, centered INSIDE the planet */}
+                {/* Category label, centered INSIDE the star */}
                 <g style={{ pointerEvents: "none" }}>
                   <text
                     x={p.x}
