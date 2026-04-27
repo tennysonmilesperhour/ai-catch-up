@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/shared/Button";
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { PageBackdrop } from "@/components/shared/PageBackdrop";
 
 export const metadata = { title: "Preview" };
 
@@ -42,6 +43,7 @@ export default function PreviewPage() {
 
   return (
     <main className="min-h-screen bg-[var(--color-cream)]">
+      <PageBackdrop variant="stars" />
       <SiteHeader />
       <div className="px-6 md:px-12 py-16 md:py-20 max-w-5xl mx-auto">
         <p className="label text-[var(--color-terracotta)] mb-6">

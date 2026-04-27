@@ -1,6 +1,7 @@
 import { EmailCaptureForm } from "@/components/shared/EmailCaptureForm";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { CommunityCTA } from "@/components/shared/CommunityCTA";
+import { PageBackdrop } from "@/components/shared/PageBackdrop";
 
 export const metadata = {
   title: "Thank you",
@@ -9,6 +10,7 @@ export const metadata = {
 export default function ThankYouPage() {
   return (
     <main className="min-h-screen">
+      <PageBackdrop variant="nebula" />
       <SiteHeader />
       <div className="px-6 md:px-12 py-16 md:py-24 max-w-3xl mx-auto">
         <p className="label text-[var(--color-terracotta)] mb-6">You are in</p>

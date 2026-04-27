@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { PageBackdrop } from "@/components/shared/PageBackdrop";
 import { Hero } from "@/components/landing/Hero";
 import { VideoPlaceholder } from "@/components/landing/VideoPlaceholder";
 import { Pricing } from "@/components/landing/Pricing";
@@ -14,6 +15,7 @@ import { Footer } from "@/components/landing/Footer";
 export default function LandingPage() {
   return (
     <main>
+      <PageBackdrop variant="stars" />
       <SiteHeader />
       <Hero />
       <VideoPlaceholder />
