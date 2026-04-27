@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  ConnectionConnectButton,
+  ConnectionConnectPanel,
+  type ConnectProvider,
+} from "@/components/admin/ConnectionConnect";
 
 const STORAGE_KEY = "admin-settings-v1";
 
@@ -84,6 +89,13 @@ type ConnectionStatus = {
   label: string;
   manageHref: string;
   configured: boolean;
+  // Optional connect-form metadata. Provided for providers that have a
+  // testable API key. When omitted, only the status pill + Manage link
+  // appear (e.g. Vercel, Stripe payment-link).
+  provider?: ConnectProvider;
+  envVar?: string;
+  vercelEnvUrl?: string;
+  connectHint?: string;
 };
 
 type Props = {
@@ -94,6 +106,7 @@ export function SettingsPanel({ connections }: Props) {
   const [settings, setSettings] = useState<Settings>(DEFAULTS);
   const [hydrated, setHydrated] = useState(false);
   const [resetState, setResetState] = useState<"idle" | "done">("idle");
+  const [openConnect, setOpenConnect] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -236,32 +249,56 @@ export function SettingsPanel({ connections }: Props) {
             environment variables on the server.
           </p>
         </header>
-        <ul className="flex flex-col gap-3">
-          {connections.map((c) => (
-            <li
-              key={c.label}
-              className="flex items-center justify-between gap-4"
-            >
-              <span className="font-mono text-xs uppercase tracking-[0.10em] text-[var(--color-dark)]">
-                {c.label}
-              </span>
-              <div className="flex items-center gap-3">
-                <span
-                  className={`status-pill ${c.configured ? "is-done" : "is-blocked"}`}
-                >
-                  {c.configured ? "Connected" : "Missing"}
-                </span>
-                <a
-                  href={c.manageHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-mono text-[10px] uppercase tracking-[0.10em] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] transition-colors"
-                >
-                  Manage &rarr;
-                </a>
-              </div>
-            </li>
-          ))}
+        <ul className="flex flex-col gap-4">
+          {connections.map((c) => {
+            const canConnect =
+              !c.configured &&
+              c.provider !== undefined &&
+              c.envVar !== undefined &&
+              c.vercelEnvUrl !== undefined;
+            const isOpen = openConnect === c.label;
+            return (
+              <li key={c.label} className="flex flex-col">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <span className="font-mono text-xs uppercase tracking-[0.10em] text-[var(--color-dark)]">
+                    {c.label}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`status-pill ${c.configured ? "is-done" : "is-blocked"}`}
+                    >
+                      {c.configured ? "Connected" : "Missing"}
+                    </span>
+                    {canConnect && (
+                      <ConnectionConnectButton
+                        expanded={isOpen}
+                        onClick={() =>
+                          setOpenConnect(isOpen ? null : c.label)
+                        }
+                      />
+                    )}
+                    <a
+                      href={c.manageHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-mono text-[10px] uppercase tracking-[0.10em] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] transition-colors"
+                    >
+                      Manage &rarr;
+                    </a>
+                  </div>
+                </div>
+                {canConnect && isOpen && (
+                  <ConnectionConnectPanel
+                    provider={c.provider as ConnectProvider}
+                    envVar={c.envVar as string}
+                    vercelEnvUrl={c.vercelEnvUrl as string}
+                    hint={c.connectHint}
+                    onClose={() => setOpenConnect(null)}
+                  />
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
 
