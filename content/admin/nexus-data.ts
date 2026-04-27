@@ -321,7 +321,8 @@ export const NEXUS_LINKS: NexusLink[] = [
 ];
 
 export const DOMAINS: Record<string, Domain> = {
-  // Cosmic-organic palette pulled from the reference images.
+  // Cosmic-organic palette pulled from the reference images. Each planet
+  // has a distinct primary hue so the orbital map reads at a glance.
   "core": {
     label: "Core",
     color: "#fbbf24",
@@ -336,49 +337,49 @@ export const DOMAINS: Record<string, Domain> = {
   },
   "ai-infra": {
     label: "AI Infrastructure",
-    color: "#5fffd7",
+    color: "#4dd0e1",
     anchor: { x: -380, y: -250 },
     note: "Forks of AI systems (memory, agents, knowledge graphs)"
   },
   "claude-workflow": {
     label: "Claude Workflow",
-    color: "#c084fc",
+    color: "#a855f7",
     anchor: { x: 380, y: -250 },
     note: "Forks improving how you work with Claude Code"
   },
   "experimental": {
     label: "Experimental ML",
-    color: "#ff5fb3",
+    color: "#ec4899",
     anchor: { x: -450, y: 180 },
     note: "Heavy ML forks with unclear integration path"
   },
   "libraries": {
     label: "Libraries",
-    color: "#4ade80",
+    color: "#84cc16",
     anchor: { x: 450, y: 180 },
     note: "General-purpose utility tools"
   },
   "security": {
     label: "Security",
-    color: "#ff7849",
+    color: "#ef4444",
     anchor: { x: 520, y: 0 },
     note: "Security and supply-chain tooling"
   },
   "sync": {
     label: "Sync Gaps",
-    color: "#f59e0b",
+    color: "#fb923c",
     anchor: { x: -200, y: -380 },
     note: "Missing infrastructure between your Mac mini and laptop"
   },
   "must-have": {
     label: "Must-Have Tools",
-    color: "#67e8f9",
+    color: "#06b6d4",
     anchor: { x: 200, y: -380 },
     note: "Widely-adopted tools you haven't installed yet"
   },
   "docs": {
     label: "Documentation",
-    color: "#22c55e",
+    color: "#10b981",
     anchor: { x: 0, y: 380 },
     note: "Per-project markdown files that unlock better AI assistance"
   },

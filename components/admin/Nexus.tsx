@@ -102,6 +102,26 @@ function nodeRadius(n: NexusNode) {
   return 6 + n.weight * 1.5;
 }
 
+// Per-planet complement color for the bright highlight stop in the
+// star body gradient. Picked so each pair has visual variety + reads
+// as a believable plasma color (cool/warm contrast).
+const PLANET_COMPLEMENT: Record<string, string> = {
+  "ai-infra":         "#ffd966", // teal body, warm amber flare
+  "claude-workflow":  "#fde68a", // violet body, warm gold flare
+  "experimental":     "#a7ffeb", // magenta body, mint cyan flare
+  "libraries":        "#fde68a", // lime body, warm gold flare
+  "security":         "#c084fc", // red body, violet flare
+  "sync":             "#ff9ed8", // orange body, hot pink flare
+  "must-have":        "#fde68a", // sky cyan body, warm gold flare
+  "docs":             "#fdba74", // emerald body, peach flare
+  "apps":             "#ffe4a3", // sun
+  "core":             "#ffe4a3", // sun
+};
+
+function complementFor(id: string, base: string): string {
+  return PLANET_COMPLEMENT[id] ?? lighten(base, 0.65);
+}
+
 // Channel-wise tweaks for shading planets.
 function lighten(hex: string, amount = 0.4): string {
   const c = hex.replace("#", "");
@@ -624,22 +644,25 @@ export function Nexus({ domains, nodes, links }: Props) {
             </radialGradient>
           ))}
 
-          {/* Star body gradient — bright center, slight limb darkening at the
-              edge (opposite of planet shading: stars emit light, not reflect). */}
-          {layout.planets.map((p) => (
-            <radialGradient
-              key={`planet-${p.id}`}
-              id={`planet-${p.id}`}
-              cx="50%"
-              cy="50%"
-              r="55%"
-            >
-              <stop offset="0%" stopColor={lighten(p.color, 0.85)} stopOpacity="1" />
-              <stop offset="35%" stopColor={lighten(p.color, 0.40)} stopOpacity="1" />
-              <stop offset="75%" stopColor={p.color} stopOpacity="1" />
-              <stop offset="100%" stopColor={darken(p.color, 0.30)} stopOpacity="1" />
-            </radialGradient>
-          ))}
+          {/* Star body gradient — complement-colored hot core fading through
+              the body color into a slight limb-darkening at the edge. */}
+          {layout.planets.map((p) => {
+            const flare = complementFor(p.id, p.color);
+            return (
+              <radialGradient
+                key={`planet-${p.id}`}
+                id={`planet-${p.id}`}
+                cx="50%"
+                cy="50%"
+                r="55%"
+              >
+                <stop offset="0%" stopColor={flare} stopOpacity="1" />
+                <stop offset="30%" stopColor={lighten(p.color, 0.30)} stopOpacity="1" />
+                <stop offset="70%" stopColor={p.color} stopOpacity="1" />
+                <stop offset="100%" stopColor={darken(p.color, 0.30)} stopOpacity="1" />
+              </radialGradient>
+            );
+          })}
 
           {/* Corona gradient — outward soft halo around each star. */}
           {layout.planets.map((p) => (
@@ -688,13 +711,6 @@ export function Nexus({ domains, nodes, links }: Props) {
             </feMerge>
           </filter>
         </defs>
-
-        {/* Concentric orbital rings — faint, like a star atlas. */}
-        <g stroke="rgba(125,138,173,0.18)" strokeDasharray="3 6" fill="none">
-          {layout.ringRadii.map((r) => (
-            <circle key={`ring-${r}`} cx={0} cy={0} r={r} />
-          ))}
-        </g>
 
         {/* Atmospheric halos for each visible planet. */}
         <g>
@@ -805,20 +821,6 @@ export function Nexus({ domains, nodes, links }: Props) {
           </text>
         </g>
 
-        {/* Per-planet orbital path ring — shows where this planet's nodes orbit. */}
-        <g fill="none" strokeDasharray="2 5">
-          {layout.planets.map((p) => (
-            <circle
-              key={`orbit-${p.id}`}
-              cx={p.x}
-              cy={p.y}
-              r={130}
-              stroke={p.color}
-              strokeOpacity={0.20}
-              strokeWidth={1}
-            />
-          ))}
-        </g>
 
         {/* Visible "planets" rendered as mini suns: corona halo, plasma
             surface granulation, solar flares, limb-darkened body. */}
@@ -848,7 +850,8 @@ export function Nexus({ domains, nodes, links }: Props) {
                   fill={p.color}
                   opacity={0.12}
                 />
-                {/* Solar flares — tendrils extending past the photosphere edge */}
+                {/* Solar flares — tendrils extending past the photosphere
+                    edge, tinted in the planet's complement color. */}
                 {flares.map((f, fi) => {
                   const cx = p.x + Math.cos(f.angle) * (r + f.length * 0.45);
                   const cy = p.y + Math.sin(f.angle) * (r + f.length * 0.45);
@@ -859,7 +862,7 @@ export function Nexus({ domains, nodes, links }: Props) {
                       cy={cy}
                       rx={f.length}
                       ry={f.width}
-                      fill={lighten(p.color, 0.6)}
+                      fill={complementFor(p.id, p.color)}
                       opacity={f.opacity}
                       transform={`rotate(${(f.angle * 180) / Math.PI} ${cx} ${cy})`}
                     />
@@ -885,8 +888,8 @@ export function Nexus({ domains, nodes, links }: Props) {
                       ry={s.ry}
                       fill={
                         s.isHot
-                          ? lighten(p.color, 0.7)
-                          : darken(p.color, 0.25)
+                          ? complementFor(p.id, p.color)
+                          : darken(p.color, 0.30)
                       }
                       opacity={s.opacity}
                     />
