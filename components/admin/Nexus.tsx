@@ -141,6 +141,41 @@ function fitPlanetLabel(
   return { lines, fontSize, lineHeight: fontSize * 1.05 };
 }
 
+// Deterministic seeded random based on a string id, so each planet gets
+// the same band pattern across renders without needing useState.
+function seededRand(id: string) {
+  let seed = 0;
+  for (let i = 0; i < id.length; i++) {
+    seed = (seed * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return () => {
+    seed = (seed * 1103515245 + 12345) >>> 0;
+    return (seed % 1000000) / 1000000;
+  };
+}
+
+type PlanetBand = {
+  cy: number; // y offset from planet center
+  ry: number; // ellipse half-height (band thickness)
+  isLight: boolean;
+  opacity: number;
+};
+
+function planetBands(id: string, r: number): PlanetBand[] {
+  const next = seededRand(id);
+  const numBands = 5 + Math.floor(next() * 3); // 5..7 bands
+  const bands: PlanetBand[] = [];
+  for (let i = 0; i < numBands; i++) {
+    const t = (i + 1) / (numBands + 1);
+    const cy = (t - 0.5) * r * 1.6; // distribute across visible diameter
+    const ry = 2 + next() * 4.5;
+    const isLight = next() > 0.5;
+    const opacity = 0.28 + next() * 0.30;
+    bands.push({ cy, ry, isLight, opacity });
+  }
+  return bands;
+}
+
 function darken(hex: string, amount = 0.5): string {
   const c = hex.replace("#", "");
   if (c.length !== 6) return hex;
@@ -567,6 +602,13 @@ export function Nexus({ domains, nodes, links }: Props) {
             </radialGradient>
           ))}
 
+          {/* Per-planet clip path so atmospheric bands stay inside the body. */}
+          {layout.planets.map((p) => (
+            <clipPath key={`clip-${p.id}`} id={`clip-${p.id}`}>
+              <circle cx={p.x} cy={p.y} r={58} />
+            </clipPath>
+          ))}
+
           {/* Sun gradient — bright core fading to the brand-warm. */}
           <radialGradient id="sun-core" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#fff8e1" stopOpacity="1" />
@@ -684,22 +726,36 @@ export function Nexus({ domains, nodes, links }: Props) {
                     transform={`rotate(-12 ${p.x} ${p.y})`}
                   />
                 )}
-                {/* Planet body — radial-shaded sphere */}
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={r}
-                  fill={`url(#planet-${p.id})`}
-                  opacity={0.92}
-                />
-                {/* Inner shadow pass on the bottom-right (terminator hint) */}
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={r}
-                  fill={`url(#shadow-${p.id})`}
-                  style={{ pointerEvents: "none" }}
-                />
+                {/* Planet body — radial-shaded sphere with horizontal cloud
+                    bands (Jupiter-like) clipped to the circle. */}
+                <g clipPath={`url(#clip-${p.id})`}>
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r={r}
+                    fill={`url(#planet-${p.id})`}
+                  />
+                  {planetBands(p.id, r).map((b, bi) => (
+                    <ellipse
+                      key={bi}
+                      cx={p.x}
+                      cy={p.y + b.cy}
+                      rx={r * 1.05}
+                      ry={b.ry}
+                      fill={
+                        b.isLight ? lighten(p.color, 0.45) : darken(p.color, 0.55)
+                      }
+                      opacity={b.opacity}
+                    />
+                  ))}
+                  {/* Inner shadow / terminator (still inside clip) */}
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r={r}
+                    fill={`url(#shadow-${p.id})`}
+                  />
+                </g>
                 {/* Atmospheric rim — subtle bright ring on the top edge */}
                 <circle
                   cx={p.x}
