@@ -21,14 +21,12 @@ export function CommunityCTA({ tone = "light" }: Props) {
 
   const isDark = tone === "dark";
   const bgClass = isDark
-    ? "bg-[var(--color-dark)] text-[var(--color-cream)]"
+    ? "glass-card-static cosmic-glow-soft text-[var(--color-dark)]"
     : "glass-card text-[var(--color-dark)]";
   const bodyClass = isDark
-    ? "text-[var(--color-cream)]/80"
+    ? "text-[var(--color-muted-dark)]"
     : "text-[var(--color-muted-dark)]";
-  const disclosureClass = isDark
-    ? "text-[var(--color-muted)]"
-    : "text-[var(--color-muted)]";
+  const disclosureClass = "text-[var(--color-muted)]";
 
   return (
     <aside className={`${bgClass} p-6 md:p-8`}>
@@ -51,7 +49,7 @@ export function CommunityCTA({ tone = "light" }: Props) {
         href={url}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        className="inline-flex items-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em] bg-[var(--color-terracotta)] text-[var(--color-cream)] border border-[var(--color-terracotta)] hover:bg-[var(--color-rust)] hover:border-[var(--color-rust)] transition-colors"
+        className="glass-button-primary inline-flex items-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em]"
       >
         {frontmatter.button_text || "Visit the community"}
         <span aria-hidden className="ml-2">

@@ -26,8 +26,8 @@ export function TabNav({ tabs }: Props) {
             href={tab.href}
             className={`px-4 py-3 font-mono text-xs uppercase tracking-[0.08em] border-b-2 transition-colors whitespace-nowrap ${
               isActive
-                ? "text-[var(--color-cream)] border-[var(--color-terracotta)]"
-                : "text-[var(--color-muted)] border-transparent hover:text-[var(--color-cream)]"
+                ? "text-[var(--color-dark)] border-[var(--color-terracotta)]"
+                : "text-[var(--color-muted)] border-transparent hover:text-[var(--color-dark)]"
             }`}
           >
             {tab.label}

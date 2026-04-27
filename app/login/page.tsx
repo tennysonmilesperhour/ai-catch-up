@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: Props) {
         : null;
 
   return (
-    <main className="min-h-screen bg-[var(--color-darker)] text-[var(--color-cream)] flex items-center justify-center px-6">
+    <main className="min-h-screen bg-[var(--color-darker)] text-[var(--color-dark)] flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <p className="label text-[var(--color-terracotta)] mb-6">
           Log in
@@ -38,11 +38,11 @@ export default async function LoginPage({ searchParams }: Props) {
             autoFocus
             required
             placeholder="you@example.com"
-            className="px-4 py-3 bg-transparent border border-[var(--color-border-dark)] text-[var(--color-cream)] placeholder:text-[var(--color-muted)] focus:outline-none focus:border-[var(--color-terracotta)] font-serif text-base"
+            className="px-4 py-3 bg-transparent border border-[var(--color-border-dark)] text-[var(--color-dark)] placeholder:text-[var(--color-muted)] focus:outline-none focus:border-[var(--color-terracotta)] font-serif text-base"
           />
           <button
             type="submit"
-            className="px-6 py-3 font-mono text-sm uppercase tracking-[0.08em] bg-[var(--color-terracotta)] text-[var(--color-cream)] border border-[var(--color-terracotta)] hover:bg-[var(--color-rust)] hover:border-[var(--color-rust)] transition-colors"
+            className="glass-button-primary px-6 py-3 font-mono text-sm uppercase tracking-[0.08em]"
           >
             Continue
           </button>

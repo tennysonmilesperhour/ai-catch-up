@@ -235,7 +235,7 @@ function ChecklistRow({
             id={`status-${item.id}`}
             value={status}
             onChange={(e) => onStatusChange(e.target.value as ChecklistStatus)}
-            className="font-mono text-xs uppercase tracking-[0.08em] bg-white border border-[var(--color-border)] text-[var(--color-dark)] px-3 py-2 cursor-pointer hover:border-[var(--color-dark)] focus:outline-none focus:border-[var(--color-terracotta)]"
+            className="font-mono text-xs uppercase tracking-[0.08em] bg-[rgba(26,18,64,0.85)] border border-[var(--color-border-dark)] text-[var(--color-dark)] px-3 py-2 cursor-pointer hover:border-[var(--color-terracotta)] focus:outline-none focus:border-[var(--color-terracotta)] rounded-md"
             style={{ color: STATUS_COLORS[status] }}
           >
             {STATUS_OPTIONS.map((opt) => (

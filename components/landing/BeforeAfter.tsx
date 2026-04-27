@@ -45,18 +45,18 @@ export function BeforeAfter() {
             ? "text-[var(--color-terracotta)]"
             : "text-[var(--color-muted-dark)]";
           const panelClass = isWith
-            ? "bg-[var(--color-cream)] border-[var(--color-terracotta)]"
-            : "glass-card-static border-[var(--color-border)]";
+            ? "glass-card-static cosmic-glow-soft"
+            : "glass-card-static";
           const userBubbleClass = isWith
-            ? "bg-white border border-[var(--color-border)] text-[var(--color-dark)]"
-            : "glass-card text-[var(--color-muted-dark)]";
+            ? "glass-card-static text-[var(--color-dark)] rounded-xl"
+            : "glass-card-static text-[var(--color-muted-dark)] rounded-xl";
           const aiBubbleClass = isWith
-            ? "bg-[var(--color-terracotta)]/10 border border-[var(--color-terracotta)] text-[var(--color-dark)]"
-            : "bg-[var(--color-muted)]/10 border border-[var(--color-muted)] text-[var(--color-muted-dark)]";
+            ? "bg-[var(--color-terracotta)]/15 border border-[var(--color-terracotta)] text-[var(--color-dark)] rounded-xl"
+            : "bg-[var(--color-muted)]/10 border border-[var(--color-muted)] text-[var(--color-muted-dark)] rounded-xl";
           return (
             <article
               key={i}
-              className={`border p-6 md:p-8 flex flex-col gap-5 ${panelClass}`}
+              className={`p-6 md:p-8 flex flex-col gap-5 ${panelClass}`}
             >
               <p className={`label ${labelClass}`}>{s.when}</p>
 

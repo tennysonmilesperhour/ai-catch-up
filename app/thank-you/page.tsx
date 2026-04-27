@@ -28,7 +28,7 @@ export default function ThankYouPage() {
         </div>
 
         <div className="aspect-video bg-[var(--color-darker)] border border-[var(--color-border-dark)] flex items-center justify-center mb-12">
-          <p className="font-mono text-xs uppercase tracking-[0.12em] text-[var(--color-cream)]">
+          <p className="font-mono text-xs uppercase tracking-[0.12em] text-[var(--color-dark)]">
             Video placeholder &middot; product delivery coming in v1.1
           </p>
         </div>

@@ -47,18 +47,15 @@ export function EmailCaptureForm({
   const inputBorder = isDark
     ? "border-[var(--color-border-dark)]"
     : "border-[var(--color-border)]";
-  const inputBg = isDark ? "bg-transparent" : "bg-[var(--color-cream)]";
-  const inputText = isDark
-    ? "text-[var(--color-cream)] placeholder:text-[var(--color-muted)]"
-    : "text-[var(--color-dark)] placeholder:text-[var(--color-muted)]";
+  const inputBg = isDark
+    ? "bg-[rgba(26,18,64,0.45)]"
+    : "bg-[rgba(26,18,64,0.35)]";
+  const inputText =
+    "text-[var(--color-dark)] placeholder:text-[var(--color-muted)]";
 
   if (status === "success") {
     return (
-      <p
-        className={`font-mono text-sm ${
-          isDark ? "text-[var(--color-cream)]" : "text-[var(--color-dark)]"
-        }`}
-      >
+      <p className="font-mono text-sm text-[var(--color-dark)]">
         {successMessage}
       </p>
     );
@@ -72,13 +69,13 @@ export function EmailCaptureForm({
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder={placeholder}
-        className={`flex-1 px-4 py-3 border ${inputBorder} ${inputBg} ${inputText} font-serif text-base focus:outline-none focus:border-[var(--color-terracotta)]`}
+        className={`flex-1 px-4 py-3 border ${inputBorder} ${inputBg} ${inputText} font-serif text-base rounded-md focus:outline-none focus:border-[var(--color-terracotta)]`}
         disabled={status === "submitting"}
       />
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="px-6 py-3 font-mono text-sm uppercase tracking-[0.08em] bg-[var(--color-terracotta)] text-[var(--color-cream)] border border-[var(--color-terracotta)] hover:bg-[var(--color-rust)] hover:border-[var(--color-rust)] disabled:opacity-60 transition-colors"
+        className="glass-button-primary px-6 py-3 font-mono text-sm uppercase tracking-[0.08em] disabled:opacity-60"
       >
         {status === "submitting" ? "Sending..." : buttonLabel}
       </button>

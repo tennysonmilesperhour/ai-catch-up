@@ -19,13 +19,13 @@ export default function NotFound() {
         <div className="flex flex-wrap gap-4">
           <Link
             href="/"
-            className="inline-flex items-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em] bg-[var(--color-terracotta)] text-[var(--color-cream)] border border-[var(--color-terracotta)] hover:bg-[var(--color-rust)] hover:border-[var(--color-rust)] transition-colors"
+            className="glass-button-primary inline-flex items-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em]"
           >
             Back to landing
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em] bg-transparent text-[var(--color-dark)] border border-[var(--color-border)] hover:border-[var(--color-dark)] transition-colors"
+            className="glass-button inline-flex items-center px-6 py-3 font-mono text-sm uppercase tracking-[0.08em]"
           >
             Log in
           </Link>

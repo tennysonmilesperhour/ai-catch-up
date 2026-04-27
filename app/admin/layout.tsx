@@ -17,7 +17,7 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-cream)]">
-      <header className="bg-[var(--color-darker)] text-[var(--color-cream)]">
+      <header className="bg-[var(--color-darker)] text-[var(--color-dark)]">
         <div className="px-6 md:px-10 pt-6 pb-0 max-w-7xl mx-auto flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <Link href="/admin" className="flex items-center gap-3">
@@ -31,14 +31,14 @@ export default function AdminLayout({
             <div className="flex items-center gap-5">
               <Link
                 href="/"
-                className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-cream)] transition-colors"
+                className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-dark)] transition-colors"
               >
                 View site
               </Link>
               <form method="POST" action="/api/logout">
                 <button
                   type="submit"
-                  className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-cream)] transition-colors bg-transparent border-0 p-0 cursor-pointer"
+                  className="font-mono text-xs uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-dark)] transition-colors bg-transparent border-0 p-0 cursor-pointer"
                 >
                   Log out
                 </button>

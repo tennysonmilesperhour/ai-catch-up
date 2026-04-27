@@ -3,7 +3,7 @@ import { EmailCaptureForm } from "@/components/shared/EmailCaptureForm";
 
 export function Footer() {
   return (
-    <footer className="bg-[var(--color-darker)] text-[var(--color-cream)] py-16 md:py-20">
+    <footer className="bg-[var(--color-darker)] text-[var(--color-dark)] py-16 md:py-20">
       <div className="px-6 md:px-12 max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
         <div>
           <p className="label text-[var(--color-terracotta)] mb-4">
@@ -28,7 +28,7 @@ export function Footer() {
         <div className="flex items-center gap-5">
           <Link
             href="/login"
-            className="hover:text-[var(--color-cream)] transition-colors"
+            className="hover:text-[var(--color-dark)] transition-colors"
           >
             Log in
           </Link>
