@@ -16,6 +16,7 @@ import {
 } from "@/lib/checklist-storage";
 import { ActionButton, type Action } from "@/components/shared/ActionButton";
 import { StepsModal } from "@/components/shared/StepsModal";
+import { Reveal } from "@/components/shared/Reveal";
 
 const STATUS_OPTIONS: { value: ChecklistStatus; label: string }[] = [
   { value: "not-started", label: "Not started" },
@@ -122,10 +123,10 @@ export function LaunchChecklist() {
       )}
 
       <div className="flex flex-col gap-10">
-        {LAUNCH_CHECKLIST.map((phase) => {
+        {LAUNCH_CHECKLIST.map((phase, i) => {
           const phaseDone = countDone(state, phase);
           return (
-            <section key={phase.id}>
+            <Reveal as="section" key={phase.id} delay={i * 80}>
               <header className="mb-5 flex flex-col md:flex-row md:items-baseline md:justify-between gap-2">
                 <div>
                   <p className="label text-[var(--color-terracotta)] mb-1">
@@ -157,7 +158,7 @@ export function LaunchChecklist() {
                   />
                 ))}
               </ul>
-            </section>
+            </Reveal>
           );
         })}
       </div>
@@ -227,23 +228,32 @@ function ChecklistRow({
             </p>
           )}
         </div>
-        <div className="shrink-0">
-          <label className="sr-only" htmlFor={`status-${item.id}`}>
-            Status
-          </label>
-          <select
-            id={`status-${item.id}`}
-            value={status}
-            onChange={(e) => onStatusChange(e.target.value as ChecklistStatus)}
-            className="font-mono text-xs uppercase tracking-[0.08em] bg-[rgba(26,18,64,0.85)] border border-[var(--color-border-dark)] text-[var(--color-dark)] px-3 py-2 cursor-pointer hover:border-[var(--color-terracotta)] focus:outline-none focus:border-[var(--color-terracotta)] rounded-md"
-            style={{ color: STATUS_COLORS[status] }}
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+        <div className="shrink-0" role="radiogroup" aria-label="Status">
+          <div className="flex flex-wrap gap-2">
+            {STATUS_OPTIONS.map((opt) => {
+              const isActive = status === opt.value;
+              const pillClass =
+                opt.value === "not-started"
+                  ? "is-not-started"
+                  : opt.value === "in-progress"
+                    ? "is-in-progress"
+                    : "is-done";
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={isActive}
+                  onClick={() => onStatusChange(opt.value)}
+                  className={`status-pill ${pillClass} cursor-pointer transition-opacity ${
+                    isActive ? "opacity-100" : "opacity-40 hover:opacity-75"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

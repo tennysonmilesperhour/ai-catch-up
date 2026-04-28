@@ -5,7 +5,7 @@ export const metadata = { title: "Launch Checklist" };
 export default function LaunchChecklistPage() {
   return (
     <div>
-      <header className="mb-10">
+      <header className="admin-header">
         <h1 className="font-serif text-3xl md:text-4xl text-[var(--color-dark)] mb-2">
           Launch Checklist
         </h1>

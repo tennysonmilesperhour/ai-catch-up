@@ -15,13 +15,18 @@ export default function PromptsPage() {
     explicitCategories ?? Array.from(new Set(prompts.map((p) => p.category)));
 
   return (
-    <div>
-      <header className="mb-10">
-        <h1 className="font-serif text-3xl md:text-4xl text-[var(--color-dark)] mb-2">
-          Prompts
+    <div className="max-w-7xl">
+      <header className="admin-header">
+        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-muted)] mb-3">
+          Prompt library &middot; {prompts.length} prompts
+        </p>
+        <h1 className="font-display text-3xl md:text-5xl text-[var(--color-dark)] mb-2 leading-[1.05]">
+          Tuned to your{" "}
+          <span className="italic headline-gradient">tone, your tools.</span>
         </h1>
-        <p className="text-[var(--color-muted-dark)]">
-          The prompt library. Click any card to expand.
+        <p className="text-[var(--color-muted-dark)] max-w-2xl mt-3 leading-relaxed">
+          Each prompt loads your CLAUDE.md context automatically. Click any
+          card to read it in full and copy it.
         </p>
       </header>
       {prompts.length === 0 ? (
@@ -32,7 +37,7 @@ export default function PromptsPage() {
           <p className="text-[var(--color-muted-dark)] leading-relaxed max-w-xl">
             The prompt library is waiting on its first batch of prompts from
             Strategy Claude. Once the handoff arrives, this page will light up
-            with expandable cards and category filters.
+            with cards and category filters.
           </p>
         </div>
       ) : (

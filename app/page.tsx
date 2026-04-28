@@ -9,6 +9,7 @@ import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { SetupPreview } from "@/components/landing/SetupPreview";
 import { WhoItsFor } from "@/components/landing/WhoItsFor";
 import { ThisIsForYou } from "@/components/landing/ThisIsForYou";
+import { LatestWriting } from "@/components/landing/LatestWriting";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Footer } from "@/components/landing/Footer";
 
@@ -26,6 +27,7 @@ export default function LandingPage() {
       <SetupPreview />
       <WhoItsFor />
       <ThisIsForYou />
+      <LatestWriting />
       <FinalCTA />
       <Footer />
     </main>
