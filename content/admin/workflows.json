@@ -1,0 +1,945 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-28T03:19:23.781577+00:00",
+  "sections": [
+    {
+      "id": "gamma-proposals-2026-01-19",
+      "name": "Gamma Proposals",
+      "date": "2026-01-19",
+      "files": [
+        {
+          "slug": "gamma-proposal-generation",
+          "fileName": "Gamma Proposal Generation.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/53816c0ba89a4f698ad335bf5a01cfdcbbf84d0ec10444059ff4e092d0b7fe86",
+          "fileSize": 37085,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "outbound-lead-qualifier-2026-01-12",
+      "name": "Outbound Lead Qualifier",
+      "date": "2026-01-12",
+      "files": [
+        {
+          "slug": "outbound-lead-qualifier",
+          "fileName": "Outbound Lead Qualifier.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/2d04a736ad544d05b46200ef4fe072bec4f4aa8585224f1ca4b4ef278c8d5f82",
+          "fileSize": 31760,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "i-built-a-voice-agent-that-calls-every-new-lead-n8n-vapi-pdf",
+          "fileName": "I Built a Voice Agent That Calls Every New Lead (n8n + Vapi).pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/e976616f99fe4216af1bb3b349be102104316189ea6647698882420162ad0a7d",
+          "fileSize": 401834,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "17-nodes-to-master-2025-11-25",
+      "name": "17 Nodes to Master",
+      "date": "2025-11-25",
+      "files": [
+        {
+          "slug": "n8n-cheatsheet-2026-pdf",
+          "fileName": "n8n Cheatsheet 2026.pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/bff6004fad2942708a1b8005285453cb935cae2a4c754d5da02834afabccc086",
+          "fileSize": 651077,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "17-nodes-to-master",
+          "fileName": "17 Nodes to Master.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/b79bc64daa0843938fd4354caeb3476994a36c8c7af0476b852449fd991e0e06",
+          "fileSize": 964701,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "gemini-file-search-2025-11-23",
+      "name": "Gemini File Search",
+      "date": "2025-11-23",
+      "files": [
+        {
+          "slug": "gemini-file-search",
+          "fileName": "Gemini File Search.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/62e53e3c1d50461ab55ae77d5e697cf4d6b7494ff75e4de6b99c47bcaa02bb72",
+          "fileSize": 22237,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "rules-of-golf-simplified-1-pdf",
+          "fileName": "Rules_of_Golf_Simplified (1).pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/9f21e6d0491b4b9a9e93d695e63fc35a48db6826cb9c4a7494c59476e34ab49b",
+          "fileSize": 143113,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "nvidiaan-1-pdf",
+          "fileName": "NVIDIAAn (1).pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/d3af31ab3fa1400598a8c6ab2e8b74e25f5c0baabfd14debb0e2e3e1ae9d15dd",
+          "fileSize": 75539,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "apple-10-k-pdf",
+          "fileName": "Apple 10-k.pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/53b7d0bf765d43a1906cce8f3abd59b8a1b38f88028947249fd2f40e024e7e91",
+          "fileSize": 963338,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "nano-banana-pro-2025-11-20",
+      "name": "Nano Banana Pro",
+      "date": "2025-11-20",
+      "files": [
+        {
+          "slug": "nano-banana-pro",
+          "fileName": "Nano Banana Pro.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/1ddd56e8a4db44ecbff6d48f6d47b73f7d82ea1eda1840bfb83f53e0da4e72e5",
+          "fileSize": 26631,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "gemini-3-pro-2025-11-18",
+      "name": "Gemini 3 Pro",
+      "date": "2025-11-18",
+      "files": [
+        {
+          "slug": "gemini-3-pro-n8n-pdf",
+          "fileName": "Gemini 3 Pro __ n8n.pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/1a3c7ab69cb54263bf411e3b3c87207d42cdd4c6504c4c9bb8bc58ec030bf225",
+          "fileSize": 528069,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "gemini-3-pro",
+          "fileName": "Gemini 3 Pro.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/191934d2c69145958f6177b0c4d21ba80bc0417b7e5e48d5ad77fce2790c997d",
+          "fileSize": 441970,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "guardrails-2025-11-11",
+      "name": "Guardrails",
+      "date": "2025-11-11",
+      "files": [
+        {
+          "slug": "guardrails-1",
+          "fileName": "Guardrails (1).json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/79a67e0b4bde4d22b8f92be0e9ece1d66fb4dd1b0a454c138c5b5bcf7e3a52c0",
+          "fileSize": 24518,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "guardrails-pdf",
+          "fileName": "Guardrails.pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/3ed72b4c86854eaa83fec1d21d0e1df38abaab5a2a314dc5b95e93d12c2d66cc",
+          "fileSize": 178444,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "ugc-content-veo-3-1-and-sora-2-2025-11-04",
+      "name": "UGC Content Veo 3.1 and Sora 2",
+      "date": "2025-11-04",
+      "files": [
+        {
+          "slug": "ugc-ads-veo-sora",
+          "fileName": "UGC Ads Veo & Sora.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/ab01ab6e97104ac5be4b28badfcfe4c0eb1fcfa3bdf548fea85f80a7f3df12dc",
+          "fileSize": 57087,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "inbox-agent-2025-10-29",
+      "name": "Inbox Agent",
+      "date": "2025-10-29",
+      "files": [
+        {
+          "slug": "from-zero-to-inbox-agent",
+          "fileName": "From Zero to Inbox Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/9fe60ca0898e43bda98e5ce07e39c1dc42fbfae553b64b0fb7d02e35c4ad08e7",
+          "fileSize": 15265,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "google-n8n-guide-3-pdf",
+          "fileName": "Google __ n8n Guide (3).pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/4d9c6f2de81146749a8a7555df9f74d8dc57ee6c7c6843a4945f69b36cbde1ab",
+          "fileSize": 8743820,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "sora-2-2025-10-22",
+      "name": "Sora 2",
+      "date": "2025-10-22",
+      "files": [
+        {
+          "slug": "create-anything-with-sora-2",
+          "fileName": "Create Anything with Sora 2.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/5fb94bff8ead40f7aba8f3c242ef07b0b10aee4cf2c145418cec3bb6c86c1596",
+          "fileSize": 37723,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "rag-pipelines-2025-10-18",
+      "name": "RAG Pipelines",
+      "date": "2025-10-18",
+      "files": [
+        {
+          "slug": "rag-pipelines",
+          "fileName": "RAG Pipelines.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/45c8753cbc0c489483d80ca8e9bda88f24c32523a2d041beb9a1c0c3929de3b4",
+          "fileSize": 64505,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "base44-web-apps-2025-10-10",
+      "name": "Base44 Web Apps",
+      "date": "2025-10-10",
+      "files": [
+        {
+          "slug": "base44-web-app-builder",
+          "fileName": "Base44 Web App Builder.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/25e4c8a59b4a4e7bad9d5e68f9e20a9c7f98671baa1847cc8d3f8ade7e7aae41",
+          "fileSize": 26699,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "n8n-data-tables-2025-09-22",
+      "name": "n8n Data Tables",
+      "date": "2025-09-22",
+      "files": [
+        {
+          "slug": "n8n-data-tables",
+          "fileName": "n8n Data Tables.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/2dab6a85e02440c9a8b39c4b8f4e09e14c9c3ea6e97e48f982ff23ea6fe93e14",
+          "fileSize": 29082,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "pinecone-assistant-2025-09-19",
+      "name": "Pinecone Assistant",
+      "date": "2025-09-19",
+      "files": [
+        {
+          "slug": "pinecone-assistant",
+          "fileName": "Pinecone Assistant.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/dc2c3f5bf3f4441aaa56b2e73f6cf7a16caea65da4f940b2a2e77ff81e9f73e4",
+          "fileSize": 24617,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "photoshop-agent-2025-09-05",
+      "name": "Photoshop Agent",
+      "date": "2025-09-05",
+      "files": [
+        {
+          "slug": "photoshop-agent",
+          "fileName": "Photoshop Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/e2f29f5fd36e41ae93ae1e0f84de97a6bc7e2b5af0ab4c7a82db40a68c0aef96",
+          "fileSize": 15527,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "workflow-evaluations-2025-09-03",
+      "name": "Workflow Evaluations",
+      "date": "2025-09-03",
+      "files": [
+        {
+          "slug": "workflow-evaluations",
+          "fileName": "Workflow Evaluations.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/66a4ed0d6aca1b8e0746eca1549ef54464e5993dd20a41ba5f4698b724909a341fdd2e",
+          "fileSize": 38127,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "rag-evaluation",
+          "fileName": "RAG Evaluation.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/2cce06ea5c20496da68dc0332b967a64820b9f1830ac4c3ba3f8b8d83bab2306",
+          "fileSize": 20093,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "newsletter-system-2025-08-21",
+      "name": "Newsletter System",
+      "date": "2025-08-21",
+      "files": [
+        {
+          "slug": "ai-newsletter-system",
+          "fileName": "AI Newsletter System.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/2891ccfd3a994e43a2ed778c9be667312e399958ba944a96b3499e292d933426",
+          "fileSize": 16145,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "9-socials-2025-08-13",
+      "name": "9 Socials",
+      "date": "2025-08-13",
+      "files": [
+        {
+          "slug": "blotato-posting",
+          "fileName": "Blotato Posting.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/9e0734292f464f8b9752ed2ae5a270b3bfdb8f853fd94599b8d593439f40bc15",
+          "fileSize": 20408,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "error-handling-2025-08-07",
+      "name": "Error Handling",
+      "date": "2025-08-07",
+      "files": [
+        {
+          "slug": "5-error-handling-techniques",
+          "fileName": "5 Error Handling Techniques.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/b5f83ca349534e02a5d3cbd4c279a542428a2c98ccf0428e84b06b74f97cd5bd",
+          "fileSize": 29478,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "elevenlabs-n8n-2025-07-31",
+      "name": "ElevenLabs n8n",
+      "date": "2025-07-31",
+      "files": [
+        {
+          "slug": "voice-workflows",
+          "fileName": "Voice Workflows.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/a00c1e08bd9442e8a55c88cc1e1ac6c2fbbff0b491c84bffb34e6fc26484a3a7",
+          "fileSize": 11265,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "agent-swarm-2025-07-25",
+      "name": "Agent Swarm",
+      "date": "2025-07-25",
+      "files": [
+        {
+          "slug": "agent-swarm",
+          "fileName": "Agent Swarm.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/df64869932f049fd8c12998b8fb8036713e92b70940c47b887ecb4c37d1feca3",
+          "fileSize": 53833,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "mastering-reactive-prompting-for-ai-agents-1-pdf",
+          "fileName": "Mastering Reactive Prompting for AI Agents (1).pdf",
+          "type": "application/pdf",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/b3b1c263896b4a3297f09ee801a225c4465aacc79f7347b290ae6f00bcfa3df6",
+          "fileSize": 294343,
+          "status": "skipped",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "metadata-2025-07-23",
+      "name": "Metadata",
+      "date": "2025-07-23",
+      "files": [
+        {
+          "slug": "youtube-chat-metadata",
+          "fileName": "YouTube Chat Metadata.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/71b53b87713d4114956939bf3645beb54d4bf6a8a9c04d88898aad7e15d84dd7",
+          "fileSize": 31306,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "first-rag-agent-2025-07-21",
+      "name": "First RAG Agent",
+      "date": "2025-07-21",
+      "files": [
+        {
+          "slug": "first-rag-agent",
+          "fileName": "First RAG Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/74eb97b8a8dc484dad3741ec80bf7cf714a69a1ee1f848c197ca1e6cf7fc8b7d",
+          "fileSize": 13703,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "webhook-security-2025-07-18",
+      "name": "Webhook Security",
+      "date": "2025-07-18",
+      "files": [
+        {
+          "slug": "webhook-security",
+          "fileName": "Webhook Security.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/ef5ed74b52fe43baa16a7efb0ba2e0b2ee4fca4e0aef4e1c8e97e7f9db5fb8c9",
+          "fileSize": 15453,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "zep-memory-2025-07-14",
+      "name": "Zep Memory",
+      "date": "2025-07-14",
+      "files": [
+        {
+          "slug": "zep-memory-agent",
+          "fileName": "Zep Memory Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/d9d91d16ddbe42509a66440e1f56c24e4f49b1d26cc145a6878d0dbca6e66b0d",
+          "fileSize": 8839,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "parallelization-2025-07-09",
+      "name": "Parallelization",
+      "date": "2025-07-09",
+      "files": [
+        {
+          "slug": "parallelization",
+          "fileName": "Parallelization.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/3de79f0a1bf34c8ead48571c9e41dc5b5f9a64a7e38c4a2aa67c7be8e34d9c05",
+          "fileSize": 9477,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "resume-screener-2025-06-30",
+      "name": "Resume Screener",
+      "date": "2025-06-30",
+      "files": [
+        {
+          "slug": "resume-screener-agent",
+          "fileName": "Resume_Screener_Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/0e64b1bf1c8d4e9caa82bf9e0ccd484e4e2ac0d9b87a4aeab0e36fde4ff3e8a6",
+          "fileSize": 15175,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "reranker-rag-agent-2025-06-28",
+      "name": "Reranker RAG Agent",
+      "date": "2025-06-28",
+      "files": [
+        {
+          "slug": "reranker-rag-agent",
+          "fileName": "Reranker_RAG_Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/76a7d99ac1f340c5a6dadc5d0ced90daaef46b3d0e9348419bfce0c23c1fe5f5",
+          "fileSize": 13985,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "youtube-strategist-2025-06-24",
+      "name": "YouTube Strategist",
+      "date": "2025-06-24",
+      "files": [
+        {
+          "slug": "youtube-strategist-agent",
+          "fileName": "YouTube_Strategist_Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/e3e06c7e54a2492294d4abe4c75b3eef8a8cf7d5c9294d309e7fc18dc89ed2e7",
+          "fileSize": 11985,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "glass-fruit-asmr-2025-06-22",
+      "name": "Glass Fruit ASMR",
+      "date": "2025-06-22",
+      "files": [
+        {
+          "slug": "glass-fruit-asmr",
+          "fileName": "Glass_Fruit_ASMR.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/0f1d73b218bc4cdb8de08e4faa2a63f05519e99614ac4b3da29eb36ac8ebf148",
+          "fileSize": 14875,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "n8n-agent-builder-2025-06-18",
+      "name": "n8n Agent Builder",
+      "date": "2025-06-18",
+      "files": [
+        {
+          "slug": "n8n-agent-builder",
+          "fileName": "n8n_Agent_Builder.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/af98a07e85d148d5bc6fef8b0c0e8a7d7ef3af9e47b043d680ee79ef27c0a7ad",
+          "fileSize": 21034,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "multi-agent-system-2025-06-10",
+      "name": "Multi Agent System",
+      "date": "2025-06-10",
+      "files": [
+        {
+          "slug": "multi-agent-system",
+          "fileName": "Multi_Agent_System.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/28c3c4b5e5e247d9b4d6d3a1cbab6dded8e8d5ffd0434e0a90a5c3e3f0c08b10",
+          "fileSize": 26024,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "browser-agent-2025-06-08",
+      "name": "Browser Agent",
+      "date": "2025-06-08",
+      "files": [
+        {
+          "slug": "browser-agent",
+          "fileName": "Browser_Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/68e13e2e22f249da93b5a3d21a9a85e11bbf1d6e1fb1458ab698892c3e65e7e7",
+          "fileSize": 12895,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "firecrawl-search-and-scrape-2025-06-03",
+      "name": "Firecrawl Search and Scrape",
+      "date": "2025-06-03",
+      "files": [
+        {
+          "slug": "firecrawl-search",
+          "fileName": "Firecrawl_Search.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/19fe9eb7afc344a884b5b307f5aedb5fcb63e05fbafb408a99b02103ae59bb31",
+          "fileSize": 14900,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "heygen-avatar-automation-2025-05-20",
+      "name": "HeyGen Avatar Automation",
+      "date": "2025-05-20",
+      "files": [
+        {
+          "slug": "heygen-avatar",
+          "fileName": "HeyGen_Avatar.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/d270a0b041654c0f930087406bbce9e1f2adf6be71f14eaca93b18afc86da291",
+          "fileSize": 16978,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "brand-reimagination-shorts-2025-05-18",
+      "name": "Brand Reimagination Shorts",
+      "date": "2025-05-18",
+      "files": [
+        {
+          "slug": "famous-brands-shorts-template",
+          "fileName": "Famous_Brands_Shorts_Template.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/12c7acdb564a4f1aa02329ffcaabc9d50b448b26c8d14e60862a4e87f8d6e",
+          "fileSize": 17891,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "apify-scraping-2025-05-16",
+      "name": "Apify Scraping",
+      "date": "2025-05-16",
+      "files": [
+        {
+          "slug": "apify-scraping-agent",
+          "fileName": "Apify_Scraping_Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/3d5e47fa1e1c4ec9af1b8de0b8a7d0cc7d0ca5ea6c7b41cfb8f4bd3bd8fb1e3e",
+          "fileSize": 11287,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "25-n8n-hacks-2025-05-13",
+      "name": "25 n8n Hacks",
+      "date": "2025-05-13",
+      "files": [
+        {
+          "slug": "25-n8n-hacks",
+          "fileName": "25_n8n_Hacks.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/7fe2a4b1ae244a12b59a0bd8c11d8e63f49b6e2890e14e499d5a72a30c0af5cf",
+          "fileSize": 38915,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "viral-shorts-machine-2025-05-11",
+      "name": "Viral Shorts Machine",
+      "date": "2025-05-11",
+      "files": [
+        {
+          "slug": "viral-shorts-machine",
+          "fileName": "Viral_Shorts_Machine.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/eb4a46e4cc3548d6853e5c8c64793b7c7cf4b3a4b4c9495fa84c0a3ac89f1e6e",
+          "fileSize": 25634,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "track-agent-actions-2025-05-03",
+      "name": "Track Agent Actions",
+      "date": "2025-05-03",
+      "files": [
+        {
+          "slug": "track-agent-actions",
+          "fileName": "Track_Agent_Actions.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/ca1f3a8d9e6547cabf7e3e58c9cddab9a2e45b9d94344f65b8c02e9db8faf741",
+          "fileSize": 14302,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "product-videography-2025-04-28",
+      "name": "Product Videography",
+      "date": "2025-04-28",
+      "files": [
+        {
+          "slug": "product-videography",
+          "fileName": "Product_Videography.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/4e5fa6dc04e2497fa38cfecce14b7b35d0c6898fe5b742e1877c4c7bc0e44a24",
+          "fileSize": 19876,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "ai-marketing-team-2025-04-26",
+      "name": "AI Marketing Team",
+      "date": "2025-04-26",
+      "files": [
+        {
+          "slug": "ai-marketing-team",
+          "fileName": "AI_Marketing_Team.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/f8c4a7b6e2d2409b9a08c5d8e1b3f6e2a0d7c5b9f4a8e3d6b2c1f9e8a7d5c4",
+          "fileSize": 38915,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "openai-image-generation-2025-04-23",
+      "name": "OpenAI Image Generation",
+      "date": "2025-04-23",
+      "files": [
+        {
+          "slug": "openai-image-gen-linkedin-post",
+          "fileName": "OpenAI_Image_Gen_LinkedIn_Post.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/2018222b8df64499922ca47d9b46ce6adda66bada76d43939890a94d5d94f4d6",
+          "fileSize": 17623,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "jarvis-2025-03-23",
+      "name": "JARVIS",
+      "date": "2025-03-23",
+      "files": [
+        {
+          "slug": "jarvis",
+          "fileName": "JARVIS.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/8ed5ce6da4934c4f8f9d995af7f74c77634436a28b4541fc9b5999e2cec9caf8",
+          "fileSize": 9560,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "contact-agent",
+          "fileName": "__Contact_Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/0a1545ac543d481bb0eb7d8667f46116c7dd83e162754bd19459e30ada437111",
+          "fileSize": 7587,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "content-creator-agent",
+          "fileName": "__Content_Creator_Agent.json",
+          "type": "application/json",
+          "sourceUrl": "https://assets.skool.com/f/b51c57150c70495899bf4bc8aaee8166/4ea49a0f0a2e4890b44f7858e440a141b1807d88fba1423489e3f9e7587896ba",
+          "fileSize": 5462,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "calendar-agent",
+          "fileName": "__Calendar_Agent.json",
+          "type": "application/json",
+          "sourceUrl": null,
+          "fileSize": 9345,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        },
+        {
+          "slug": "email-agent",
+          "fileName": "__Email_Agent.json",
+          "type": "application/json",
+          "sourceUrl": null,
+          "fileSize": 9102,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "faceless-shorts-system-2025-03-12",
+      "name": "Faceless Shorts System",
+      "date": "2025-03-12",
+      "files": [
+        {
+          "slug": "faceless-shorts-system",
+          "fileName": "Faceless_Shorts_System.json",
+          "type": "application/json",
+          "sourceUrl": null,
+          "fileSize": 21456,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "supabase-postgres-2025-02-22",
+      "name": "Supabase & Postgres",
+      "date": "2025-02-22",
+      "files": [
+        {
+          "slug": "supabase-postgres",
+          "fileName": "Supabase_Postgres.json",
+          "type": "application/json",
+          "sourceUrl": null,
+          "fileSize": 18621,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    },
+    {
+      "id": "customer-support-2024-12-24",
+      "name": "Customer Support",
+      "date": "2024-12-24",
+      "files": [
+        {
+          "slug": "customer-support-agent",
+          "fileName": "Customer_Support_Agent.json",
+          "type": "application/json",
+          "sourceUrl": null,
+          "fileSize": 16933,
+          "status": "pending",
+          "rawPath": null,
+          "extracted": null
+        }
+      ]
+    }
+  ]
+}
