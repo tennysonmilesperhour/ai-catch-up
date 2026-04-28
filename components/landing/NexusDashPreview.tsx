@@ -24,11 +24,28 @@ const RAILS_WORKSPACE = [
 ];
 
 const LOCATIONS = [
-  { who: "SF", path: "ws/personalize/run", when: "2026-04-27 14:02:18" },
-  { who: "NYC", path: "nexus/sync/repo-add", when: "2026-04-27 13:51:09" },
-  { who: "LDN", path: "prompts/library/v1.0.4", when: "2026-04-27 13:38:42" },
-  { who: "BER", path: "decisions/append/locked", when: "2026-04-27 13:22:55" },
+  { who: "LA", when: "26-04-27T 13:43:18" },
+  { who: "SF", when: "26-04-27T 16:08:15" },
+  { who: "NYC", when: "26-04-27T 11:22:04" },
+  { who: "LDN", when: "26-04-27T 09:51:47" },
 ];
+
+function cityFor(code: string): string {
+  switch (code) {
+    case "LA":
+      return "Los Angeles, CA";
+    case "SF":
+      return "San Francisco, CA";
+    case "NYC":
+      return "New York, NY";
+    case "LDN":
+      return "London, UK";
+    case "BER":
+      return "Berlin, DE";
+    default:
+      return code;
+  }
+}
 
 const WAVES = [
   { ampBase: 18, ampVar: 6, freq1: 0.0042, freq2: 0.0018, phase: 0.6, yBase: 90, drift: 0.00012, color: "#5fffd7", op: 0.85 },
@@ -271,11 +288,30 @@ export function NexusDashPreview() {
             {/* right side */}
             <div className="dash-side">
               <div className="anomaly">
-                <span className="h">
-                  <span className="dot" aria-hidden /> Anomalies
-                </span>
-                <div className="v">●34</div>
-                <div className="s">Active across 8 customer setups</div>
+                <div className="h-row">
+                  <span className="h">
+                    <span className="dot" aria-hidden /> Anomaly detection
+                  </span>
+                  <span className="ext" aria-hidden>↗</span>
+                </div>
+                <div className="flex flex-col gap-1.5 mt-2 font-mono text-[11px] tracking-[0.04em] text-[var(--color-muted-dark)] num-tab">
+                  <div className="flex justify-between">
+                    <span>Service availability</span>
+                    <span className="text-[var(--color-dark)]">29.3%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>P95 utilization</span>
+                    <span className="text-[var(--color-dark)]">43.5 MHz</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Overload [24h]</span>
+                    <span className="text-[var(--color-dark)]">41 min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Active alerts</span>
+                    <span className="text-[var(--color-magenta)]">●  34</span>
+                  </div>
+                </div>
               </div>
               <div className="rail-h" style={{ marginTop: 0 }}>
                 Recent syncs
@@ -283,8 +319,8 @@ export function NexusDashPreview() {
               <div className="loc-list">
                 {LOCATIONS.map((l) => (
                   <div key={l.who} className="loc">
-                    <span className="who">{l.who}</span>
-                    <span>{l.path}</span>
+                    <span className="city">{cityFor(l.who)}</span>
+                    <span className="label">Last sync</span>
                     <span className="when">{l.when}</span>
                   </div>
                 ))}

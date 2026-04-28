@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import promptsData from "@/content/admin/prompts.json";
 import { Reveal } from "@/components/shared/Reveal";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 type Prompt = {
   id: number | string;
@@ -18,22 +19,58 @@ type Prompt = {
 
 const PROMPTS: Prompt[] = (promptsData as Prompt[]).slice(0, 8);
 
-function highlight(body: string): string {
-  const escape = body
+// Tone tags derived from prompt category, placeholder until prompts.json
+// gains a real `tone` field.
+function toneFor(category: string): string {
+  const c = category.toLowerCase();
+  if (c.includes("unstuck")) return "candid";
+  if (c.includes("setup")) return "clear";
+  if (c.includes("building")) return "firm";
+  if (c.includes("prompting")) return "honest";
+  if (c.includes("research")) return "patient";
+  if (c.includes("marketing")) return "warm";
+  if (c.includes("operations")) return "sober";
+  if (c.includes("brand")) return "considered";
+  if (c.includes("hard")) return "kind";
+  return "neutral";
+}
+
+function escapeHtml(s: string): string {
+  return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-  return escape
-    .replace(/(\[[A-Z_][A-Z0-9_ \-,/]*\])/g, '<span class="var">$1</span>')
-    .replace(/(^|\n)(##\s+[^\n]+)/g, '$1<span class="kw">$2</span>')
-    .replace(/(^|\n)(\d+\.\s)/g, '$1<span class="kw">$2</span>')
-    .replace(/("[^"]+")/g, '<span class="str">$1</span>')
-    .replace(/(^|\n)(\/[A-Za-z0-9.\-_]+)/g, '$1<span class="cm">$2</span>');
+}
+
+function highlight(body: string): string {
+  // Comments first (lines starting with `# `), then headers (## / ###),
+  // then strings ("..." quoted text), then variables [PLACEHOLDERS] and
+  // {{var}} templates. Order matters; escape html upfront.
+  let h = escapeHtml(body);
+  h = h.replace(
+    /(^|\n)(#\s+[^\n]+)/g,
+    (_m, p, line) => `${p}<span class="cm">${line}</span>`
+  );
+  h = h.replace(
+    /(^|\n)(##\s+[^\n]+)/g,
+    (_m, p, line) => `${p}<span class="kw">${line}</span>`
+  );
+  h = h.replace(
+    /(\{\{[A-Za-z0-9_]+\}\})/g,
+    '<span class="var">$1</span>'
+  );
+  h = h.replace(
+    /(\[[A-Z_][A-Z0-9_ \-,/]*\])/g,
+    '<span class="var">$1</span>'
+  );
+  h = h.replace(/("[^"\n]+")/g, '<span class="str">$1</span>');
+  return h;
 }
 
 function countVariables(prompt: string): number {
-  const matches = prompt.match(/\[[A-Z_][A-Z0-9_ \-,/]*\]/g);
-  return matches ? new Set(matches).size : 0;
+  const a = prompt.match(/\[[A-Z_][A-Z0-9_ \-,/]*\]/g) || [];
+  const b = prompt.match(/\{\{[A-Za-z0-9_]+\}\}/g) || [];
+  return new Set([...a, ...b]).size;
 }
 
 export function PromptLibraryExplorer() {
@@ -58,6 +95,8 @@ export function PromptLibraryExplorer() {
 
   if (!active) return null;
   const vars = active.variables ?? String(countVariables(active.prompt));
+  const activeIdx = PROMPTS.findIndex((p) => p.id === active.id);
+  const promptIdLabel = `P${String(activeIdx + 1).padStart(2, "0")}`;
 
   return (
     <section
@@ -65,48 +104,64 @@ export function PromptLibraryExplorer() {
       className="px-6 md:px-12 py-12 md:py-20 max-w-7xl mx-auto"
     >
       <Reveal>
-        <p className="label text-[var(--color-muted-dark)] mb-3">Prompt library</p>
+        <div className="mb-4">
+          <SectionEyebrow>Inside the workspace</SectionEyebrow>
+        </div>
       </Reveal>
-      <Reveal delay={80}>
-        <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-3 max-w-3xl">
-          Twenty prompts.{" "}
-          <span className="italic headline-gradient">Tuned to your tone.</span>
-        </h2>
-      </Reveal>
-      <Reveal delay={160}>
-        <p className="text-[var(--color-muted-dark)] mb-8 md:mb-12 max-w-3xl leading-relaxed">
-          A preview of the live library. The full set ships with the onboarding
-          and stays in your admin tab. Click any row to inspect.
-        </p>
-      </Reveal>
+      <div className="section-head">
+        <Reveal delay={80}>
+          <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
+            {PROMPTS.length} prompts,{" "}
+            <span className="headline-gradient">tuned to your voice.</span>
+          </h2>
+        </Reveal>
+        <Reveal delay={160}>
+          <p className="section-subhead">
+            Ships with variables, runtime hints, and the rationale.
+          </p>
+        </Reveal>
+      </div>
 
       <Reveal delay={240}>
         <div className="glass-card-static prompts">
           <div className="prompt-list">
-            {PROMPTS.map((p, i) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setActiveId(p.id)}
-                className={`prompt-row ${p.id === active.id ? "active" : ""}`}
-              >
-                <span className="id">P{String(i + 1).padStart(2, "0")} · {p.category}</span>
-                <span className="ttl">{p.title}</span>
-                <span className="meta">
-                  {countVariables(p.prompt)} vars
-                </span>
-              </button>
-            ))}
+            <div className="prompts-head">
+              <span>Library</span>
+              <span>{PROMPTS.length} · Curated</span>
+            </div>
+            {PROMPTS.map((p, i) => {
+              const id = `P${String(i + 1).padStart(2, "0")}`;
+              const tone = toneFor(p.category);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setActiveId(p.id)}
+                  className={`prompt-row ${p.id === active.id ? "active" : ""}`}
+                >
+                  <span className="id-num">{id}</span>
+                  <span className="body">
+                    <span className="ttl">{p.title}</span>
+                    <span className="meta">Tone · {tone}</span>
+                  </span>
+                  <span className="vars-pill num-tab">
+                    {countVariables(p.prompt)} vars
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="prompt-detail">
             <div className="head">
-              <h3>{active.title}</h3>
-              <button
-                type="button"
-                onClick={onCopy}
-                className="glass-button px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em]"
-              >
+              <h3>
+                {active.title}
+                <span className="ml-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-cyan)]">
+                  · {promptIdLabel}
+                </span>
+              </h3>
+              <button type="button" onClick={onCopy} className="copy-pill">
+                <span aria-hidden>⧉</span>
                 {copied ? "Copied" : "Copy"}
               </button>
             </div>
