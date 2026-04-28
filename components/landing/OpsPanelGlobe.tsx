@@ -170,23 +170,8 @@ export function OpsPanelGlobe() {
         </svg>
       </div>
 
-      <div className="stat-strip">
-        <div className="stat">
-          <span className="v num-tab">1,284</span>
-          <span>Active builds</span>
-          <span className="d">↑ 12%</span>
-        </div>
-        <div className="stat">
-          <span className="v num-tab">9k/mo</span>
-          <span>Hours saved</span>
-          <span className="d">cumulative</span>
-        </div>
-        <div className="stat">
-          <span className="v num-tab">●34</span>
-          <span>Anomalies</span>
-          <span className="d">active</span>
-        </div>
-      </div>
+      {/* Stat strip moved to Hero per the reference shots; OpsPanelGlobe now
+          carries just the globe + header chip. */}
     </div>
   );
 }

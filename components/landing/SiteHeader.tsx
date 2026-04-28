@@ -78,24 +78,14 @@ export function SiteHeader() {
           AI Catch Up
         </Link>
 
-        <nav className="hidden md:flex items-center gap-5 flex-1 justify-center">
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
           {TABS.map((t) => (
             <a
               key={t.id}
               href={`#${t.id}`}
-              className={`relative font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
-                active === t.id
-                  ? "text-[var(--color-terracotta)]"
-                  : "text-[var(--color-muted-dark)] hover:text-[var(--color-dark)]"
-              }`}
+              className={`tab-pill ${active === t.id ? "is-active" : ""}`}
             >
               {t.label}
-              {active === t.id && (
-                <span
-                  aria-hidden
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-px bg-[var(--color-terracotta)] cosmic-glow-soft"
-                />
-              )}
             </a>
           ))}
         </nav>

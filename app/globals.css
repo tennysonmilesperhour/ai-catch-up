@@ -1400,3 +1400,309 @@ textarea:focus-visible {
     animation: none;
   }
 }
+
+/* ============================================================
+   Aurora fidelity pass (2026-04-28): align to reference shots.
+   ============================================================ */
+
+/* Section eyebrow chip (replaces the bare .label pattern across sections). */
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 255, 215, 0.35);
+  background: rgba(2, 6, 14, 0.55);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+}
+.section-eyebrow .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(95, 255, 215, 0.65);
+}
+
+/* Right-side sub-eyebrow: mono caps, right-aligned 2-3 line copy. */
+.section-subhead {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-align: right;
+  line-height: 1.55;
+  max-width: 360px;
+  margin-left: auto;
+}
+
+/* Section header layout: title left, sub-eyebrow right. */
+.section-head {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 2rem;
+}
+@media (min-width: 768px) {
+  .section-head { grid-template-columns: 1.5fr 1fr; gap: 2rem; }
+}
+
+/* Hero stat strip (lifted out of OpsPanelGlobe; lives next to the CTA). */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.hero-stats .cell {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(95, 255, 215, 0.18);
+  background: rgba(2, 6, 14, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.hero-stats .cell .k {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.hero-stats .cell .v {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+  color: var(--color-dark);
+}
+.hero-stats .cell .v .delta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  margin-left: 6px;
+}
+.hero-stats .cell .v .delta.pos { color: var(--color-cyan); }
+.hero-stats .cell .v .delta.warn { color: var(--color-magenta); }
+
+/* Header tabs as cyan-bordered pills (active state). */
+.tab-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted-dark);
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tab-pill:hover { color: var(--color-dark); }
+.tab-pill.is-active {
+  border-color: rgba(95, 255, 215, 0.5);
+  background: rgba(95, 255, 215, 0.08);
+  color: var(--color-cyan);
+  box-shadow: 0 0 0 1px rgba(95, 255, 215, 0.18), 0 0 18px rgba(95, 255, 215, 0.16);
+}
+
+/* Compare card tinted borders (magenta for bad, cyan for good). */
+.compare-card.bad {
+  border-color: rgba(255, 95, 179, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 8px 30px rgba(255, 95, 179, 0.06),
+    0 0 0 1px rgba(255, 95, 179, 0.16);
+}
+.compare-card.bad .h .state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-magenta);
+}
+.compare-card.bad .h .state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-magenta);
+  box-shadow: 0 0 8px rgba(255, 95, 179, 0.55);
+}
+.compare-card.bad .compare-list .ic { color: var(--color-magenta); }
+.compare-card.good {
+  border-color: rgba(95, 255, 215, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 30px rgba(95, 255, 215, 0.10),
+    0 0 0 1px rgba(95, 255, 215, 0.20);
+}
+.compare-card.good .h { color: var(--color-cyan); }
+.compare-card.good .h .state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-cyan);
+}
+.compare-card.good .h .state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(95, 255, 215, 0.55);
+}
+.compare-card.good .compare-list .ic { color: var(--color-cyan); }
+
+/* Outcome card tinted borders per glyph color. */
+.outcome.tint-cyan   { border-color: rgba(95, 255, 215, 0.28); }
+.outcome.tint-violet { border-color: rgba(192, 132, 252, 0.28); }
+.outcome.tint-pink   { border-color: rgba(255, 95, 179, 0.28); }
+.outcome.tint-amber  { border-color: rgba(251, 191, 36, 0.28); }
+
+/* Phase card hairline: dashed for the duration row separator. */
+.phase-card .time {
+  border-top: 1px dashed rgba(95, 255, 215, 0.30);
+}
+.phase-card .time .v { color: var(--color-cyan); }
+
+/* Prompt library refinements. */
+.prompts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(95, 255, 215, 0.18);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+}
+.prompt-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: start;
+  gap: 8px;
+  padding: 0.85rem 1rem;
+}
+.prompt-row .id-num {
+  color: var(--color-cyan);
+  font-size: 11px;
+  letter-spacing: 0.10em;
+}
+.prompt-row .body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.prompt-row .body .ttl {
+  color: var(--color-dark);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prompt-row .body .meta {
+  color: var(--color-muted);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.prompt-row .vars-pill {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  border: 1px solid rgba(95, 255, 215, 0.35);
+  background: rgba(2, 6, 14, 0.5);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-variant-numeric: tabular-nums;
+}
+.prompt-row.active {
+  background: rgba(95, 255, 215, 0.06);
+  box-shadow:
+    inset 3px 0 0 var(--color-cyan),
+    0 0 24px rgba(192, 132, 252, 0.18);
+  border-left-color: transparent;
+}
+.prompt-row.active .body .ttl { color: var(--color-cyan); }
+
+/* Syntax classes — strings GREEN, headers VIOLET, vars CYAN, comments muted. */
+.prompt-body .str { color: var(--color-organic); }
+.prompt-body .kw  { color: var(--color-violet); font-weight: 700; }
+
+.copy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 255, 215, 0.35);
+  background: rgba(2, 6, 14, 0.5);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.copy-pill:hover {
+  border-color: rgba(95, 255, 215, 0.6);
+  background: rgba(95, 255, 215, 0.08);
+}
+
+/* Nexus location list: 3-line stack instead of single row. */
+.loc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: stretch;
+  padding: 8px 10px;
+  border-left: 1px solid rgba(95, 255, 215, 0.22);
+  background: rgba(2, 6, 14, 0.45);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.loc .city {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-dark);
+  letter-spacing: -0.005em;
+  text-transform: none;
+}
+.loc .label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.loc .when {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--color-muted-dark);
+}
+
+/* Anomaly box ↗ link icon. */
+.anomaly .h-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.anomaly .ext {
+  color: var(--color-magenta);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-decoration: none;
+}
