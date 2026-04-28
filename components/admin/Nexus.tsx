@@ -14,6 +14,13 @@ import {
 } from "@/components/shared/ActionButton";
 import { StepsModal } from "@/components/shared/StepsModal";
 import { buildOrbitalLayout } from "@/lib/nexus-layout";
+import {
+  PlanetTextureDefs,
+  planetTextureFor,
+  planetTextureHasBands,
+  planetTextureRim,
+  SUN_TEXTURE_ID,
+} from "@/components/admin/NexusPlanetTextures";
 
 export type NexusKind = "real" | "ghost" | "fork";
 
@@ -584,6 +591,20 @@ export function Nexus({ domains, nodes, links }: Props) {
 
   const visibleIds = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes]);
 
+  // Per-node color lookup (by id), used to color links by source domain.
+  // Categorization scheme: every link inherits the color of its
+  // SOURCE node's domain — so visually, a domain "broadcasts" outward
+  // in its own color and you can tell at a glance which planet is
+  // pulling the connection.
+  const nodeColorById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const n of nodes) {
+      const d = orbitalDomains[n.domain];
+      m.set(n.id, d?.color ?? "#7d8aad");
+    }
+    return m;
+  }, [nodes, orbitalDomains]);
+
   // While pinned, click outside the tooltip (and not on a node) closes it.
   useEffect(() => {
     if (!isPinned) return;
@@ -710,6 +731,12 @@ export function Nexus({ domains, nodes, links }: Props) {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
+          {/* Photographic planet textures (replace the old mini-sun
+              corona/plasma/flare layers). One radialGradient per
+              planet plus a sun gradient; planets are mapped by id
+              hash to a fixed palette in NexusPlanetTextures.tsx. */}
+          <PlanetTextureDefs />
         </defs>
 
         {/* Atmospheric halos for each visible planet. */}
@@ -725,80 +752,38 @@ export function Nexus({ domains, nodes, links }: Props) {
           ))}
         </g>
 
-        {/* The central sun: bigger but same visual language as the orbiting
-            stars — corona halo, plasma granulation, solar flares. */}
+        {/* The central sun: photographic gradient body. Replaces the
+            old corona/plasma/flare layered mini-sun. */}
         <g>
           {(() => {
             const sunR = 70;
             const sunColor = "#fbbf24";
-            const flares = solarFlares("__center-sun__", sunR);
-            const spots = plasmaSpots("__center-sun__", sunR);
             return (
               <>
-                {/* Outer corona */}
+                {/* Single soft halo for warmth, no corona stack. */}
                 <circle
                   cx={0}
                   cy={0}
-                  r={sunR * 2.4}
+                  r={sunR * 1.55}
                   fill={sunColor}
-                  opacity={0.10}
+                  opacity={0.14}
                 />
-                {/* Mid corona */}
+                {/* Body. */}
                 <circle
                   cx={0}
                   cy={0}
-                  r={sunR * 1.5}
-                  fill={sunColor}
-                  opacity={0.18}
+                  r={sunR}
+                  fill={`url(#${SUN_TEXTURE_ID})`}
                 />
-                {/* Solar flares */}
-                {flares.map((f, fi) => {
-                  const cx = Math.cos(f.angle) * (sunR + f.length * 0.45);
-                  const cy = Math.sin(f.angle) * (sunR + f.length * 0.45);
-                  return (
-                    <ellipse
-                      key={fi}
-                      cx={cx}
-                      cy={cy}
-                      rx={f.length}
-                      ry={f.width}
-                      fill={lighten(sunColor, 0.6)}
-                      opacity={f.opacity}
-                      transform={`rotate(${(f.angle * 180) / Math.PI} ${cx} ${cy})`}
-                    />
-                  );
-                })}
-                {/* Body with plasma granulation */}
-                <clipPath id="clip-sun">
-                  <circle cx={0} cy={0} r={sunR} />
-                </clipPath>
-                <g clipPath="url(#clip-sun)">
-                  <circle cx={0} cy={0} r={sunR} fill="url(#sun-core)" />
-                  {spots.map((s, si) => (
-                    <ellipse
-                      key={si}
-                      cx={s.cx}
-                      cy={s.cy}
-                      rx={s.rx}
-                      ry={s.ry}
-                      fill={
-                        s.isHot
-                          ? lighten(sunColor, 0.7)
-                          : darken(sunColor, 0.20)
-                      }
-                      opacity={s.opacity}
-                    />
-                  ))}
-                </g>
-                {/* Limb darkening rim */}
+                {/* Atmospheric rim. */}
                 <circle
                   cx={0}
                   cy={0}
                   r={sunR}
                   fill="none"
-                  stroke={darken(sunColor, 0.45)}
-                  strokeOpacity={0.35}
-                  strokeWidth={1.2}
+                  stroke="#7a1e08"
+                  strokeOpacity={0.55}
+                  strokeWidth={1.4}
                 />
               </>
             );
@@ -822,8 +807,10 @@ export function Nexus({ domains, nodes, links }: Props) {
         </g>
 
 
-        {/* Visible "planets" rendered as mini suns: corona halo, plasma
-            surface granulation, solar flares, limb-darkened body. */}
+        {/* Visible "planets" rendered as photographic spheres. Each
+            node maps deterministically to one of 12 hand-tuned
+            radial-gradient textures (see NexusPlanetTextures.tsx).
+            No more corona/plasma/flare layers — replaced wholesale. */}
         <g>
           {layout.planets.map((p) => {
             const r = 58;
@@ -831,80 +818,51 @@ export function Nexus({ domains, nodes, links }: Props) {
               p.label.toUpperCase(),
               r
             );
-            const flares = solarFlares(p.id, r);
-            const spots = plasmaSpots(p.id, r);
+            const textureId = planetTextureFor(p.id);
+            const hasBands = planetTextureHasBands(textureId);
+            const rim = planetTextureRim(textureId);
             return (
               <g key={`planet-g-${p.id}`}>
-                {/* Outer corona — large soft halo */}
+                {/* Soft single halo (subtle so the photographic body
+                    reads as the focal point). */}
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={r * 2.1}
-                  fill={`url(#corona-${p.id})`}
-                />
-                {/* Inner corona — tighter glow */}
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={r * 1.35}
+                  r={r * 1.45}
                   fill={p.color}
-                  opacity={0.12}
+                  opacity={0.08}
                 />
-                {/* Solar flares — tendrils extending past the photosphere
-                    edge, tinted in the planet's complement color. */}
-                {flares.map((f, fi) => {
-                  const cx = p.x + Math.cos(f.angle) * (r + f.length * 0.45);
-                  const cy = p.y + Math.sin(f.angle) * (r + f.length * 0.45);
-                  return (
-                    <ellipse
-                      key={fi}
-                      cx={cx}
-                      cy={cy}
-                      rx={f.length}
-                      ry={f.width}
-                      fill={complementFor(p.id, p.color)}
-                      opacity={f.opacity}
-                      transform={`rotate(${(f.angle * 180) / Math.PI} ${cx} ${cy})`}
-                    />
-                  );
-                })}
-                {/* Star body with plasma surface granulation, clipped to
-                    the photosphere disc. */}
+                {/* Body: photographic gradient, clipped to the disc.
+                    Optional gas-giant band overlay layered on top. */}
                 <g clipPath={`url(#clip-${p.id})`}>
-                  {/* Bright limb-darkened body */}
                   <circle
                     cx={p.x}
                     cy={p.y}
                     r={r}
-                    fill={`url(#planet-${p.id})`}
+                    fill={`url(#${textureId})`}
                   />
-                  {/* Convection-cell granulation — small irregular blobs */}
-                  {spots.map((s, si) => (
-                    <ellipse
-                      key={si}
-                      cx={p.x + s.cx}
-                      cy={p.y + s.cy}
-                      rx={s.rx}
-                      ry={s.ry}
-                      fill={
-                        s.isHot
-                          ? complementFor(p.id, p.color)
-                          : darken(p.color, 0.30)
-                      }
-                      opacity={s.opacity}
+                  {hasBands && (
+                    <rect
+                      x={p.x - r}
+                      y={p.y - r}
+                      width={r * 2}
+                      height={r * 2}
+                      fill={`url(#${textureId}-bands)`}
                     />
-                  ))}
+                  )}
                 </g>
-                {/* Limb darkening rim — subtle dark ring at the very edge */}
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={r}
-                  fill="none"
-                  stroke={darken(p.color, 0.55)}
-                  strokeOpacity={0.40}
-                  strokeWidth={1.2}
-                />
+                {/* Atmospheric rim — thin dark stroke for the limb. */}
+                {rim && (
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r={r}
+                    fill="none"
+                    stroke={rim.color}
+                    strokeOpacity={rim.opacity}
+                    strokeWidth={1.4}
+                  />
+                )}
                 {/* Category label, centered INSIDE the star */}
                 <g style={{ pointerEvents: "none" }}>
                   <text
@@ -959,6 +917,10 @@ export function Nexus({ domains, nodes, links }: Props) {
               hoveredId &&
               (l.source === hoveredId || l.target === hoveredId);
             const dimmed = hoveredId && !isHighlighted;
+            // Categorization: link inherits the source node's domain
+            // color. On hover the highlighted link uses its own color
+            // at full strength so it doesn't blend into the neighbors.
+            const sourceColor = nodeColorById.get(l.source) ?? "#7d8aad";
             return (
               <line
                 key={i}
@@ -966,8 +928,8 @@ export function Nexus({ domains, nodes, links }: Props) {
                 y1={a.y}
                 x2={b.x}
                 y2={b.y}
-                stroke={isHighlighted ? "#d97757" : "#d4cdbf"}
-                strokeOpacity={dimmed ? 0.08 : isHighlighted ? 0.9 : 0.25}
+                stroke={sourceColor}
+                strokeOpacity={dimmed ? 0.06 : isHighlighted ? 0.95 : 0.30}
                 strokeWidth={isHighlighted ? 1.8 : 1}
               />
             );
