@@ -1,5 +1,6 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 type FAQItem = {
   q: string;
@@ -23,12 +24,17 @@ export function FAQ() {
       id="faq"
       className="px-6 md:px-12 py-12 md:py-20 max-w-4xl mx-auto"
     >
+      <Reveal>
+        <div className="mb-4">
+          <SectionEyebrow>Questions</SectionEyebrow>
+        </div>
+      </Reveal>
       {(frontmatter.title_1 || frontmatter.title_2) && (
-        <Reveal>
+        <Reveal delay={80}>
           <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-3">
             {frontmatter.title_1}{" "}
             {frontmatter.title_2 && (
-              <span className="italic headline-gradient">
+              <span className="headline-gradient">
                 {frontmatter.title_2}
               </span>
             )}
@@ -36,7 +42,7 @@ export function FAQ() {
         </Reveal>
       )}
       {frontmatter.lead && (
-        <Reveal delay={80}>
+        <Reveal delay={160}>
           <p className="text-[var(--color-muted-dark)] mb-8 md:mb-12 max-w-3xl leading-relaxed">
             {frontmatter.lead}
           </p>

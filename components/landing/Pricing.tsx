@@ -1,6 +1,7 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { MagneticButton } from "@/components/shared/MagneticButton";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 type AsideRow = { k: string; v: string; small?: string };
 
@@ -31,30 +32,30 @@ export function Pricing() {
     >
       {frontmatter.eyebrow && (
         <Reveal>
-          <p className="label text-[var(--color-muted-dark)] mb-3">
-            {frontmatter.eyebrow}
-          </p>
+          <div className="mb-4">
+            <SectionEyebrow>{frontmatter.eyebrow}</SectionEyebrow>
+          </div>
         </Reveal>
       )}
-      {(frontmatter.headline || frontmatter.headline_em) && (
-        <Reveal delay={80}>
-          <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-3 max-w-3xl">
-            {frontmatter.headline}{" "}
-            {frontmatter.headline_em && (
-              <span className="italic headline-gradient">
-                {frontmatter.headline_em}
-              </span>
-            )}
-          </h2>
-        </Reveal>
-      )}
-      {frontmatter.sub && (
-        <Reveal delay={160}>
-          <p className="text-[var(--color-muted-dark)] mb-8 md:mb-12 max-w-3xl leading-relaxed">
-            {frontmatter.sub}
-          </p>
-        </Reveal>
-      )}
+      <div className="section-head">
+        {(frontmatter.headline || frontmatter.headline_em) && (
+          <Reveal delay={80}>
+            <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
+              {frontmatter.headline}{" "}
+              {frontmatter.headline_em && (
+                <span className="headline-gradient">
+                  {frontmatter.headline_em}
+                </span>
+              )}
+            </h2>
+          </Reveal>
+        )}
+        {frontmatter.sub && (
+          <Reveal delay={160}>
+            <p className="section-subhead">{frontmatter.sub}</p>
+          </Reveal>
+        )}
+      </div>
 
       <div className="pricing">
         <Reveal>

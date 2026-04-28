@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/shared/Reveal";
 import { EmailCaptureForm } from "@/components/shared/EmailCaptureForm";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 export function EmailCapture() {
   return (
@@ -9,7 +10,7 @@ export function EmailCapture() {
     >
       <Reveal>
         <div className="glass-card capture capture-card">
-          <p className="label text-[var(--color-muted-dark)]">Stay in touch</p>
+          <SectionEyebrow>Stay in touch</SectionEyebrow>
           <h2 className="font-serif text-3xl md:text-4xl leading-tight text-[var(--color-dark)]">
             Not ready yet?{" "}
             <span className="italic headline-gradient">

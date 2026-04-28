@@ -1,5 +1,6 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 type Testimonial = {
   initials: string;
@@ -24,18 +25,25 @@ export function TestimonialsRow() {
     <section className="px-6 md:px-12 py-12 md:py-20 max-w-7xl mx-auto">
       {frontmatter.eyebrow && (
         <Reveal>
-          <p className="label text-[var(--color-muted-dark)] mb-3">
-            {frontmatter.eyebrow}
+          <div className="mb-4">
+            <SectionEyebrow>{frontmatter.eyebrow}</SectionEyebrow>
+          </div>
+        </Reveal>
+      )}
+      <div className="section-head">
+        {frontmatter.headline && (
+          <Reveal delay={80}>
+            <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
+              {frontmatter.headline}
+            </h2>
+          </Reveal>
+        )}
+        <Reveal delay={160}>
+          <p className="section-subhead">
+            What changed for the people who finished the 60 minutes.
           </p>
         </Reveal>
-      )}
-      {frontmatter.headline && (
-        <Reveal delay={80}>
-          <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-8 md:mb-12 max-w-3xl">
-            {frontmatter.headline}
-          </h2>
-        </Reveal>
-      )}
+      </div>
 
       <div className="testis">
         {items.map((t, i) => (

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/shared/Reveal";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -186,21 +187,25 @@ export function NexusDashPreview() {
       className="px-6 md:px-12 py-12 md:py-20 max-w-7xl mx-auto"
     >
       <Reveal>
-        <p className="label text-[var(--color-muted-dark)] mb-3">Live console</p>
+        <div className="mb-4">
+          <SectionEyebrow>The console</SectionEyebrow>
+        </div>
       </Reveal>
-      <Reveal delay={80}>
-        <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-3 max-w-3xl">
-          The Nexus dashboard.{" "}
-          <span className="italic headline-gradient">Live for every customer</span>{" "}
-          from minute 60.
-        </h2>
-      </Reveal>
-      <Reveal delay={160}>
-        <p className="text-[var(--color-muted-dark)] mb-8 md:mb-12 max-w-3xl leading-relaxed">
-          Five phases, three workspace artifacts, every sync stamped. This is what
-          you walk away with at the end of the onboarding, already running.
-        </p>
-      </Reveal>
+      <div className="section-head">
+        <Reveal delay={80}>
+          <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
+            The Nexus dashboard.{" "}
+            <span className="headline-gradient">Live for every customer</span>{" "}
+            from minute 60.
+          </h2>
+        </Reveal>
+        <Reveal delay={160}>
+          <p className="section-subhead">
+            What your workspace looks like the moment onboarding ends.
+            Auto-syncing, observable, yours forever.
+          </p>
+        </Reveal>
+      </div>
 
       <Reveal delay={240}>
         <div className="glass-card-static dash">

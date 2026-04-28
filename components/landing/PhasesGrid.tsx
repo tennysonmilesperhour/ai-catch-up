@@ -1,5 +1,6 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 type Phase = {
   number: string;
@@ -28,25 +29,29 @@ export function PhasesGrid() {
     >
       {frontmatter.eyebrow && (
         <Reveal>
-          <p className="label text-[var(--color-muted-dark)] mb-3">
-            {frontmatter.eyebrow}
-          </p>
+          <div className="mb-4">
+            <SectionEyebrow>{frontmatter.eyebrow}</SectionEyebrow>
+          </div>
         </Reveal>
       )}
-      {frontmatter.headline && (
-        <Reveal delay={80}>
-          <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-3 max-w-3xl">
-            {frontmatter.headline}
-          </h2>
-        </Reveal>
-      )}
-      {frontmatter.intro && (
-        <Reveal delay={160}>
-          <p className="text-[var(--color-muted-dark)] mb-8 md:mb-12 max-w-3xl leading-relaxed">
-            {frontmatter.intro}
-          </p>
-        </Reveal>
-      )}
+      <div className="section-head">
+        {frontmatter.headline && (
+          <Reveal delay={80}>
+            <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
+              A guided 60-minute flow,{" "}
+              <span className="headline-gradient">five phases.</span>
+            </h2>
+          </Reveal>
+        )}
+        {frontmatter.intro && (
+          <Reveal delay={160}>
+            <p className="section-subhead">
+              Read top-to-bottom. Each phase ends with a working artifact in
+              your workspace.
+            </p>
+          </Reveal>
+        )}
+      </div>
 
       <div className="phases-grid">
         {phases.map((p, i) => (

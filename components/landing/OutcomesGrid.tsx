@@ -1,5 +1,6 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 type Outcome = {
   glyph: string;
@@ -28,35 +29,35 @@ export function OutcomesGrid() {
     <section className="px-6 md:px-12 py-12 md:py-20 max-w-7xl mx-auto">
       {frontmatter.eyebrow && (
         <Reveal>
-          <p className="label text-[var(--color-muted-dark)] mb-3">
-            {frontmatter.eyebrow}
-          </p>
+          <div className="mb-4">
+            <SectionEyebrow>{frontmatter.eyebrow}</SectionEyebrow>
+          </div>
         </Reveal>
       )}
-      {(frontmatter.headline_1 || frontmatter.headline_2) && (
-        <Reveal delay={80}>
-          <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-3 max-w-3xl">
-            {frontmatter.headline_1}{" "}
-            {frontmatter.headline_2 && (
-              <span className="italic headline-gradient">
-                {frontmatter.headline_2}
-              </span>
-            )}
-          </h2>
-        </Reveal>
-      )}
-      {frontmatter.lead && (
-        <Reveal delay={160}>
-          <p className="text-[var(--color-muted-dark)] mb-8 md:mb-12 max-w-3xl leading-relaxed">
-            {frontmatter.lead}
-          </p>
-        </Reveal>
-      )}
+      <div className="section-head">
+        {(frontmatter.headline_1 || frontmatter.headline_2) && (
+          <Reveal delay={80}>
+            <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
+              {frontmatter.headline_1}{" "}
+              {frontmatter.headline_2 && (
+                <span className="headline-gradient">
+                  {frontmatter.headline_2}
+                </span>
+              )}
+            </h2>
+          </Reveal>
+        )}
+        {frontmatter.lead && (
+          <Reveal delay={160}>
+            <p className="section-subhead">{frontmatter.lead}</p>
+          </Reveal>
+        )}
+      </div>
 
       <div className="outcomes">
         {items.map((o, i) => (
           <Reveal key={o.glyph} delay={i * 80}>
-            <article className="glass-card outcome h-full">
+            <article className={`glass-card outcome h-full tint-${o.color}`}>
               <span className={`glyph ${o.color}`} aria-hidden>
                 {o.glyph}
               </span>

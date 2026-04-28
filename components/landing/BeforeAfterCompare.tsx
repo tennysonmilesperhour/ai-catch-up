@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/shared/Reveal";
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
 // STRATEGY CLAUDE: refine. The Aurora handoff said BeforeAfterCompare reads
 // existing before-after.mdx with no schema change, but the existing schema
@@ -23,27 +24,30 @@ export function BeforeAfterCompare() {
   return (
     <section className="px-6 md:px-12 py-12 md:py-20 max-w-7xl mx-auto">
       <Reveal>
-        <p className="label text-[var(--color-muted-dark)] mb-3">The difference</p>
+        <div className="mb-4">
+          <SectionEyebrow>The difference</SectionEyebrow>
+        </div>
       </Reveal>
-      <Reveal delay={80}>
-        <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] mb-3 max-w-3xl">
-          Same tools.{" "}
-          <span className="italic headline-gradient">Different outcome.</span>
-        </h2>
-      </Reveal>
-      <Reveal delay={160}>
-        <p className="text-[var(--color-muted-dark)] mb-8 md:mb-12 max-w-3xl leading-relaxed">
-          The gap between "I tried Claude" and "Claude works for me" is not the
-          tool. It's the context you hand it.
-        </p>
-      </Reveal>
+      <div className="section-head">
+        <Reveal delay={80}>
+          <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
+            What it feels like,{" "}
+            <span className="headline-gradient">before and after.</span>
+          </h2>
+        </Reveal>
+        <Reveal delay={160}>
+          <p className="section-subhead">
+            The 60 minutes that breaks the loop of half-finished setups.
+          </p>
+        </Reveal>
+      </div>
 
       <div className="compare">
         <Reveal>
           <article className="glass-card-static compare-card bad">
             <div className="h">
               <span>Before AI Catch Up</span>
-              <span>· State drifting</span>
+              <span className="state">State drifting</span>
             </div>
             <ul className="compare-list">
               {BAD.map((item, i) => (
@@ -61,7 +65,7 @@ export function BeforeAfterCompare() {
           <article className="glass-card-static compare-card good">
             <div className="h">
               <span>After AI Catch Up</span>
-              <span>· State synced</span>
+              <span className="state">State synced</span>
             </div>
             <ul className="compare-list">
               {GOOD.map((item, i) => (
