@@ -893,9 +893,46 @@ textarea:focus-visible {
   color: var(--color-dark);
 }
 .rail-card.active {
-  border-left: 3px solid var(--color-terracotta);
-  background: rgba(251, 191, 36, 0.06);
+  border-left: 3px solid var(--color-cyan);
+  background: rgba(95, 255, 215, 0.06);
   color: var(--color-dark);
+}
+.rail-card .row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.rail-card .row .num {
+  color: var(--color-muted);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+.rail-card.active .row .num { color: var(--color-cyan); }
+.rail-card .row .ttl { color: var(--color-dark); font-size: 12px; }
+.rail-card .row .badge {
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 95, 179, 0.4);
+  background: rgba(255, 95, 179, 0.12);
+  color: var(--color-magenta);
+  font-variant-numeric: tabular-nums;
+}
+.rail-card .row .badge.is-dot {
+  border: none;
+  background: transparent;
+  color: var(--color-magenta);
+  padding: 0;
+  font-size: 11px;
+}
+.rail-card .meta-row {
+  margin-top: 4px;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
 }
 .month-strip {
   display: grid;

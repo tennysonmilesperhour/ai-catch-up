@@ -10,17 +10,26 @@ const MONTHS = [
 ];
 const NOW_MONTH = 3; // April (0-indexed)
 
-const RAILS_PHASES = [
-  { id: "P1", title: "Capture idea", meta: "5–10 min" },
-  { id: "P2", title: "Set up accounts", meta: "15–20 min" },
-  { id: "P3", title: "Install starter", meta: "10–15 min" },
-  { id: "P4", title: "Configure Claude", meta: "10–15 min" },
-  { id: "P5", title: "Receive outputs", meta: "5 min", active: true },
+type RailRow = {
+  id: string;
+  num: string;
+  title: string;
+  meta: string;
+  badge?: string;
+  badgeDot?: boolean;
+};
+
+const RAILS_PHASES: RailRow[] = [
+  { id: "P1", num: "01", title: "Capture", meta: "Brief · 5 min", badgeDot: true },
+  { id: "P2", num: "02", title: "Accounts", meta: "Wire-up · 15 min", badge: "5" },
+  { id: "P3", num: "03", title: "Starter pkg", meta: "Install · 10 min", badge: "4" },
+  { id: "P4", num: "04", title: "Configure", meta: "Claude · 20 min", badge: "12" },
+  { id: "P5", num: "05", title: "Outputs", meta: "Deliver · 10 min", badge: "4" },
 ];
-const RAILS_WORKSPACE = [
-  { id: "WS1", title: "CLAUDE.md", meta: "spec" },
-  { id: "WS2", title: "Nexus map", meta: "live graph" },
-  { id: "WS3", title: "Prompt library", meta: "20 prompts" },
+const RAILS_WORKSPACE: RailRow[] = [
+  { id: "WS1", num: "MD", title: "CLAUDE.md", meta: "spec" },
+  { id: "WS2", num: "NX", title: "Nexus map", meta: "live graph" },
+  { id: "WS3", num: "PL", title: "Prompt library", meta: "20 prompts" },
 ];
 
 const LOCATIONS = [
@@ -48,11 +57,21 @@ function cityFor(code: string): string {
 }
 
 const WAVES = [
-  { ampBase: 18, ampVar: 6, freq1: 0.0042, freq2: 0.0018, phase: 0.6, yBase: 90, drift: 0.00012, color: "#5fffd7", op: 0.85 },
-  { ampBase: 22, ampVar: 8, freq1: 0.0038, freq2: 0.0021, phase: 1.4, yBase: 115, drift: 0.00009, color: "#ff5fb3", op: 0.75 },
-  { ampBase: 14, ampVar: 5, freq1: 0.0055, freq2: 0.0014, phase: 2.1, yBase: 140, drift: 0.00015, color: "#c084fc", op: 0.7 },
-  { ampBase: 28, ampVar: 9, freq1: 0.0029, freq2: 0.0026, phase: 3.0, yBase: 160, drift: 0.00007, color: "#fbbf24", op: 0.6 },
-  { ampBase: 12, ampVar: 4, freq1: 0.0072, freq2: 0.0011, phase: 4.5, yBase: 180, drift: 0.00018, color: "#4ade80", op: 0.55 },
+  { name: "ST-983", ampBase: 18, ampVar: 6, freq1: 0.0042, freq2: 0.0018, phase: 0.6, yBase: 90, drift: 0.00012, color: "#5fffd7", op: 0.85 },
+  { name: "VYG1", ampBase: 22, ampVar: 8, freq1: 0.0038, freq2: 0.0021, phase: 1.4, yBase: 115, drift: 0.00009, color: "#ff5fb3", op: 0.75 },
+  { name: "ST-156", ampBase: 14, ampVar: 5, freq1: 0.0055, freq2: 0.0014, phase: 2.1, yBase: 140, drift: 0.00015, color: "#c084fc", op: 0.7 },
+  { name: "ST-204", ampBase: 28, ampVar: 9, freq1: 0.0029, freq2: 0.0026, phase: 3.0, yBase: 160, drift: 0.00007, color: "#fbbf24", op: 0.6 },
+  { name: "ST-077", ampBase: 12, ampVar: 4, freq1: 0.0072, freq2: 0.0011, phase: 4.5, yBase: 180, drift: 0.00018, color: "#4ade80", op: 0.55 },
+];
+
+// Stream label overlay positions (x along the chart, anchored to the
+// underlying wave so the dot sits on the curve at t=0). These are
+// decorative; they don't track the live RAF.
+const STREAM_LABELS = [
+  { wave: 0, x: 220 },
+  { wave: 1, x: 360 },
+  { wave: 2, x: 540 },
+  { wave: 3, x: 100 },
 ];
 
 const CHART_W = 720;
@@ -190,6 +209,31 @@ function NexusChart() {
         >
           VYG1
         </text>
+
+        {/* Decorative stream labels (static, anchored at t=0). */}
+        {STREAM_LABELS.map((s, i) => {
+          const w = WAVES[s.wave];
+          const y =
+            w.yBase +
+            Math.sin(s.x * w.freq1 + 0) * w.ampBase +
+            Math.cos(s.x * w.freq2 + 0) * w.ampVar;
+          return (
+            <g key={`label-${i}`}>
+              <circle cx={s.x} cy={y} r="3" fill={w.color} />
+              <text
+                x={s.x + 8}
+                y={y - 8}
+                fontFamily="var(--font-mono)"
+                fontSize="9"
+                letterSpacing="0.14em"
+                fill={w.color}
+                opacity="0.85"
+              >
+                {w.name}
+              </text>
+            </g>
+          );
+        })}
       </svg>
     </div>
   );
@@ -243,28 +287,34 @@ export function NexusDashPreview() {
           <div className="dash-grid">
             {/* left rail */}
             <div className="dash-rail">
-              <div className="rail-h">Setup phases</div>
+              <div className="rail-h">Phases · 5</div>
               {RAILS_PHASES.map((r) => (
                 <div
                   key={r.id}
                   className={`rail-card ${activeRail === r.id ? "active" : ""}`}
                   onMouseEnter={() => setActiveRail(r.id)}
                 >
-                  <span className="meta">{r.id}</span>
-                  <span className="block">{r.title}</span>
-                  <span className="meta">{r.meta}</span>
+                  <div className="row">
+                    <span className="num">{r.num}</span>
+                    <span className="ttl">{r.title}</span>
+                    {r.badge && <span className="badge">{r.badge}</span>}
+                    {r.badgeDot && <span className="badge is-dot" aria-hidden>●</span>}
+                  </div>
+                  <div className="meta-row">{r.meta}</div>
                 </div>
               ))}
-              <div className="rail-h">Workspace</div>
+              <div className="rail-h">Workspace · 3</div>
               {RAILS_WORKSPACE.map((r) => (
                 <div
                   key={r.id}
                   className={`rail-card ${activeRail === r.id ? "active" : ""}`}
                   onMouseEnter={() => setActiveRail(r.id)}
                 >
-                  <span className="meta">{r.id}</span>
-                  <span className="block">{r.title}</span>
-                  <span className="meta">{r.meta}</span>
+                  <div className="row">
+                    <span className="num">{r.num}</span>
+                    <span className="ttl">{r.title}</span>
+                  </div>
+                  <div className="meta-row">{r.meta}</div>
                 </div>
               ))}
             </div>

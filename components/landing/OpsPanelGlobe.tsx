@@ -34,9 +34,9 @@ function generateDots(): Dot[] {
 }
 
 const PINGS = [
-  { x: CENTER - 70, y: CENTER + 30, color: "#5fffd7", delay: "0s" },
-  { x: CENTER + 80, y: CENTER - 40, color: "#ff5fb3", delay: "0.6s" },
-  { x: CENTER + 30, y: CENTER + 70, color: "#c084fc", delay: "1.2s" },
+  { x: CENTER - 70, y: CENTER + 30, color: "#5fffd7", delay: "0s",   label: "SF",  count: "2.1k" },
+  { x: CENTER + 80, y: CENTER - 40, color: "#ff5fb3", delay: "0.6s", label: "NYC", count: "3.8k" },
+  { x: CENTER + 30, y: CENTER + 70, color: "#c084fc", delay: "1.2s", label: "LDN", count: "1.4k" },
 ];
 
 export function OpsPanelGlobe() {
@@ -134,29 +134,46 @@ export function OpsPanelGlobe() {
           </g>
 
           {/* location pings */}
-          {PINGS.map((p, i) => (
-            <g key={`p-${i}`}>
-              <circle cx={p.x} cy={p.y} r="3" fill={p.color}>
-                <animate
-                  attributeName="r"
-                  from="3"
-                  to="22"
-                  dur="2.4s"
-                  begin={p.delay}
-                  repeatCount="indefinite"
-                />
-                <animate
-                  attributeName="opacity"
-                  from="0.9"
-                  to="0"
-                  dur="2.4s"
-                  begin={p.delay}
-                  repeatCount="indefinite"
-                />
-              </circle>
-              <circle cx={p.x} cy={p.y} r="3" fill={p.color} />
-            </g>
-          ))}
+          {PINGS.map((p, i) => {
+            const labelOnLeft = p.x > CENTER;
+            const tx = labelOnLeft ? p.x - 12 : p.x + 12;
+            const anchor = labelOnLeft ? "end" : "start";
+            return (
+              <g key={`p-${i}`}>
+                <circle cx={p.x} cy={p.y} r="3" fill={p.color}>
+                  <animate
+                    attributeName="r"
+                    from="3"
+                    to="22"
+                    dur="2.4s"
+                    begin={p.delay}
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    from="0.9"
+                    to="0"
+                    dur="2.4s"
+                    begin={p.delay}
+                    repeatCount="indefinite"
+                  />
+                </circle>
+                <circle cx={p.x} cy={p.y} r="3.2" fill={p.color} />
+                <text
+                  x={tx}
+                  y={p.y + 4}
+                  fontFamily="var(--font-mono)"
+                  fontSize="10"
+                  letterSpacing="0.14em"
+                  fill={p.color}
+                  textAnchor={anchor}
+                  opacity="0.95"
+                >
+                  {p.label} · {p.count}
+                </text>
+              </g>
+            );
+          })}
 
           {/* outer ring */}
           <circle

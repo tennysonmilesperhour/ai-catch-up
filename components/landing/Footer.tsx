@@ -1,39 +1,47 @@
 import Link from "next/link";
-import { EmailCaptureForm } from "@/components/shared/EmailCaptureForm";
 
 export function Footer() {
   return (
-    <footer className="bg-[var(--color-darker)] text-[var(--color-dark)] py-16 md:py-20">
-      <div className="px-6 md:px-12 max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
-        <div>
-          <p className="label text-[var(--color-terracotta)] mb-4">
-            Stay in the loop
-          </p>
-          <p className="font-serif text-2xl md:text-3xl leading-snug max-w-md">
-            New updates, new lessons, a short note when something meaningful
-            changes.
+    <footer className="px-6 md:px-12 pb-12 pt-4 max-w-7xl mx-auto text-[var(--color-muted-dark)]">
+      <div className="foot-grid">
+        <div className="foot-col">
+          <Link
+            href="/"
+            className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-dark)]"
+          >
+            AI · Catch · Up
+          </Link>
+          <p className="text-xs leading-relaxed mt-2 text-[var(--color-muted)] font-mono tracking-[0.04em]">
+            A 60-minute onboarding for the solo entrepreneur or small-team lead
+            who became the AI person by default.
           </p>
         </div>
-        <div className="flex items-end">
-          <EmailCaptureForm
-            tone="dark"
-            placeholder="you@example.com"
-            buttonLabel="Subscribe"
-            successMessage="Thanks, you are on the list."
-          />
+
+        <div className="foot-col">
+          <h4>Product</h4>
+          <Link href="#overview" className="hover:text-[var(--color-dark)] transition-colors">Overview</Link>
+          <Link href="#flow" className="hover:text-[var(--color-dark)] transition-colors">The flow</Link>
+          <Link href="#nexus" className="hover:text-[var(--color-dark)] transition-colors">Nexus</Link>
+          <Link href="#prompts" className="hover:text-[var(--color-dark)] transition-colors">Prompts</Link>
+        </div>
+
+        <div className="foot-col">
+          <h4>Buy</h4>
+          <Link href="#pricing" className="hover:text-[var(--color-dark)] transition-colors">Pricing</Link>
+          <Link href="#faq" className="hover:text-[var(--color-dark)] transition-colors">FAQ</Link>
+          <Link href="/blog" className="hover:text-[var(--color-dark)] transition-colors">Writing</Link>
+        </div>
+
+        <div className="foot-col">
+          <h4>Account</h4>
+          <Link href="/login" className="hover:text-[var(--color-dark)] transition-colors">Log in</Link>
+          <Link href="/preview" className="hover:text-[var(--color-dark)] transition-colors">Preview</Link>
         </div>
       </div>
-      <div className="px-6 md:px-12 max-w-5xl mx-auto mt-16 pt-6 border-t border-[var(--color-border-dark)] flex flex-col md:flex-row justify-between items-start md:items-center gap-3 font-mono text-xs text-[var(--color-muted)]">
-        <p>&copy; {new Date().getFullYear()} AI Catch Up. All rights reserved.</p>
-        <div className="flex items-center gap-5">
-          <Link
-            href="/login"
-            className="hover:text-[var(--color-dark)] transition-colors"
-          >
-            Log in
-          </Link>
-          <span>Made with care, not hype.</span>
-        </div>
+
+      <div className="foot-bot">
+        <span>© {new Date().getFullYear()} AI Catch Up · v1.0.0</span>
+        <span>Made with care, not hype.</span>
       </div>
     </footer>
   );
