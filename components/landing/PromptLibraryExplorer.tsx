@@ -120,15 +120,15 @@ export function PromptLibraryExplorer() {
                 <span>Variables</span>
               </div>
               <div className="cell">
-                <span className="v num-tab">{active.avg_tokens ?? "—"}</span>
+                <span className="v num-tab">{active.avg_tokens ?? "-"}</span>
                 <span>Avg tokens</span>
               </div>
               <div className="cell">
-                <span className="v num-tab">{active.used_by_pct ?? "—"}</span>
+                <span className="v num-tab">{active.used_by_pct ?? "-"}</span>
                 <span>Used by</span>
               </div>
               <div className="cell">
-                <span className="v num-tab">{active.updated_at ?? "—"}</span>
+                <span className="v num-tab">{active.updated_at ?? "-"}</span>
                 <span>Updated</span>
               </div>
             </div>

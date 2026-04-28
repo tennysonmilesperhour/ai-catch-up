@@ -3,8 +3,20 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+type Tab = { id: string; label: string };
+
+const TABS: Tab[] = [
+  { id: "overview", label: "Overview" },
+  { id: "flow", label: "The flow" },
+  { id: "nexus", label: "Nexus" },
+  { id: "prompts", label: "Prompts" },
+  { id: "pricing", label: "Pricing" },
+  { id: "faq", label: "FAQ" },
+];
+
 export function SiteHeader() {
   const [hidden, setHidden] = useState(false);
+  const [active, setActive] = useState<string>("overview");
   const lastY = useRef(0);
 
   useEffect(() => {
@@ -24,9 +36,37 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const els = TABS.map((t) => document.getElementById(t.id)).filter(
+      (el): el is HTMLElement => Boolean(el)
+    );
+    if (els.length === 0) return;
+
+    const visibility = new Map<string, number>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          visibility.set(entry.target.id, entry.intersectionRatio);
+        }
+        let bestId = "overview";
+        let best = -1;
+        for (const [id, ratio] of visibility) {
+          if (ratio > best) {
+            best = ratio;
+            bestId = id;
+          }
+        }
+        if (best > 0) setActive(bestId);
+      },
+      { threshold: [0.1, 0.25, 0.5, 0.75] }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
   return (
     <header
-      className={`site-header sticky top-0 z-30 px-6 md:px-12 py-4 backdrop-blur-md bg-[rgba(7,7,26,0.55)] border-b border-white/5 ${
+      className={`site-header sticky top-[28px] z-30 px-6 md:px-12 py-3 backdrop-blur-md bg-[rgba(2,6,14,0.55)] border-b border-white/5 ${
         hidden ? "site-header-hidden" : ""
       }`}
     >
@@ -37,14 +77,50 @@ export function SiteHeader() {
         >
           AI Catch Up
         </Link>
-        <nav className="flex items-center gap-6">
+
+        <nav className="hidden md:flex items-center gap-5 flex-1 justify-center">
+          {TABS.map((t) => (
+            <a
+              key={t.id}
+              href={`#${t.id}`}
+              className={`relative font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
+                active === t.id
+                  ? "text-[var(--color-terracotta)]"
+                  : "text-[var(--color-muted-dark)] hover:text-[var(--color-dark)]"
+              }`}
+            >
+              {t.label}
+              {active === t.id && (
+                <span
+                  aria-hidden
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-px bg-[var(--color-terracotta)] cosmic-glow-soft"
+                />
+              )}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Search"
+            className="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-md border border-white/10 text-[var(--color-muted-dark)] hover:text-[var(--color-dark)] hover:border-white/30 transition-colors"
+          >
+            <span className="font-mono text-[11px]">⌘K</span>
+          </button>
           <Link
             href="/login"
-            className="font-mono text-xs uppercase tracking-[0.1em] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] transition-colors"
+            className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] transition-colors"
           >
             Log in
           </Link>
-        </nav>
+          <Link
+            href="#pricing"
+            className="glass-button-primary px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em]"
+          >
+            Get access
+          </Link>
+        </div>
       </div>
     </header>
   );

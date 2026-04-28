@@ -18,7 +18,7 @@ export function FinalCTA() {
   const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
 
   return (
-    <section className="px-6 md:px-12 py-20 md:py-28 max-w-3xl mx-auto text-center">
+    <section className="final px-6 md:px-12 py-20 md:py-28 max-w-3xl mx-auto text-center">
       {frontmatter.eyebrow && (
         <Reveal>
           <p className="label text-[var(--color-muted-dark)] mb-6">
