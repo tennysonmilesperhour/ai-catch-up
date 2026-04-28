@@ -10,6 +10,7 @@ const tabGroups = [
       { label: "Schedule", href: "/admin/schedule" },
       { label: "Nexus map", href: "/admin/nexus" },
       { label: "Prompts", href: "/admin/prompts" },
+      { label: "Workflows", href: "/admin/workflows" },
       { label: "Decisions", href: "/admin/decisions" },
       { label: "Launch checklist", href: "/admin/checklist" },
       { label: "CLAUDE.md", href: "/admin/claude-md" },
