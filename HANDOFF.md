@@ -10,6 +10,229 @@ This file is how Tennyson passes instructions from Strategy Claude (claude.ai we
 
 ## Pending instructions
 
+### Aurora Command landing reskin
+
+> Paste this entire block into `HANDOFF.md` directly under the `## Pending instructions` heading (replacing the "_(None...)_" line). Claude Code will execute it on the next session, then move it to "Completed handoffs" with a one-line summary per the protocol in CLAUDE.md.
+
+---
+
+## Scope
+
+Full reskin of the public landing page (`/`) to match the Aurora Command direction. The repo is already converging on the cosmic palette and motion primitives that this direction extends, so this is an additive polish pass and a few new sections — not a re-architecture. **No admin / login / middleware / auth changes. No tech-stack changes.**
+
+The site moves from a single-column editorial scroll to a denser, "operations console" feel: utility status bar, persistent nav with tabs, a hero with a live-globe ops panel on the right, a Nexus dashboard preview with animated waveform chart, a 5-card phase grid, a 4-card outcomes/deliverables grid, a before/after comparison, an interactive prompt library, testimonials, a two-column pricing block, FAQ, email capture, and a final CTA. All sections respect `prefers-reduced-motion`.
+
+## Hard constraints
+
+- **No em dashes anywhere** (per CLAUDE.md). The prototype HTML has a few; strip them when porting copy. Use commas, regular dashes, or parentheses.
+- **No new top-level dependencies.** All animation is CSS + plain SVG + a small RAF loop, identical pattern to the existing `Starfield.tsx`.
+- **No `/content/` writes that aren't listed below.** The schema changes I'm proposing are listed explicitly under "Content schema changes."
+- **Price.** The prototype shows `$249`. Authoritative price is still `$49` per CLAUDE.md / `final-cta.mdx` / `Pricing.tsx`. **Keep `$49`.** Treat the prototype's `$249` as an artifact of the design exploration and ignore it.
+- **Tone preserved.** Headlines stay editorial / human. Don't "operations-console" the copy. The chrome is denser; the prose is not.
+
+## Content schema changes (`/content/landing/*.mdx`)
+
+These are the only `/content/` edits in this handoff. Apply them verbatim.
+
+### 1. `content/landing/hero.mdx` — replace whole file
+
+```mdx
+---
+eyebrow: "Live · 60-minute onboarding · v1.0"
+headline_line_1: "You became the AI person by default."
+headline_line_2: "Build a custom"
+headline_line_3: "workspace that already works."
+---
+
+A 60-minute guided onboarding for the solo entrepreneur or small-team lead. Install the starter kit, configure Claude, walk away with a setup that compounds, not another bookmark folder.
+
+Three months ago I had no coding experience. Today I've shipped real apps. I'm probably not much further along than you are, but I can tell you exactly what helped, what wasted my time, and what I wish someone had told me in week one.
+```
+
+Notes: line 2 stays plain; line 3 takes the `headline-gradient` + `breath` treatment in `Hero.tsx` (already wired). Eyebrow is the system-status string. No em dashes.
+
+### 2. `content/landing/pricing.mdx` — new file
+
+```mdx
+---
+eyebrow: "Pricing"
+headline: "One price."
+headline_em: "Everything inside."
+sub: "No tiers. No upsells. The setup, artifacts, chat support, lifetime access to all future updates."
+amount: "$49"
+amount_qualifier: "one-time, includes every future update"
+button_text: "Buy and start setup"
+features:
+  - "The full 60-minute guided setup, top to bottom"
+  - "Personalized CLAUDE.md and live Nexus map"
+  - "20-prompt library tuned to your tone"
+  - "Lifetime access to the starter repo"
+  - "Real humans on chat (14-min average)"
+  - "Updates whenever Claude updates"
+aside:
+  - { k: "Refund", v: "30 days", small: "no questions" }
+  - { k: "Time required", v: "60 minutes", small: "one sitting" }
+  - { k: "What you keep", v: "Everything", small: "repo, spec, prompts" }
+  - { k: "Support", v: "Real humans", small: "14-min avg" }
+  - { k: "Updates", v: "Lifetime", small: "follows Claude releases" }
+  - { k: "Cancellation", v: "Anytime", small: "keep what you built" }
+---
+```
+
+This replaces the inline `Pricing.tsx` strings; `Pricing.tsx` becomes a content-driven component. `Pricing.tsx` should keep reading `STRIPE_PAYMENT_LINK` from env.
+
+### 3. `content/landing/final-cta.mdx` — replace whole file
+
+```mdx
+---
+headline_line_1: "It's time to"
+headline_line_2: "finish what we started"
+subhead: "One payment. Lifetime access. Empowering you."
+button_text: "Begin onboarding"
+footnote: "$49 once, 30-day refund, keep everything you build"
+---
+```
+
+### 4. `content/landing/utility-bar.mdx` — new file
+
+Used by the new `UtilityBar.tsx` strip across the top.
+
+```mdx
+---
+left:
+  - "SYSTEM ONLINE"
+  - "Build 26.04 · stable"
+right_static:
+  - "v1.0.0"
+clock: "utc"
+---
+```
+
+## Component changes (`/components/landing/*.tsx`)
+
+### New components
+
+1. **`UtilityBar.tsx`** — fixed top strip, `position: sticky; top: 0; z-index: 60`. Mono caps, 10px, letter-spacing 0.14em. Left side has a tiny `cosmic-glow-soft` dot then `SYSTEM ONLINE · Build 26.04 · stable`. Right side has a UTC clock (client-side `useEffect` setInterval at 1s, shows `HH:MM:SS UTC` tabular). Color `var(--color-muted-dark)`, background `rgba(2,6,14,0.65)` with `backdrop-blur-md`. 28px tall.
+
+2. **`OpsPanelGlobe.tsx`** — the right-side hero panel. Renders inline SVG: a 170-radius globe with 4 concentric latitude ellipses + 3 longitudes, `rgba(95, 217, 255, 0.18)` strokes, an outer ring at `rgba(95, 217, 255, 0.4)`, a dashed magenta orbit `rgba(255, 95, 179, 0.35)` rotating 40s linear (use SVG `<animateTransform>` like the prototype), 140 surface dots generated client-side (front-facing only, 18% chance of being cyan, otherwise muted blue), and 3 location pings (SF cyan, NYC magenta, LDN violet) with expanding-ring + fade animations on stagger. Below the SVG, a 3-cell stat strip (`Active builds 1,284 ↑12% · Hours saved 9k/mo · Anomalies ●34 active`). Wrapped in a `glass-card-static` panel with the `ops-panel-head` chip ("NEXUS · LIVE MAP" + animated `Tracking` dot).
+
+3. **`NexusDashPreview.tsx`** — new full-width section between Hero and Plateau. Title: "The Nexus dashboard. *Live for every customer* from minute 60." Body is a glass-card containing:
+   - `dash-tabbar` (Overview/Tools/Prompts/Decisions pills + ⌘K search chip on the right). Visual-only state.
+   - 3-column grid: left rail (5 phase rail-cards + 3 workspace rail-cards), center (month strip + animated waveform chart), right side (anomaly stat block + 4 location sync stamps).
+   - The chart is the only complex piece. Implementation: an SVG with 5 paths whose `d` attributes are recomputed every animation frame from `performance.now()` using the `genPath(ampBase, ampVar, freq1, freq2, phase, yBase, drift)` function from the prototype (lines ~720–760). Plus a sweeping probe line + dot + label. Wrap the RAF in a `useEffect` with cleanup, and gate the whole RAF behind `matchMedia('(prefers-reduced-motion: reduce)')` — when reduced, render five static paths from one fixed `t = 0` snapshot.
+   - **Don't lift this into a generic chart abstraction.** It's intentionally a one-off visual. Inline it.
+
+4. **`PhasesGrid.tsx`** — replaces / augments existing `SetupPreview`. Five `phase-card`s in a responsive grid (1 / 2 / 3 / 5 columns at sm/md/lg/xl). Each card: `PHASE · 0N` mono label, `<h3>` title, one-sentence description, footer row with `Duration / 5 min`. Cards use `.glass-card` (so the existing hover lift + amber halo applies). Content stays in `content/landing/setup-flow.mdx` (already exists from the prior handoff); add `phases` array to its frontmatter if it isn't there.
+
+5. **`OutcomesGrid.tsx`** — new section. Eyebrow "Deliverables", headline "Four artifacts. *Yours forever.*", lead "Not a course. Not another video library. Things you'll actually use tomorrow." Four `outcome` cards, each with a 2-letter glyph badge (MD cyan, NX violet, PL magenta, NM amber), title, description, and a tag-row footer (`Format / Markdown` etc.). Glyph is a 56×56 rounded square with the corresponding cosmic color at ~12% opacity background, full-saturation text, mono caps. Content in `content/landing/outcomes.mdx`.
+
+6. **`BeforeAfterCompare.tsx`** — new section, replaces / supplements existing `BeforeAfter.tsx`. Two side-by-side `compare-card`s. The `bad` panel uses `var(--color-muted)` text and ✕ markers; the `good` panel uses the amber/magenta gradient border and ✓ markers. Each panel is a `glass-card-static` with a header (`Before AI Catch Up · • STATE` / `After AI Catch Up · ● STATE`) and a 5-item checklist. Content is in `content/landing/before-after.mdx` (already exists; just read both `mode: "with"` and `mode: "without"` panels, no new schema needed).
+
+7. **`PromptLibraryExplorer.tsx`** — new section between Outcomes and Testimonials. Two-column glass-card. Left: a scrollable list of prompts (`P01 / Weekly recap / tone · candid / 3 vars`, eight rows). Right: detail panel showing the active prompt's name, tag, formatted body in a mono `<pre>` with three syntax classes (`.cm` muted comment, `.kw` amber, `.var` cyan, `.str` magenta), and a 4-cell stat row (`Variables / Avg tokens / Used by / Updated`). Active prompt switches on click. Use the eight prompts from the prototype's `PROMPTS` object as initial content but **read from `/content/admin/prompts.json`** if entries with matching ids are present, so the library here is the same source of truth as the admin Prompts tab. Use `'use client'`. Hard cap to first 8 entries on the landing — the admin tab has all 20.
+
+8. **`TestimonialsRow.tsx`** — three quote cards in a row. Body in editorial serif, attribution row with a 2-letter avatar circle (gradient amber→magenta with cosmic-glow-soft border), name, role. Three quotes, each `data-reveal`'d with stagger `0 / 80 / 160`. Content in `content/landing/testimonials.mdx`.
+
+9. **`FAQ.tsx`** — new section. Title "Things people ask *before buying.*", lead "If your question isn't here, the chat icon up top works. A real human reads it." Then 7 `<details>` accordions (use the `chev` element from globals.css for the indicator). First one `open` by default. Content in `content/landing/faq.mdx`.
+
+10. **`EmailCapture.tsx`** — replaces the inline form on `/`. Single glass-card centered, headline "Not ready yet? *We'll still teach you.*", lead, then email input + send button. Posts to existing `/api/subscribe`. Button text changes to "Sent ✓" on success (already the existing pattern).
+
+### Existing components that need touch-ups
+
+11. **`SiteHeader.tsx`** — add the 6-tab nav row (Overview / The flow / Nexus / Prompts / Pricing / FAQ) between the wordmark and the right-side actions, plus a search-icon button and a settings-icon button before the existing "Get access" CTA. Tabs are anchor links to in-page section ids. Active tab is whichever section is most visible; implement with a single IntersectionObserver across `[id]` sections, same pattern as the existing reveal observer. Keep the auto-hide-on-scroll-down behavior.
+
+12. **`Hero.tsx`** — switch the layout to a 2-column grid on `md+` (text left, `<OpsPanelGlobe />` right). Mobile stays single-column with the globe stacked under the text. Add the `hero-eyebrow` chip styling: pill-shaped, 1px cyan border, 6×6 cyan-glow dot inside, mono caps. Add a price block under the CTA: `<strong>$49</strong> one-time, lifetime access` in mono.
+
+13. **`Pricing.tsx`** — switch from inline strings to the new `pricing.mdx`. Layout becomes 2-column on `md+`: a `price-card` (large amount, feature list with ✓ markers, full-width CTA) and a `price-aside` panel (the 6-row k/v list with `¤` glyph). On mobile, the aside collapses below the card.
+
+14. **`FinalCTA.tsx`** — minor: line 1 plain, line 2 with `headline-gradient`. Footnote uses the new copy. All other behavior (MagneticButton, Reveal stagger) stays.
+
+15. **`app/page.tsx`** — new section order:
+    ```
+    UtilityBar
+    SiteHeader  (with the new tab row)
+    Hero        (with OpsPanelGlobe)
+    NexusDashPreview
+    PhasesGrid
+    OutcomesGrid
+    BeforeAfterCompare
+    PromptLibraryExplorer
+    TestimonialsRow
+    Pricing
+    FAQ
+    EmailCapture
+    FinalCTA
+    Footer
+    ```
+    `LatestWriting`, `WhatYouGet`, `WhoItsFor`, `ThisIsForYou`, `VideoPlaceholder`, `Plateau` are removed from the landing page (don't delete the components — keep them for the `/preview` route and future blog use).
+
+## CSS additions (append to `app/globals.css`, do not modify existing rules)
+
+All listed in `DESIGN.md` with full source. Summary:
+
+- `.utility-bar`, `.utility-bar .dot`, `.utility-bar .sep`
+- `.hero-eyebrow`, `.hero-grid`
+- `.ops-panel`, `.ops-panel-head`, `.ops-panel-head .live`, `.globe-wrap`, `.stat-strip`, `.stat-strip .stat`
+- `.dash`, `.dash-tabbar`, `.dash-tabbar .pill`, `.dash-tabbar .search`, `.dash-grid`, `.dash-rail`, `.rail-h`, `.rail-card`, `.rail-card.active`, `.month-strip`, `.chart`, `.dash-side`, `.anomaly`, `.loc-list`, `.loc`
+- `.phases-grid`, `.phase-card`, `.phase-card .num`, `.phase-card .time`
+- `.outcomes`, `.outcome`, `.glyph`, `.glyph.cyan/.violet/.pink/.amber`
+- `.compare`, `.compare-card`, `.compare-card.bad`, `.compare-card.good`, `.compare-list`, `.compare-list .ic`
+- `.prompts`, `.prompt-list`, `.prompt-row`, `.prompt-row.active`, `.prompt-detail`, `.prompt-body`, `.prompt-body .cm/.kw/.var/.str`, `.prompt-meta`
+- `.testis`, `.testi`, `.testi .avatar`, `.testi .who`
+- `.pricing`, `.price-card`, `.price-card .amount`, `.features`, `.price-aside`, `.aside-row`
+- `.faqs`, `.faq` (uses existing `.chev`), `.faq summary`, `.faq[open] summary .chev`, `.faq .a`
+- `.capture`, `.capture-card`, `.capture-form`
+- `.final` (final CTA stage), `.foot-grid`, `.foot-col`, `.foot-bot`
+
+All cards inherit `.glass-card` or `.glass-card-static` so they share hover/halo behavior. **Do not duplicate the glass styling**, just compose on top.
+
+## Animation notes (from the prototype, with their reasons)
+
+These are the things most likely to be lost in translation. Worth preserving exactly.
+
+- **Hero headline reveal stagger:** lines reveal at `40 / 120 / 220 ms`. Line 3 also gets `breath` (4.5s ease-in-out infinite). Don't change the timing — the rhythm reads as "thought arriving."
+- **Globe orbit:** 40s linear rotation on the dashed magenta orbit. Linear, not ease — non-linear motion makes it feel mechanical. Pings stagger at 0.6s offsets, 2.4s pulse.
+- **Chart waveforms:** five paths, each with its own `freq1 / freq2 / phase / drift`. Don't simplify to fewer waves; the visual density is the entire point. The probe line sweeps at `0.06` of period, slow enough to read but fast enough to feel alive. The `VYG1` label is recomputed every frame to suggest live telemetry.
+- **Hot-wire pulse** (existing): keep the 4.5s pulse on `SetupPreview`'s connector. If `PhasesGrid` replaces `SetupPreview` on the landing, port the hot-wire to the divider between the rail and the chart in `NexusDashPreview` instead, so the motion isn't lost.
+- **Magnetic CTA** (existing): preserve. Wrap the new "Begin onboarding" CTA in `MagneticButton`.
+- **Reveal stagger inside grids:** outcomes, phases, testimonials, FAQ should each get sequential `delay` (0/80/160/240/...) on `Reveal`. Keep this — without it the grids feel "popped on" instead of "arrived."
+- **`prefers-reduced-motion` respected on every new animation.** No exceptions: the chart RAF, the orbit, the pings, the magnetic pull, the reveal transforms.
+
+## Hover states (the easy thing to half-implement)
+
+- `.glass-card:hover` already gives `translateY(-2px)` + amber halo. All new cards should reach for `.glass-card`, not roll their own hover.
+- `.rail-card:hover` should brighten the left border to `var(--color-terracotta)` and lift 1px. Active rail-card has a 3px amber left bar and brighter background.
+- `.prompt-row:hover` brightens text and shows a faint left amber bar. Active row gets a full bar + amber-tinted background.
+- `.phase-card:hover` raises 2px and the `PHASE · 0N` label shifts from `var(--color-muted)` to `var(--color-terracotta)` — small but reads as "this card is alive."
+- `.faq summary:hover` shifts the chev to amber. Open state rotates the chev (existing `.chev.is-open`).
+- All transitions use the existing easing token `cubic-bezier(0.22, 1, 0.36, 1)` and durations 180–260ms. Don't introduce new easings.
+
+## Verification checklist (before marking handoff complete)
+
+- [ ] `npx tsc --noEmit` clean
+- [ ] `npm run build` green, all routes still emit
+- [ ] `/` renders the new section order with no layout overflow at 360px / 768px / 1280px / 1920px
+- [ ] All animations stop or stay at t=0 with `prefers-reduced-motion: reduce` set in DevTools
+- [ ] No em dashes anywhere in the diff (`grep -R "—" app/ components/ content/landing/` returns nothing)
+- [ ] Price reads `$49` everywhere (Pricing card, Hero subhead, FinalCTA footnote). The prototype's `$249` is **not** in the repo.
+- [ ] Stripe link still wired through `STRIPE_PAYMENT_LINK` on every CTA
+- [ ] `/admin/*`, `/login`, `/preview`, `/thank-you`, `/blog/*` all still render (untouched by this change)
+- [ ] `/api/subscribe` still works from `EmailCapture.tsx`
+- [ ] Lighthouse mobile performance >= 85 (the chart RAF is the most likely regression — verify)
+
+## Rollout
+
+Branch off `claude/ai-onboarding-v1-RTsDk`, push as `claude/aurora-command-reskin`, open a PR titled "Aurora Command landing reskin." Don't merge to `main` automatically; Tennyson will review the deploy preview on Vercel before merging.
+
+## When this is done
+
+Move this entire block to `## Completed handoffs` with a one-line entry per the protocol. Strategy Claude will pick up future tweaks from there.
+
+---
+
+## Companion: `DESIGN.md`
+
+Sits alongside this file in the repo. It contains the full CSS source for every new class listed above (lifted from `Aurora Command - Landing.html` lines 1–700 of the source `aurora-command.css`, with no functional changes), plus the design rules in narrative form. Use it as the spec when implementing each component.
+
 _(None. Paste new instructions from Strategy Claude above this line.)_
 
 ## Completed handoffs
