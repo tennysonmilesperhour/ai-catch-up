@@ -1,7 +1,9 @@
 import { loadContent, loadJson } from "@/lib/content";
 import { resolveCheckout } from "@/lib/checkout";
 import { Reveal } from "@/components/shared/Reveal";
-import { OpsPanelGlobe } from "@/components/landing/OpsPanelGlobe";
+// Lazy-loaded client wrapper around the Three.js globe so the ~150KB
+// scene doesn't ship in the landing's initial bundle.
+import { OpsPanelGlobeClient as OpsPanelGlobe } from "@/components/landing/OpsPanelGlobeClient";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { AutoLearnText } from "@/components/shared/LearnMode";

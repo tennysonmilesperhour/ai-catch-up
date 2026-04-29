@@ -22,17 +22,41 @@ function fmtUtc(d: Date) {
 const BUILD_ID = (process.env.NEXT_PUBLIC_BUILD_ID as string | undefined) || "";
 const BUILD_TAG = BUILD_ID ? BUILD_ID.slice(0, 7) : "dev";
 
+// Clock isolated into its own component so the 1-second setInterval only
+// re-renders the clock span — not the LearnModeToggle, the build id chip,
+// or the rest of the bar. Pauses when the tab is hidden via document
+// visibilitychange to save CPU on background tabs.
+function UtcClock() {
+  const [now, setNow] = useState<string>(() => fmtUtc(new Date()));
+  useEffect(() => {
+    let id: ReturnType<typeof setInterval> | null = null;
+    function start() {
+      stop();
+      setNow(fmtUtc(new Date()));
+      id = setInterval(() => setNow(fmtUtc(new Date())), 1000);
+    }
+    function stop() {
+      if (id) clearInterval(id);
+      id = null;
+    }
+    start();
+    function onVis() {
+      if (document.visibilityState === "visible") start();
+      else stop();
+    }
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, []);
+  return <span className="num-tab">{now}</span>;
+}
+
 export function UtilityBar({
   left = ["SYSTEM ONLINE", "Build 26.04 · stable"],
   rightStatic = ["v1.0.0"],
 }: UtilityBarProps) {
-  const [now, setNow] = useState<string>(fmtUtc(new Date()));
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(fmtUtc(new Date())), 1000);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <div className="utility-bar" role="status" aria-live="off">
       <div className="group">
@@ -60,7 +84,7 @@ export function UtilityBar({
           {BUILD_TAG}
         </span>
         <span className="sep">·</span>
-        <span className="num-tab">{now}</span>
+        <UtcClock />
       </div>
     </div>
   );

@@ -44,17 +44,17 @@ export function OpsPanelGlobe() {
     sessionsRef.current = feed.sessions;
   }, [feed.sessions]);
 
-  // Register this visit, then pull the live feed. Re-pulls every 60s so
-  // the globe shows recent visitors as they trickle in.
+  // Register this visit, then pull the live feed. Re-pulls every 3 min
+  // (was 60s — overkill for a low-traffic landing) and pauses entirely
+  // when the tab is hidden so background tabs don't burn cycles.
   useEffect(() => {
     let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
     async function ping() {
       try {
         await fetch("/api/sessions", {
           method: "POST",
           cache: "no-store",
-          // Empty body — the API reads geo from Vercel headers, not the
-          // client. No personally identifying data is sent.
         });
       } catch {
         /* ignore */
@@ -72,11 +72,25 @@ export function OpsPanelGlobe() {
         /* ignore — keep demo */
       }
     }
+    function start() {
+      stop();
+      intervalId = setInterval(pull, 180_000);
+    }
+    function stop() {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = null;
+    }
+    function onVis() {
+      if (document.visibilityState === "visible") start();
+      else stop();
+    }
     ping().then(pull);
-    const id = setInterval(pull, 60_000);
+    start();
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       cancelled = true;
-      clearInterval(id);
+      stop();
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, []);
 

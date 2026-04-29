@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const POLL_INTERVAL_MS = 15 * 1000; // 15 seconds
+const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds (was 15; 15 was overkill)
 const FOCUS_THROTTLE_MS = 5 * 1000;
 
 // BUILD_ID is baked into the client bundle at build time via

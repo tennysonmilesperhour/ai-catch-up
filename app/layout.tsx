@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Outfit, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { RefreshBanner } from "@/components/shared/RefreshBanner";
-import { CommandPalette } from "@/components/shared/CommandPalette";
+import { CommandPaletteClient } from "@/components/shared/CommandPaletteClient";
 import { LearnModeProvider } from "@/components/shared/LearnMode";
 import { buildPaletteItems } from "@/lib/palette";
 
@@ -83,7 +83,7 @@ export default function RootLayout({
         <LearnModeProvider>
           {children}
           <RefreshBanner />
-          <CommandPalette items={paletteItems} />
+          <CommandPaletteClient items={paletteItems} />
         </LearnModeProvider>
       </body>
     </html>
