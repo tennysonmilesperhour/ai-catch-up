@@ -105,7 +105,7 @@ export default async function OverviewPage() {
         </p>
         <h1 className="font-display text-3xl md:text-5xl leading-[1.05] text-[var(--color-dark)]">
           Your workspace,{" "}
-          <span className="italic headline-gradient">still warm.</span>
+          <span className="headline-gradient">still warm.</span>
         </h1>
         <p className="text-[var(--color-muted-dark)] max-w-2xl mt-4 leading-relaxed">
           Where you left off, what is connected, and the prompts you are most

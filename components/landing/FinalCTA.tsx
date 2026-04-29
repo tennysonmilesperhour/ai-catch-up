@@ -33,7 +33,7 @@ export function FinalCTA() {
               <span className="block">{frontmatter.headline_line_1}</span>
             )}
             {frontmatter.headline_line_2 && (
-              <span className="block italic headline-gradient">
+              <span className="block headline-gradient">
                 {frontmatter.headline_line_2}
               </span>
             )}

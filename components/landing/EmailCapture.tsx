@@ -13,7 +13,7 @@ export function EmailCapture() {
           <SectionEyebrow>Stay in touch</SectionEyebrow>
           <h2 className="font-serif text-3xl md:text-4xl leading-tight text-[var(--color-dark)]">
             Not ready yet?{" "}
-            <span className="italic headline-gradient">
+            <span className="headline-gradient">
               We'll still teach you.
             </span>
           </h2>
