@@ -14,6 +14,13 @@ function fmtUtc(d: Date) {
   return `${hh}:${mm}:${ss} UTC`;
 }
 
+// Bundle build id baked at build time (next.config.mjs → env.NEXT_PUBLIC_BUILD_ID).
+// Render the first 7 chars so it reads like a short git sha. RefreshBanner
+// compares this same constant against /api/version; this chip is the visible
+// breadcrumb that the system is wired up.
+const BUILD_ID = (process.env.NEXT_PUBLIC_BUILD_ID as string | undefined) || "";
+const BUILD_TAG = BUILD_ID ? BUILD_ID.slice(0, 7) : "dev";
+
 export function UtilityBar({
   left = ["SYSTEM ONLINE", "Build 26.04 · stable"],
   rightStatic = ["v1.0.0"],
@@ -43,6 +50,13 @@ export function UtilityBar({
             <span className="sep">·</span>
           </span>
         ))}
+        <span
+          className="num-tab"
+          title="Bundle build id (compares against /api/version for stale-page detection)"
+        >
+          {BUILD_TAG}
+        </span>
+        <span className="sep">·</span>
         <span className="num-tab">{now}</span>
       </div>
     </div>

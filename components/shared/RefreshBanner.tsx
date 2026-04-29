@@ -97,59 +97,22 @@ export function RefreshBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="glass-card"
-      style={{
-        position: "fixed",
-        bottom: 24,
-        right: 24,
-        maxWidth: 360,
-        padding: "14px 18px",
-        zIndex: 200,
-        display: "flex",
-        gap: 14,
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderLeft: "3px solid #ff8a4c",
-      }}
+      className="refresh-banner glass-card-static"
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p
-          style={{
-            fontFamily: "ui-monospace, Menlo, monospace",
-            fontSize: 10,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#ff8a4c",
-            marginBottom: 4,
-          }}
-        >
-          Updates available
+      <div className="refresh-banner-body">
+        <p className="refresh-banner-eyebrow">
+          <span className="dot" aria-hidden /> New build available
         </p>
-        <p
-          style={{
-            fontFamily: "Georgia, serif",
-            fontSize: 14,
-            lineHeight: 1.4,
-            color: "#f3ecdb",
-          }}
-        >
+        <p className="refresh-banner-msg">
           This page is out of date. Refresh to pick up the latest.
         </p>
       </div>
       <button
+        type="button"
         onClick={() => window.location.reload()}
-        className="glass-button-primary"
-        style={{
-          padding: "8px 14px",
-          fontSize: 12,
-          fontFamily: "ui-monospace, Menlo, monospace",
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
+        className="glass-button-primary refresh-banner-button"
       >
-        Refresh
+        Refresh →
       </button>
     </div>
   );
