@@ -7,6 +7,7 @@ import {
   type ConnectProvider,
 } from "@/components/admin/ConnectionConnect";
 import { LearnModeToggle } from "@/components/shared/LearnMode";
+import { ApiKeyManager } from "@/components/shared/ApiKeyManager";
 
 const STORAGE_KEY = "admin-settings-v1";
 
@@ -376,6 +377,18 @@ export function SettingsPanel({ connections }: Props) {
         >
           {resetState === "done" ? "Workspace reset" : "Reset workspace"}
         </button>
+      </section>
+
+      <section>
+        <h2 className="font-serif text-2xl text-[var(--color-dark)] mb-2">
+          API key
+        </h2>
+        <p className="text-[var(--color-muted-dark)] leading-relaxed mb-5 max-w-2xl">
+          Required to run prompts and complete the guided setup. Bring your
+          own Anthropic key. We never see it; calls go from your browser
+          straight to api.anthropic.com.
+        </p>
+        <ApiKeyManager />
       </section>
 
       <section>

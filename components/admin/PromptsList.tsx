@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { RunPrompt } from "@/components/shared/RunPrompt";
 
 export type Prompt = {
   id: number | string;
@@ -217,19 +218,35 @@ export function PromptsList({ prompts, categories }: Props) {
             </header>
 
             <section>
-              <div className="flex items-baseline justify-between mb-2">
+              <div className="flex items-baseline justify-between mb-2 gap-3 flex-wrap">
                 <p className="label text-[var(--color-muted-dark)]">Prompt</p>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(openPrompt.prompt)}
-                  className={`font-mono text-[10px] uppercase tracking-[0.10em] px-3 py-1.5 rounded-[6px] border transition-colors cursor-pointer ${
-                    copyState === "copied"
-                      ? "border-[var(--color-organic)] text-[var(--color-organic)]"
-                      : "border-[var(--color-border-dark)] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] hover:border-[var(--color-terracotta)]"
-                  }`}
-                >
-                  {copyState === "copied" ? "Copied" : "Copy"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <RunPrompt
+                    prompt={openPrompt.prompt}
+                    title={openPrompt.title}
+                  >
+                    {(open) => (
+                      <button
+                        type="button"
+                        onClick={open}
+                        className="font-mono text-[10px] uppercase tracking-[0.10em] px-3 py-1.5 rounded-[6px] border border-[rgba(95,255,215,0.45)] text-[var(--color-cyan)] hover:bg-[rgba(95,255,215,0.08)] hover:border-[var(--color-cyan)] transition-colors cursor-pointer"
+                      >
+                        Run →
+                      </button>
+                    )}
+                  </RunPrompt>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(openPrompt.prompt)}
+                    className={`font-mono text-[10px] uppercase tracking-[0.10em] px-3 py-1.5 rounded-[6px] border transition-colors cursor-pointer ${
+                      copyState === "copied"
+                        ? "border-[var(--color-organic)] text-[var(--color-organic)]"
+                        : "border-[var(--color-border-dark)] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] hover:border-[var(--color-terracotta)]"
+                    }`}
+                  >
+                    {copyState === "copied" ? "Copied" : "Copy"}
+                  </button>
+                </div>
               </div>
               <div className="whitespace-pre-line text-[var(--color-dark)] leading-relaxed bg-[rgba(2,6,14,0.7)] border border-[var(--color-border)] rounded-[10px] p-4 font-mono text-sm">
                 {openPrompt.prompt}
