@@ -427,15 +427,15 @@ textarea:focus-visible {
 
 .headline-gradient {
   background: linear-gradient(
-    135deg,
-    #fbbf24 0%,
-    #ff8a4c 45%,
+    110deg,
+    #5fffd7 0%,
+    #b9a4ff 45%,
     #ff5fb3 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 0 22px rgba(251, 191, 36, 0.35));
+  filter: drop-shadow(0 0 22px rgba(95, 255, 215, 0.18));
 }
 
 .orbit-stack {
