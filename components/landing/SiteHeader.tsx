@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type Tab = { id: string; label: string };
@@ -15,9 +16,17 @@ const TABS: Tab[] = [
 ];
 
 export function SiteHeader() {
+  const pathname = usePathname();
+  const isLanding = pathname === "/";
   const [hidden, setHidden] = useState(false);
   const [active, setActive] = useState<string>("overview");
   const lastY = useRef(0);
+
+  // Tab anchors are absolute ("/#section") so they work as cross-page nav
+  // from /preview/dashboard, /thank-you, etc. — they navigate back to the
+  // landing and jump to the section. On the landing itself the browser
+  // smooth-scrolls within the page (default behavior).
+  const tabHref = (id: string) => (isLanding ? `#${id}` : `/#${id}`);
 
   useEffect(() => {
     function onScroll() {
@@ -37,6 +46,14 @@ export function SiteHeader() {
   }, []);
 
   useEffect(() => {
+    // The active-tab indicator only makes sense on the landing where every
+    // section id exists. On other routes (/preview/dashboard, /thank-you,
+    // etc.) most ids are absent so the IO would lock to whichever single id
+    // happens to be present and read as "wrong tab active." Skip entirely.
+    if (!isLanding) {
+      setActive("");
+      return;
+    }
     const els = TABS.map((t) => document.getElementById(t.id)).filter(
       (el): el is HTMLElement => Boolean(el)
     );
@@ -62,7 +79,7 @@ export function SiteHeader() {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [isLanding]);
 
   return (
     <header
@@ -82,7 +99,7 @@ export function SiteHeader() {
           {TABS.map((t) => (
             <a
               key={t.id}
-              href={`#${t.id}`}
+              href={tabHref(t.id)}
               className={`tab-pill ${active === t.id ? "is-active" : ""}`}
             >
               {t.label}
@@ -108,7 +125,7 @@ export function SiteHeader() {
             Log in
           </Link>
           <Link
-            href="#pricing"
+            href={tabHref("pricing")}
             className="glass-button-primary px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em]"
           >
             Get access

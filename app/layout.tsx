@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Outfit, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { RefreshBanner } from "@/components/shared/RefreshBanner";
+import { CommandPalette } from "@/components/shared/CommandPalette";
+import { buildPaletteItems } from "@/lib/palette";
 
 // Display: warm modern geometric sans for headings + UI labels.
 const outfit = Outfit({
@@ -67,6 +69,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Build palette items at request time (server-side). Items are static
+  // across requests so this is cheap; could memoize later if needed.
+  const paletteItems = buildPaletteItems();
+
   return (
     <html
       lang="en"
@@ -75,6 +81,7 @@ export default function RootLayout({
       <body>
         {children}
         <RefreshBanner />
+        <CommandPalette items={paletteItems} />
       </body>
     </html>
   );

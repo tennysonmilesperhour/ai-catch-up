@@ -19,17 +19,17 @@ export function Footer() {
 
         <div className="foot-col">
           <h4>Product</h4>
-          <Link href="#overview" className="hover:text-[var(--color-dark)] transition-colors">Overview</Link>
-          <Link href="#flow" className="hover:text-[var(--color-dark)] transition-colors">The flow</Link>
-          <Link href="#nexus" className="hover:text-[var(--color-dark)] transition-colors">Nexus</Link>
-          <Link href="#prompts" className="hover:text-[var(--color-dark)] transition-colors">Prompts</Link>
+          <Link href="/#overview" className="hover:text-[var(--color-dark)] transition-colors">Overview</Link>
+          <Link href="/#flow" className="hover:text-[var(--color-dark)] transition-colors">The flow</Link>
+          <Link href="/#nexus" className="hover:text-[var(--color-dark)] transition-colors">Nexus</Link>
+          <Link href="/#prompts" className="hover:text-[var(--color-dark)] transition-colors">Prompts</Link>
           <Link href="/preview/dashboard" className="hover:text-[var(--color-cyan)] transition-colors">Playground →</Link>
         </div>
 
         <div className="foot-col">
           <h4>Buy</h4>
-          <Link href="#pricing" className="hover:text-[var(--color-dark)] transition-colors">Pricing</Link>
-          <Link href="#faq" className="hover:text-[var(--color-dark)] transition-colors">FAQ</Link>
+          <Link href="/#pricing" className="hover:text-[var(--color-dark)] transition-colors">Pricing</Link>
+          <Link href="/#faq" className="hover:text-[var(--color-dark)] transition-colors">FAQ</Link>
           <Link href="/blog" className="hover:text-[var(--color-dark)] transition-colors">Writing</Link>
         </div>
 
