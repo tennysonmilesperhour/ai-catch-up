@@ -86,21 +86,21 @@ export function Hero() {
             <Reveal delay={780}>
               <div className="hero-stats">
                 <div className="cell">
-                  <span className="k">Active builds</span>
+                  <span className="k">Setup time</span>
                   <span className="v num-tab">
-                    1,284 <span className="delta pos">↑ 12%</span>
+                    60 <span className="delta pos">min · one sitting</span>
                   </span>
                 </div>
                 <div className="cell">
-                  <span className="k">Hours saved</span>
+                  <span className="k">Prompt library</span>
                   <span className="v num-tab">
-                    9k <span className="delta pos">/ mo</span>
+                    20 <span className="delta pos">tuned to your voice</span>
                   </span>
                 </div>
                 <div className="cell">
-                  <span className="k">Anomalies</span>
+                  <span className="k">Updates</span>
                   <span className="v num-tab">
-                    34 <span className="delta warn">active</span>
+                    lifetime <span className="delta pos">with Claude</span>
                   </span>
                 </div>
               </div>

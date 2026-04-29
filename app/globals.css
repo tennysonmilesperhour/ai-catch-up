@@ -1490,12 +1490,16 @@ textarea:focus-visible {
   .section-head { grid-template-columns: 1.5fr 1fr; gap: 2rem; }
 }
 
-/* Hero stat strip (lifted out of OpsPanelGlobe; lives next to the CTA). */
+/* Hero stat strip (lifted out of OpsPanelGlobe; lives next to the CTA).
+   1-col on phones, 3-col on sm: and up. */
 .hero-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.75rem;
   margin-top: 1.5rem;
+}
+@media (min-width: 640px) {
+  .hero-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 .hero-stats .cell {
   padding: 0.85rem 1rem;
@@ -1791,6 +1795,40 @@ textarea:focus-visible {
   text-transform: uppercase;
   color: var(--color-violet);
   cursor: help;
+}
+
+/* ============================================================
+   Narrow-screen overrides (Aurora landing). Targets 360-639px
+   phones primarily; tablet/desktop layouts unchanged.
+   ============================================================ */
+
+/* UtilityBar: at < 640px the bar gets crowded. Hide secondary
+   left-side build label and the right-side static labels so just the
+   system dot + status, build-id chip, and UTC clock remain. */
+@media (max-width: 639px) {
+  .utility-bar {
+    padding: 0 0.85rem;
+    gap: 0.5rem;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+  .utility-bar .group .group:nth-child(n + 2) { display: none; }
+  .utility-bar .group:last-child .group .sep { display: none; }
+}
+
+/* Dashboard tabbar: allow the pill row to wrap on narrow widths so
+   the demo pill + search chip don't overlap the regular tabs. */
+@media (max-width: 767px) {
+  .dash-tabbar .pills { flex-basis: 100%; }
+  .dash-tabbar .search { margin-left: auto; }
+  .demo-pill { font-size: 8px; padding: 3px 8px; }
+}
+
+/* Workspace activity feed: at narrow widths the city/label/when stack
+   needs to keep .label and .when from running into each other. */
+@media (max-width: 479px) {
+  .loc .label { font-size: 8px; }
+  .loc .when { font-size: 9px; }
 }
 
 /* Stream legend: chips below the chart, one per wave, so the colors
