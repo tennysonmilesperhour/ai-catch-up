@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import promptsData from "@/content/admin/prompts.json";
 import { Reveal } from "@/components/shared/Reveal";
@@ -14,11 +15,58 @@ import {
 
 // Resolved at module init from prompts.json so the workspace rail-card
 // "n prompts" label tracks Strategy Claude's actual library size.
-const PROMPT_COUNT = Array.isArray(promptsData)
-  ? promptsData.length
-  : Array.isArray((promptsData as { prompts?: unknown[] }).prompts)
-    ? ((promptsData as { prompts: unknown[] }).prompts.length)
-    : 0;
+type PromptShape = { id: number | string; category: string; title: string };
+const PROMPTS_ARR: PromptShape[] = Array.isArray(promptsData)
+  ? (promptsData as PromptShape[])
+  : Array.isArray((promptsData as { prompts?: PromptShape[] }).prompts)
+    ? ((promptsData as { prompts: PromptShape[] }).prompts)
+    : [];
+const PROMPT_COUNT = PROMPTS_ARR.length;
+
+// ============================================================================
+// Tab content data: clickable interactions across the dashboard.
+// ============================================================================
+
+type DashTab = "Overview" | "Tools" | "Prompts" | "Decisions";
+const DASH_TABS: DashTab[] = ["Overview", "Tools", "Prompts", "Decisions"];
+
+// Workspace rail-card hrefs. Clicking an artifact in the workspace rail
+// jumps to the corresponding admin tab. Non-authed visitors get bounced
+// to /login by middleware, which is fine — the click communicates "this
+// is a real route, not chrome."
+const WORKSPACE_HREF: Record<string, string> = {
+  WS1: "/admin/claude-md",
+  WS2: "/admin/nexus",
+  WS3: "/admin/prompts",
+};
+
+// Activity-feed kind → admin tab href. The feed becomes a real
+// navigational artifact instead of decoration.
+const ACTIVITY_HREF: Record<ActivityKind, string> = {
+  edit: "/admin/claude-md",
+  use: "/admin/prompts",
+  log: "/admin/decisions",
+  sync: "/admin/nexus",
+};
+
+// Demo-tool list shown when the Tools tab is active. Marketing surface
+// only; the post-purchase admin overview reads real connection state.
+const DEMO_TOOLS: { name: string; detail: string; state: "ok" | "warn" }[] = [
+  { name: "Anthropic", detail: "API connected",      state: "ok" },
+  { name: "GitHub",    detail: "synced as you",      state: "ok" },
+  { name: "Vercel",    detail: "deploy linked",      state: "ok" },
+  { name: "Stripe",    detail: "payment ready",      state: "ok" },
+  { name: "1Password", detail: "vault optional",     state: "warn" },
+];
+
+// Demo decisions shown when the Decisions tab is active. Curated to
+// match the AI Catch Up narrative without exposing real customer data.
+const DEMO_DECISIONS: { id: number; title: string; note: string }[] = [
+  { id: 28, title: "Lock pricing at $49",                note: "no tiers" },
+  { id: 27, title: "No subscription, lifetime access",   note: "one-time" },
+  { id: 26, title: "Defer real-time sync to v1.1",       note: "v1.0 ships static" },
+  { id: 25, title: `${PROMPT_COUNT}-prompt library, 9 categories`, note: "tone-tuned" },
+];
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -236,6 +284,7 @@ export function NexusDashPreview({
   const [activeRail, setActiveRail] = useState<string>(
     scenario.railsPhases[0]?.id ?? "P1"
   );
+  const [activeTab, setActiveTab] = useState<DashTab>("Overview");
   const {
     waves,
     railsPhases,
@@ -243,6 +292,10 @@ export function NexusDashPreview({
     activeAlerts,
     activity,
   } = scenario;
+
+  const openPalette = () =>
+    typeof window !== "undefined" &&
+    window.dispatchEvent(new CustomEvent("command-palette:open"));
 
   return (
     <section
@@ -278,13 +331,16 @@ export function NexusDashPreview({
           <Reveal delay={0}>
             <div className="dash-tabbar">
               <div className="pills">
-                {["Overview", "Tools", "Prompts", "Decisions"].map((p) => (
-                  <span
+                {DASH_TABS.map((p) => (
+                  <button
                     key={p}
-                    className={`pill ${p === "Overview" ? "is-active" : ""}`}
+                    type="button"
+                    onClick={() => setActiveTab(p)}
+                    className={`pill ${activeTab === p ? "is-active" : ""}`}
+                    aria-pressed={activeTab === p}
                   >
                     {p}
-                  </span>
+                  </button>
                 ))}
                 <span
                   className="demo-pill"
@@ -293,7 +349,14 @@ export function NexusDashPreview({
                   ● Demo · live for buyers
                 </span>
               </div>
-              <span className="search">⌘K · Search</span>
+              <button
+                type="button"
+                onClick={openPalette}
+                className="search"
+                aria-label="Open command palette (⌘K)"
+              >
+                ⌘K · Search
+              </button>
             </div>
           </Reveal>
 
@@ -317,19 +380,24 @@ export function NexusDashPreview({
                 </div>
               ))}
               <div className="rail-h">Workspace · 3</div>
-              {RAILS_WORKSPACE.map((r) => (
-                <div
-                  key={r.id}
-                  className={`rail-card ${activeRail === r.id ? "active" : ""}`}
-                  onMouseEnter={() => setActiveRail(r.id)}
-                >
-                  <div className="row">
-                    <span className="num">{r.num}</span>
-                    <span className="ttl">{r.title}</span>
-                  </div>
-                  <div className="meta-row">{r.meta}</div>
-                </div>
-              ))}
+              {RAILS_WORKSPACE.map((r) => {
+                const href = WORKSPACE_HREF[r.id] ?? "/admin";
+                return (
+                  <Link
+                    key={r.id}
+                    href={href}
+                    className={`rail-card rail-link ${activeRail === r.id ? "active" : ""}`}
+                    onMouseEnter={() => setActiveRail(r.id)}
+                  >
+                    <div className="row">
+                      <span className="num">{r.num}</span>
+                      <span className="ttl">{r.title}</span>
+                      <span className="rail-arrow" aria-hidden>→</span>
+                    </div>
+                    <div className="meta-row">{r.meta}</div>
+                  </Link>
+                );
+              })}
             </Reveal>
 
             {/* center: month strip + chart */}
@@ -361,50 +429,153 @@ export function NexusDashPreview({
               </div>
             </Reveal>
 
-            {/* right side */}
+            {/* right side: tab-aware content */}
             <Reveal as="div" delay={240} className="dash-side">
-              <div className="anomaly">
-                <div className="h-row">
-                  <span className="h">
-                    <span className="dot" aria-hidden /> Pattern signals
-                  </span>
-                  <span className="ext" aria-hidden>↗</span>
-                </div>
-                <div className="flex flex-col gap-1.5 mt-2 font-mono text-[11px] tracking-[0.04em] text-[var(--color-muted-dark)] num-tab">
-                  {patternSignals.map((s) => (
-                    <div key={s.label} className="flex flex-col">
-                      <div className="flex justify-between">
-                        <span>{s.label}</span>
-                        <span className="text-[var(--color-dark)]">{s.value}</span>
-                      </div>
-                      <span className="text-[10px] text-[var(--color-muted)] tracking-[0.10em]">
-                        {s.note}
+              {activeTab === "Overview" && (
+                <>
+                  <Link
+                    href="/admin/checklist"
+                    className="anomaly anomaly-link"
+                    aria-label="Open the launch checklist (where these signals get resolved)"
+                  >
+                    <div className="h-row">
+                      <span className="h">
+                        <span className="dot" aria-hidden /> Pattern signals
                       </span>
+                      <span className="ext" aria-hidden>↗</span>
                     </div>
-                  ))}
-                  <div className="flex justify-between mt-1 pt-2 border-t border-[rgba(255,95,179,0.20)]">
-                    <span>Active alerts</span>
-                    <span className="text-[var(--color-magenta)]">●  {activeAlerts}</span>
+                    <div className="flex flex-col gap-1.5 mt-2 font-mono text-[11px] tracking-[0.04em] text-[var(--color-muted-dark)] num-tab">
+                      {patternSignals.map((s) => (
+                        <div key={s.label} className="flex flex-col">
+                          <div className="flex justify-between">
+                            <span>{s.label}</span>
+                            <span className="text-[var(--color-dark)]">{s.value}</span>
+                          </div>
+                          <span className="text-[10px] text-[var(--color-muted)] tracking-[0.10em]">
+                            {s.note}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between mt-1 pt-2 border-t border-[rgba(255,95,179,0.20)]">
+                        <span>Active alerts</span>
+                        <span className="text-[var(--color-magenta)]">●  {activeAlerts}</span>
+                      </div>
+                    </div>
+                  </Link>
+                  <div className="rail-h" style={{ marginTop: 0 }}>
+                    This week
                   </div>
-                </div>
-              </div>
-              <div className="rail-h" style={{ marginTop: 0 }}>
-                This week
-              </div>
-              <div className="loc-list">
-                {activity.map((a, i) => (
-                  <div key={i} className="loc">
-                    <span
-                      className="city"
-                      style={{ color: KIND_COLOR[a.kind] }}
-                    >
-                      ●  {a.label}
-                    </span>
-                    <span className="label">{a.detail}</span>
-                    <span className="when">{a.when} · today</span>
+                  <div className="loc-list">
+                    {activity.map((a, i) => (
+                      <Link
+                        key={i}
+                        href={ACTIVITY_HREF[a.kind]}
+                        className="loc loc-link"
+                      >
+                        <span className="city" style={{ color: KIND_COLOR[a.kind] }}>
+                          ●  {a.label}
+                        </span>
+                        <span className="label">{a.detail}</span>
+                        <span className="when">{a.when} · today</span>
+                      </Link>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </>
+              )}
+
+              {activeTab === "Tools" && (
+                <>
+                  <div className="rail-h" style={{ marginTop: 0 }}>
+                    Connected tools · {DEMO_TOOLS.length}
+                  </div>
+                  <div className="loc-list">
+                    {DEMO_TOOLS.map((t) => (
+                      <Link
+                        key={t.name}
+                        href="/admin"
+                        className="loc loc-link"
+                      >
+                        <span
+                          className="city"
+                          style={{
+                            color:
+                              t.state === "ok"
+                                ? "var(--color-organic)"
+                                : "var(--color-terracotta)",
+                          }}
+                        >
+                          ●  {t.name}
+                        </span>
+                        <span className="label">{t.detail}</span>
+                        <span className="when">
+                          {t.state === "ok" ? "Connected" : "Configurable"}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)] mt-2 leading-relaxed">
+                    Demo. Buyer view shows your real connection state per tool.
+                  </p>
+                </>
+              )}
+
+              {activeTab === "Prompts" && (
+                <>
+                  <div className="rail-h" style={{ marginTop: 0 }}>
+                    Recent prompts · {PROMPT_COUNT} library
+                  </div>
+                  <div className="loc-list">
+                    {PROMPTS_ARR.slice(0, 4).map((p, i) => (
+                      <Link
+                        key={p.id}
+                        href="/admin/prompts"
+                        className="loc loc-link"
+                      >
+                        <span className="city" style={{ color: "var(--color-magenta)" }}>
+                          ●  P{String(i + 1).padStart(2, "0")} · {p.title}
+                        </span>
+                        <span className="label">{p.category}</span>
+                        <span className="when">Open library →</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    href="/admin/prompts"
+                    className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-cyan)] hover:text-[var(--color-dark)] mt-2 inline-block transition-colors"
+                  >
+                    Browse all {PROMPT_COUNT} prompts →
+                  </Link>
+                </>
+              )}
+
+              {activeTab === "Decisions" && (
+                <>
+                  <div className="rail-h" style={{ marginTop: 0 }}>
+                    Recent decisions · locked
+                  </div>
+                  <div className="loc-list">
+                    {DEMO_DECISIONS.map((d) => (
+                      <Link
+                        key={d.id}
+                        href="/admin/decisions"
+                        className="loc loc-link"
+                      >
+                        <span className="city" style={{ color: "var(--color-violet)" }}>
+                          ●  #{d.id} · {d.title}
+                        </span>
+                        <span className="label">{d.note}</span>
+                        <span className="when">View log →</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    href="/admin/decisions"
+                    className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-cyan)] hover:text-[var(--color-dark)] mt-2 inline-block transition-colors"
+                  >
+                    Open the decisions log →
+                  </Link>
+                </>
+              )}
             </Reveal>
           </div>
         </div>
