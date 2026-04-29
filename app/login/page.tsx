@@ -1,5 +1,4 @@
 import { Starfield } from "@/components/landing/Starfield";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
 
 export const metadata = { title: "Log in" };
 
@@ -17,10 +16,9 @@ export default async function LoginPage({ searchParams }: Props) {
         : null;
 
   return (
-    <main className="min-h-screen grid md:grid-cols-[1.05fr_1fr] bg-[var(--color-darker)] text-[var(--color-dark)]">
-      <PageBackdrop variant="stars" />
+    <main className="aurora-page min-h-screen grid md:grid-cols-[1.05fr_1fr] text-[var(--color-dark)]">
       {/* Left: editorial brand pane */}
-      <aside className="relative overflow-hidden hidden md:flex flex-col justify-between p-12 lg:p-16 border-r border-[var(--color-border)]">
+      <aside className="relative overflow-hidden hidden md:flex flex-col justify-between p-12 lg:p-16 border-r border-[rgba(95,255,215,0.12)]">
         <div className="absolute inset-0 -z-10">
           <Starfield density={0.00012} />
           <div className="orbit-stack">

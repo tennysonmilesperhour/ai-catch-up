@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/shared/Button";
 import { SiteHeader } from "@/components/landing/SiteHeader";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
 
 export const metadata = { title: "Preview" };
 
@@ -42,8 +41,7 @@ export default function PreviewPage() {
   const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
 
   return (
-    <main className="min-h-screen">
-      <PageBackdrop variant="stars" />
+    <main className="aurora-page min-h-screen">
       <SiteHeader />
       <div className="px-6 md:px-12 py-16 md:py-20 max-w-5xl mx-auto">
         <p className="label text-[var(--color-terracotta)] mb-6">
