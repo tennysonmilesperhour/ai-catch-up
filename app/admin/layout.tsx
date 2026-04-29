@@ -6,6 +6,7 @@ const tabGroups = [
     heading: "Workspace",
     tabs: [
       { label: "Overview", href: "/admin" },
+      { label: "Pulse", href: "/admin/pulse" },
       { label: "Plan", href: "/admin/plan" },
       { label: "Schedule", href: "/admin/schedule" },
       { label: "Nexus map", href: "/admin/nexus" },
@@ -14,6 +15,8 @@ const tabGroups = [
       { label: "Decisions", href: "/admin/decisions" },
       { label: "Launch checklist", href: "/admin/checklist" },
       { label: "CLAUDE.md", href: "/admin/claude-md" },
+      { label: "Invocations", href: "/admin/invocations" },
+      { label: "Monthly memo", href: "/admin/memo" },
     ],
   },
   {

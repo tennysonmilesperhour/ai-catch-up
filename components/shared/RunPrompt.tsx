@@ -11,12 +11,22 @@ import {
   runMessage,
   type RunResult,
 } from "@/lib/anthropic-client";
+import {
+  appendHistory,
+  readHistory,
+  type HistoryEntry,
+} from "@/lib/run-history-shape";
+import { incrementPromptUsage } from "@/lib/usage-tracking";
 
 type RunPromptProps = {
   /** The prompt template with {{var}} or [PLACEHOLDER] tokens. */
   prompt: string;
   /** Display name shown in the modal header. */
   title: string;
+  /** Optional canonical id from prompts.json so usage tracking can
+   *  attribute the invocation. Setup phases and ad-hoc runs leave this
+   *  undefined; the history entry is still recorded. */
+  promptId?: number | string;
   /** Optional system prompt (e.g., the buyer's CLAUDE.md). */
   system?: string;
   /** Optional model override; defaults to claude-sonnet-4-6. */
@@ -33,47 +43,10 @@ type RunState =
   | { kind: "success"; result: RunResult & { ok: true } }
   | { kind: "error"; message: string };
 
-const HISTORY_KEY = "run-prompt-history-v1";
-const HISTORY_MAX = 30;
-
-type HistoryEntry = {
-  id: string;
-  ts: number;
-  title: string;
-  prompt: string;
-  result: string;
-  inputTokens: number;
-  outputTokens: number;
-};
-
-export function appendHistory(entry: HistoryEntry) {
-  if (typeof window === "undefined") return;
-  try {
-    const raw = window.localStorage.getItem(HISTORY_KEY);
-    const list: HistoryEntry[] = raw ? JSON.parse(raw) : [];
-    list.unshift(entry);
-    window.localStorage.setItem(
-      HISTORY_KEY,
-      JSON.stringify(list.slice(0, HISTORY_MAX))
-    );
-  } catch {
-    /* ignore */
-  }
-}
-
-export function readHistory(): HistoryEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(HISTORY_KEY);
-    return raw ? (JSON.parse(raw) as HistoryEntry[]) : [];
-  } catch {
-    return [];
-  }
-}
-
 export function RunPrompt({
   prompt,
   title,
+  promptId,
   system,
   model,
   children,
@@ -128,11 +101,13 @@ export function RunPrompt({
       id: `run-${Date.now()}`,
       ts: Date.now(),
       title,
+      promptId,
       prompt: filled,
       result: result.content,
       inputTokens: result.usage.input_tokens,
       outputTokens: result.usage.output_tokens,
     });
+    if (promptId !== undefined) incrementPromptUsage(promptId);
     onResult?.(result.content);
   };
 

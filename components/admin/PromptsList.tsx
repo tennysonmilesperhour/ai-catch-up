@@ -224,6 +224,7 @@ export function PromptsList({ prompts, categories }: Props) {
                   <RunPrompt
                     prompt={openPrompt.prompt}
                     title={openPrompt.title}
+                    promptId={openPrompt.id}
                   >
                     {(open) => (
                       <button
