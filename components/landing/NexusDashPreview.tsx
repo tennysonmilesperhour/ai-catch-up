@@ -297,29 +297,34 @@ export function NexusDashPreview() {
 
       <Reveal delay={240}>
         <div className="glass-card-static dash">
-          <div className="dash-tabbar">
-            <div className="pills">
-              {["Overview", "Tools", "Prompts", "Decisions"].map((p) => (
+          {/* Boot sequence: tabbar in first, then 3 columns cascade
+              left-to-right at 80ms intervals — reads as the workspace
+              "coming online" rather than landing as a single block. */}
+          <Reveal delay={0}>
+            <div className="dash-tabbar">
+              <div className="pills">
+                {["Overview", "Tools", "Prompts", "Decisions"].map((p) => (
+                  <span
+                    key={p}
+                    className={`pill ${p === "Overview" ? "is-active" : ""}`}
+                  >
+                    {p}
+                  </span>
+                ))}
                 <span
-                  key={p}
-                  className={`pill ${p === "Overview" ? "is-active" : ""}`}
+                  className="demo-pill"
+                  title="Demo data. After purchase, this view is fed by your repos, sessions, and prompts."
                 >
-                  {p}
+                  ● Demo · live for buyers
                 </span>
-              ))}
-              <span
-                className="demo-pill"
-                title="Demo data. After purchase, this view is fed by your repos, sessions, and prompts."
-              >
-                ● Demo · live for buyers
-              </span>
+              </div>
+              <span className="search">⌘K · Search</span>
             </div>
-            <span className="search">⌘K · Search</span>
-          </div>
+          </Reveal>
 
           <div className="dash-grid">
             {/* left rail */}
-            <div className="dash-rail">
+            <Reveal as="div" delay={80} className="dash-rail">
               <div className="rail-h">Phases · 5</div>
               {RAILS_PHASES.map((r) => (
                 <div
@@ -350,10 +355,10 @@ export function NexusDashPreview() {
                   <div className="meta-row">{r.meta}</div>
                 </div>
               ))}
-            </div>
+            </Reveal>
 
             {/* center: month strip + chart */}
-            <div className="flex flex-col gap-3">
+            <Reveal as="div" delay={160} className="flex flex-col gap-3">
               <div className="month-strip">
                 {MONTHS.map((m, i) => (
                   <span key={m} className={i === NOW_MONTH ? "is-now" : ""}>
@@ -379,10 +384,10 @@ export function NexusDashPreview() {
                 <span>5 streams · auto-synced</span>
                 <span className="num-tab">Sessions · live probe</span>
               </div>
-            </div>
+            </Reveal>
 
             {/* right side */}
-            <div className="dash-side">
+            <Reveal as="div" delay={240} className="dash-side">
               <div className="anomaly">
                 <div className="h-row">
                   <span className="h">
@@ -425,7 +430,7 @@ export function NexusDashPreview() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </Reveal>
