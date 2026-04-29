@@ -30,6 +30,10 @@ export function buildPaletteItems(): PaletteItem[] {
     { kind: "section", id: "sec-setup-str",  title: "Phase 03 · Starter",  subtitle: "Fork, install, deploy",                  href: "/setup/starter" },
     { kind: "section", id: "sec-setup-cfg",  title: "Phase 04 · Configure", subtitle: "Generate your CLAUDE.md",               href: "/setup/configure" },
     { kind: "section", id: "sec-setup-out",  title: "Phase 05 · Outputs",  subtitle: "Receive your four artifacts",            href: "/setup/outputs" },
+    { kind: "section", id: "sec-coding-guide", title: "Coding guide",      subtitle: "Plan First, Act Second workflow",        href: "/admin/coding-guide" },
+    { kind: "section", id: "sec-pulse",        title: "Workspace Pulse",   subtitle: "Pattern signals + suggested moves",      href: "/admin/pulse" },
+    { kind: "section", id: "sec-invocations",  title: "Invocations",       subtitle: "Last 30 prompt runs with token cost",    href: "/admin/invocations" },
+    { kind: "section", id: "sec-memo",         title: "Monthly memo",      subtitle: "30-day distillation generator",          href: "/admin/memo" },
   ];
 
   let prompts: PaletteItem[] = [];

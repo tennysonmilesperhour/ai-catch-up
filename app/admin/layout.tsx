@@ -15,6 +15,7 @@ const tabGroups = [
       { label: "Decisions", href: "/admin/decisions" },
       { label: "Launch checklist", href: "/admin/checklist" },
       { label: "CLAUDE.md", href: "/admin/claude-md" },
+      { label: "Coding guide", href: "/admin/coding-guide" },
       { label: "Invocations", href: "/admin/invocations" },
       { label: "Monthly memo", href: "/admin/memo" },
     ],

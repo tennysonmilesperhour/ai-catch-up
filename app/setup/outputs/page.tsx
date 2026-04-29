@@ -145,6 +145,25 @@ export default function OutputsPhase() {
 
       <article className="glass-card setup-card">
         <h3>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-organic)] mr-2">
+            CG
+          </span>
+          Coding guide
+        </h3>
+        <p className="text-[var(--color-muted-dark)] leading-relaxed">
+          The Plan-First, Act-Second workflow that makes everything else
+          stick. Short, opinionated, re-readable. Read once before you
+          ship anything new.
+        </p>
+        <div className="setup-actions">
+          <Link href="/admin/coding-guide" className="glass-button-primary setup-action-primary">
+            Open coding guide →
+          </Link>
+        </div>
+      </article>
+
+      <article className="glass-card setup-card">
+        <h3>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-terracotta)] mr-2">
             NX
           </span>

@@ -673,6 +673,37 @@ textarea:focus-visible {
 }
 .prose-blog strong { color: var(--color-dark); }
 
+.prose-blog table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+.prose-blog thead {
+  border-bottom: 1px solid rgba(95, 255, 215, 0.30);
+}
+.prose-blog th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  padding: 0.5rem 0.75rem;
+}
+.prose-blog td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid rgba(95, 255, 215, 0.10);
+  color: var(--color-muted-dark);
+  vertical-align: top;
+}
+.prose-blog tr:last-child td { border-bottom: 0; }
+.prose-blog td:first-child {
+  font-family: var(--font-mono);
+  color: var(--color-dark);
+  white-space: nowrap;
+}
+
 /* ============================================================
    Aurora Command landing reskin (2026-04-28)
    Operations-console aesthetic. Authored from DESIGN.md.

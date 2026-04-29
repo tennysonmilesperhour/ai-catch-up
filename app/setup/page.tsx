@@ -53,6 +53,20 @@ export default function SetupIntroPage() {
       </article>
 
       <article className="glass-card-static setup-card">
+        <h3>Read this first (5 minutes)</h3>
+        <p className="text-[var(--color-muted-dark)] leading-relaxed">
+          The coding guide explains the Plan-First, Act-Second workflow that
+          makes everything else stick. It's short, opinionated, and the
+          single highest-leverage thing to read before Phase 01.
+        </p>
+        <div className="setup-actions">
+          <Link href="/admin/coding-guide" className="setup-action-ghost">
+            Open coding guide →
+          </Link>
+        </div>
+      </article>
+
+      <article className="glass-card-static setup-card">
         <h3>What you'll have at minute 60</h3>
         <ul className="flex flex-col gap-2 text-[var(--color-muted-dark)] leading-relaxed">
           <li>
