@@ -1,6 +1,5 @@
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { UtilityBar } from "@/components/landing/UtilityBar";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
 import { Hero } from "@/components/landing/Hero";
 import { NexusDashPreview } from "@/components/landing/NexusDashPreview";
 import { PhasesGrid } from "@/components/landing/PhasesGrid";
@@ -16,8 +15,7 @@ import { Footer } from "@/components/landing/Footer";
 
 export default function LandingPage() {
   return (
-    <main>
-      <PageBackdrop variant="stars" />
+    <main className="aurora-page">
       <UtilityBar />
       <SiteHeader />
       <Hero />

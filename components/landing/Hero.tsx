@@ -1,5 +1,4 @@
 import { loadContent } from "@/lib/content";
-import { Starfield } from "@/components/landing/Starfield";
 import { Reveal } from "@/components/shared/Reveal";
 import { OpsPanelGlobe } from "@/components/landing/OpsPanelGlobe";
 import { MagneticButton } from "@/components/shared/MagneticButton";
@@ -31,16 +30,6 @@ export function Hero() {
 
   return (
     <section id="overview" className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <Starfield />
-        <div className="orbit-stack">
-          <div className="orbit orbit-ring" />
-          <div className="orbit" />
-          <div className="orbit" />
-          <div className="orbit" />
-        </div>
-      </div>
-
       <div className="relative px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-20 max-w-7xl mx-auto">
         <div className="hero-grid">
           <div>
@@ -51,7 +40,7 @@ export function Hero() {
                 </div>
               </Reveal>
             )}
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl xl:text-7xl leading-[1.05] tracking-tight text-[var(--color-dark)] mb-8">
+            <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl xl:text-[5.25rem] leading-[1.02] tracking-[-0.02em] text-[var(--color-dark)] mb-8">
               {plainLines.map((line, i) => (
                 <Reveal as="span" delay={40 + i * 80} key={`pl-${i}`} className="block">
                   {line}

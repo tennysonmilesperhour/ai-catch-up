@@ -71,11 +71,11 @@ export function SiteHeader() {
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
-        <Link
-          href="/"
-          className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-dark)] hover:cosmic-glow transition-all"
-        >
-          AI Catch Up
+        <Link href="/" className="brand-mark">
+          <span className="box" aria-hidden>
+            <span className="core" />
+          </span>
+          <span className="text">AI · Catch · Up</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">

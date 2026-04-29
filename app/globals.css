@@ -1743,3 +1743,66 @@ textarea:focus-visible {
   font-size: 12px;
   text-decoration: none;
 }
+
+/* ============================================================
+   Aurora page bg: clean near-black with a hairline cyan grid.
+   Scoped to .aurora-page so other routes keep their cosmic bg.
+   ============================================================ */
+
+.aurora-page {
+  position: relative;
+  isolation: isolate;
+}
+.aurora-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: var(--color-darker);
+  pointer-events: none;
+}
+.aurora-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg,  rgba(95, 217, 255, 0.04) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(90deg, rgba(95, 217, 255, 0.04) 0 1px, transparent 1px 96px),
+    radial-gradient(at 18% 22%, rgba(255, 95, 179, 0.05) 0px, transparent 50%),
+    radial-gradient(at 82% 78%, rgba(95, 255, 215, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* AI · Catch · Up wordmark with a small cyan-bordered icon box. */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.brand-mark .box {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(95, 255, 215, 0.55);
+  background: rgba(2, 6, 14, 0.7);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand-mark .box .core {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(95, 255, 215, 0.7);
+}
+.brand-mark .text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-dark);
+}
