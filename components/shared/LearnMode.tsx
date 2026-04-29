@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import glossaryData from "@/content/glossary.json";
 
 // ============================================================================
@@ -184,6 +185,7 @@ type LearnTermProps = {
 export function LearnTerm({ term, children }: LearnTermProps) {
   const { enabled } = useLearnMode();
   const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
   const wrapRef = useRef<HTMLSpanElement | null>(null);
 
   // Resolve the glossary entry from the explicit term prop or the rendered
@@ -193,25 +195,81 @@ export function LearnTerm({ term, children }: LearnTermProps) {
     term ?? (typeof children === "string" ? children : undefined);
   const entry = resolvedKey ? lookupTerm(resolvedKey) : undefined;
 
+  const positionPopover = useCallback(() => {
+    if (!wrapRef.current) return;
+    const rect = wrapRef.current.getBoundingClientRect();
+    // Position popover below the trigger, anchored to the trigger's left.
+    // Keep it inside the viewport with a 16px right-edge buffer.
+    const POPOVER_MAX = 360;
+    const margin = 16;
+    let left = rect.left;
+    if (left + POPOVER_MAX > window.innerWidth - margin) {
+      left = Math.max(margin, window.innerWidth - POPOVER_MAX - margin);
+    }
+    setCoords({ top: rect.bottom + 8, left });
+  }, []);
+
   useEffect(() => {
     if (!open) return;
+    positionPopover();
     function onClickOutside(e: MouseEvent) {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     }
     function onEsc(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
+    function onScrollOrResize() {
+      // Re-anchor while open so the popover follows the trigger as the
+      // user scrolls; close once the trigger leaves the viewport.
+      if (!wrapRef.current) return;
+      const rect = wrapRef.current.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > window.innerHeight) {
+        setOpen(false);
+        return;
+      }
+      positionPopover();
+    }
     document.addEventListener("mousedown", onClickOutside);
     document.addEventListener("keydown", onEsc);
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
     return () => {
       document.removeEventListener("mousedown", onClickOutside);
       document.removeEventListener("keydown", onEsc);
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
     };
-  }, [open]);
+  }, [open, positionPopover]);
 
   if (!enabled || !entry) {
     return <>{children}</>;
   }
+
+  // Portal the popover into document.body so it escapes any ancestor
+  // overflow:hidden / backdrop-filter containing blocks (the glass-card
+  // surfaces both clip absolutely-positioned children).
+  const popover =
+    open && coords && typeof document !== "undefined"
+      ? createPortal(
+          <span
+            className="learn-term-pop"
+            role="tooltip"
+            style={{ top: coords.top, left: coords.left }}
+          >
+            <span className="learn-term-head">
+              <span className="learn-term-name">{entry.canonical}</span>
+              {entry.kind && (
+                <span className="learn-term-kind">· {entry.kind}</span>
+              )}
+            </span>
+            <span className="learn-term-brief">{entry.brief}</span>
+            {entry.more && (
+              <span className="learn-term-more">{entry.more}</span>
+            )}
+          </span>,
+          document.body
+        )
+      : null;
 
   return (
     <span
@@ -231,18 +289,7 @@ export function LearnTerm({ term, children }: LearnTermProps) {
       >
         {children}
       </button>
-      {open && (
-        <span className="learn-term-pop" role="tooltip">
-          <span className="learn-term-head">
-            <span className="learn-term-name">{entry.canonical}</span>
-            {entry.kind && (
-              <span className="learn-term-kind">· {entry.kind}</span>
-            )}
-          </span>
-          <span className="learn-term-brief">{entry.brief}</span>
-          {entry.more && <span className="learn-term-more">{entry.more}</span>}
-        </span>
-      )}
+      {popover}
     </span>
   );
 }

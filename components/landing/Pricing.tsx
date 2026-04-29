@@ -3,6 +3,7 @@ import { Reveal } from "@/components/shared/Reveal";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { AutoLearnText } from "@/components/shared/LearnMode";
+import { resolveCheckout } from "@/lib/checkout";
 
 type AsideRow = { k: string; v: string; small?: string };
 
@@ -22,7 +23,7 @@ export function Pricing() {
   const { frontmatter } = loadContent<PricingFrontmatter>(
     "landing/pricing.mdx"
   );
-  const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
+  const checkout = resolveCheckout();
   const features = frontmatter.features || [];
   const aside = frontmatter.aside || [];
 
@@ -75,9 +76,11 @@ export function Pricing() {
               ))}
             </ul>
             <div className="mt-2">
-              <MagneticButton href={paymentLink}>
+              <MagneticButton href={checkout.href}>
                 <span className="glass-button-primary inline-flex items-center justify-center w-full px-7 py-3.5 font-mono text-sm uppercase tracking-[0.08em]">
-                  {frontmatter.button_text || "Buy and start setup"}
+                  {checkout.ready
+                    ? frontmatter.button_text || "Buy and start setup"
+                    : checkout.fallbackLabel}
                 </span>
               </MagneticButton>
             </div>

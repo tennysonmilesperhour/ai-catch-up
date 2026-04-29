@@ -1,4 +1,5 @@
 import { loadContent, loadJson } from "@/lib/content";
+import { resolveCheckout } from "@/lib/checkout";
 import { Reveal } from "@/components/shared/Reveal";
 import { OpsPanelGlobe } from "@/components/landing/OpsPanelGlobe";
 import { MagneticButton } from "@/components/shared/MagneticButton";
@@ -17,7 +18,7 @@ type HeroFrontmatter = {
 export function Hero() {
   const { frontmatter, body } = loadContent<HeroFrontmatter>("landing/hero.mdx");
   const paragraphs = body.split(/\n\s*\n/).filter(Boolean);
-  const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
+  const checkout = resolveCheckout();
   // Prompt library count tracks Strategy Claude's actual library size
   // so the hero stat stays in sync if the JSON grows.
   const promptsRaw = loadJson<unknown>("admin/prompts.json");
@@ -78,9 +79,9 @@ export function Hero() {
 
             <Reveal delay={680}>
               <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-                <MagneticButton href={paymentLink}>
+                <MagneticButton href={checkout.href}>
                   <span className="glass-button-primary inline-flex items-center justify-center px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em]">
-                    Begin onboarding →
+                    {checkout.ready ? "Begin onboarding →" : checkout.fallbackLabel}
                   </span>
                 </MagneticButton>
                 <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted-dark)]">

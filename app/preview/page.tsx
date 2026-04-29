@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/shared/Button";
 import { SiteHeader } from "@/components/landing/SiteHeader";
+import { resolveCheckout } from "@/lib/checkout";
 
 export const metadata = { title: "Preview" };
 
@@ -38,7 +39,7 @@ const tabs = [
 ];
 
 export default function PreviewPage() {
-  const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
+  const checkout = resolveCheckout();
 
   return (
     <main className="aurora-page min-h-screen">
@@ -87,8 +88,8 @@ export default function PreviewPage() {
             the prompt library, the Nexus map, and the ongoing personalized
             checklist. Start your 60-minute setup the moment you buy.
           </p>
-          <Button href={paymentLink} variant="primary">
-            Unlock the onboarding
+          <Button href={checkout.href} variant="primary">
+            {checkout.ready ? "Unlock the onboarding" : checkout.fallbackLabel}
           </Button>
         </div>
 

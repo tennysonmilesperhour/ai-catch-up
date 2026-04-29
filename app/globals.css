@@ -1937,18 +1937,23 @@ textarea:focus-visible {
    Toggleable from the UtilityBar; persisted in localStorage.
    ============================================================ */
 
+/* Inline term wrapper: keep it as plain inline so paragraph text wraps
+   normally around the underlined word. The popover is portaled to body
+   so we don't need position: relative here. */
 .learn-term {
-  position: relative;
-  display: inline-flex;
+  display: inline;
 }
 .learn-term-trigger {
+  display: inline;
   background: transparent;
   border: 0;
   padding: 0;
+  margin: 0;
   cursor: help;
   color: inherit;
   font: inherit;
   letter-spacing: inherit;
+  line-height: inherit;
   text-decoration-line: underline;
   text-decoration-style: dotted;
   text-decoration-color: rgba(95, 255, 215, 0.45);
@@ -1964,11 +1969,12 @@ textarea:focus-visible {
 }
 .learn-term-trigger.as-text { cursor: default; pointer-events: none; }
 
+/* Popover is portaled to <body>, positioned with viewport-fixed coords
+   computed from the trigger's getBoundingClientRect. Escapes any
+   ancestor overflow:hidden / backdrop-filter clipping. */
 .learn-term-pop {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  z-index: 180;
+  position: fixed;
+  z-index: 220;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1993,6 +1999,7 @@ textarea:focus-visible {
   animation: learn-pop-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
   text-align: left;
   white-space: normal;
+  pointer-events: none;
 }
 .learn-term-pop::before {
   content: "";

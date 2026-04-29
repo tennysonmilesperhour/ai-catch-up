@@ -1,4 +1,5 @@
 import { loadContent } from "@/lib/content";
+import { resolveCheckout } from "@/lib/checkout";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { Reveal } from "@/components/shared/Reveal";
 
@@ -15,7 +16,7 @@ export function FinalCTA() {
   const { frontmatter } = loadContent<FinalCTAFrontmatter>(
     "landing/final-cta.mdx"
   );
-  const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
+  const checkout = resolveCheckout();
 
   return (
     <section className="final px-6 md:px-12 py-20 md:py-28 max-w-3xl mx-auto text-center">
@@ -48,9 +49,11 @@ export function FinalCTA() {
         </Reveal>
       )}
       <Reveal delay={240}>
-        <MagneticButton href={paymentLink}>
+        <MagneticButton href={checkout.href}>
           <span className="glass-button-primary inline-flex items-center justify-center px-8 py-4 font-mono text-sm uppercase tracking-[0.08em]">
-            {frontmatter.button_text || "Get the onboarding"}
+            {checkout.ready
+              ? frontmatter.button_text || "Get the onboarding"
+              : checkout.fallbackLabel}
           </span>
         </MagneticButton>
       </Reveal>

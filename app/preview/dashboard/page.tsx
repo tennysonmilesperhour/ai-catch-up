@@ -6,6 +6,7 @@ import { ScenarioPicker } from "@/components/landing/ScenarioPicker";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { Reveal } from "@/components/shared/Reveal";
+import { resolveCheckout } from "@/lib/checkout";
 
 export const metadata = {
   title: "Workspace Pulse · Preview",
@@ -42,7 +43,7 @@ const STREAM_NOTES = [
 ];
 
 export default function DashboardPlaygroundPage() {
-  const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
+  const checkout = resolveCheckout();
 
   return (
     <main className="aurora-page">
@@ -138,9 +139,9 @@ export default function DashboardPlaygroundPage() {
         </Reveal>
         <Reveal delay={240}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-            <MagneticButton href={paymentLink}>
+            <MagneticButton href={checkout.href}>
               <span className="glass-button-primary inline-flex items-center justify-center px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em]">
-                Begin onboarding →
+                {checkout.ready ? "Begin onboarding →" : checkout.fallbackLabel}
               </span>
             </MagneticButton>
             <Link
