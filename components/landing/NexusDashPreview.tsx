@@ -141,7 +141,13 @@ function NexusChart({ waves }: { waves: Wave[] }) {
     reducedRef.current = reduce;
 
     const mobile = window.matchMedia("(max-width: 640px)").matches;
-    samplesRef.current = mobile ? 100 : 240;
+    // Cut sample density: 60 mobile / 140 desktop. Visually identical at
+    // chart scale, ~2× cheaper per frame than the previous 100/240.
+    samplesRef.current = mobile ? 60 : 140;
+    // Frame throttle: paint at ~30fps instead of every frame. The chart
+    // is decorative; halving the work doesn't change how it reads.
+    const FRAME_INTERVAL = 1000 / 30;
+    let lastPaintAt = 0;
 
     function paint(t: number) {
       const samples = samplesRef.current;
@@ -195,13 +201,30 @@ function NexusChart({ waves }: { waves: Wave[] }) {
         rafRef.current = null;
         return;
       }
-      paint(now / 1000);
+      if (now - lastPaintAt >= FRAME_INTERVAL) {
+        paint(now / 1000);
+        lastPaintAt = now;
+      }
       rafRef.current = requestAnimationFrame(tick);
     }
     rafRef.current = requestAnimationFrame(tick);
 
+    // Pause cleanly when the tab goes hidden so background tabs don't
+    // burn CPU on a chart no one's looking at.
+    function onVis() {
+      if (document.visibilityState === "hidden") {
+        if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      } else if (visibleRef.current && rafRef.current == null) {
+        lastPaintAt = 0;
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    }
+    document.addEventListener("visibilitychange", onVis);
+
     return () => {
       io.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
   }, []);
@@ -276,14 +299,66 @@ function NexusChart({ waves }: { waves: Wave[] }) {
   );
 }
 
+// Rail extracted as its own component so hover state stays local — the
+// previous design hoisted activeRail into NexusDashPreview, which meant
+// every hover re-rendered the chart, anomaly box, and activity feed too.
+// Now hovering a phase card only re-renders the rail subtree.
+function DashRail({ railsPhases }: { railsPhases: RailRow[] }) {
+  const [activeRail, setActiveRail] = useState<string>(
+    railsPhases[0]?.id ?? "P1"
+  );
+  return (
+    <>
+      <div className="rail-h">Phases · 5</div>
+      {railsPhases.map((r) => (
+        <div
+          key={r.id}
+          className={`rail-card ${activeRail === r.id ? "active" : ""}`}
+          onMouseEnter={() => setActiveRail(r.id)}
+        >
+          <div className="row">
+            <span className="num">{r.num}</span>
+            <span className="ttl">{r.title}</span>
+            {r.badge && <span className="badge">{r.badge}</span>}
+            {r.badgeDot && (
+              <span className="badge is-dot" aria-hidden>
+                ●
+              </span>
+            )}
+          </div>
+          <div className="meta-row">{r.meta}</div>
+        </div>
+      ))}
+      <div className="rail-h">Workspace · 3</div>
+      {RAILS_WORKSPACE.map((r) => {
+        const href = WORKSPACE_HREF[r.id] ?? "/admin";
+        return (
+          <Link
+            key={r.id}
+            href={href}
+            className={`rail-card rail-link ${activeRail === r.id ? "active" : ""}`}
+            onMouseEnter={() => setActiveRail(r.id)}
+          >
+            <div className="row">
+              <span className="num">{r.num}</span>
+              <span className="ttl">{r.title}</span>
+              <span className="rail-arrow" aria-hidden>
+                →
+              </span>
+            </div>
+            <div className="meta-row">{r.meta}</div>
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
 export function NexusDashPreview({
   scenario = SCENARIO_BASELINE,
 }: {
   scenario?: Scenario;
 }) {
-  const [activeRail, setActiveRail] = useState<string>(
-    scenario.railsPhases[0]?.id ?? "P1"
-  );
   const [activeTab, setActiveTab] = useState<DashTab>("Overview");
   const {
     waves,
@@ -361,43 +436,10 @@ export function NexusDashPreview({
           </Reveal>
 
           <div className="dash-grid">
-            {/* left rail */}
+            {/* left rail — owns its own hover state internally so hovering
+                doesn't re-render the chart / signals / activity */}
             <Reveal as="div" delay={80} className="dash-rail">
-              <div className="rail-h">Phases · 5</div>
-              {railsPhases.map((r) => (
-                <div
-                  key={r.id}
-                  className={`rail-card ${activeRail === r.id ? "active" : ""}`}
-                  onMouseEnter={() => setActiveRail(r.id)}
-                >
-                  <div className="row">
-                    <span className="num">{r.num}</span>
-                    <span className="ttl">{r.title}</span>
-                    {r.badge && <span className="badge">{r.badge}</span>}
-                    {r.badgeDot && <span className="badge is-dot" aria-hidden>●</span>}
-                  </div>
-                  <div className="meta-row">{r.meta}</div>
-                </div>
-              ))}
-              <div className="rail-h">Workspace · 3</div>
-              {RAILS_WORKSPACE.map((r) => {
-                const href = WORKSPACE_HREF[r.id] ?? "/admin";
-                return (
-                  <Link
-                    key={r.id}
-                    href={href}
-                    className={`rail-card rail-link ${activeRail === r.id ? "active" : ""}`}
-                    onMouseEnter={() => setActiveRail(r.id)}
-                  >
-                    <div className="row">
-                      <span className="num">{r.num}</span>
-                      <span className="ttl">{r.title}</span>
-                      <span className="rail-arrow" aria-hidden>→</span>
-                    </div>
-                    <div className="meta-row">{r.meta}</div>
-                  </Link>
-                );
-              })}
+              <DashRail railsPhases={railsPhases} />
             </Reveal>
 
             {/* center: month strip + chart */}

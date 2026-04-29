@@ -67,39 +67,12 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
 
-/* Cosmic background: layered nebula glows + starfield pinpoints. The
-   solid color lives on `html` so PageBackdrop images can show through
-   when present. */
+/* Body bg is solid; every public route wraps content in `.aurora-page`
+   which paints its own near-black + cyan-grid backdrop. The previous
+   20-stop animated nebula gradient was rendered on every route, then
+   covered by aurora-page — pure wasted paint. Removed entirely. */
 body {
-  background-color: transparent;
-  background-image:
-    radial-gradient(at 18% 18%, rgba(255, 95, 179, 0.13) 0px, transparent 55%),
-    radial-gradient(at 82% 82%, rgba(95, 255, 215, 0.13) 0px, transparent 55%),
-    radial-gradient(at 80% 18%, rgba(192, 132, 252, 0.12) 0px, transparent 55%),
-    radial-gradient(at 18% 82%, rgba(74, 222, 128, 0.10) 0px, transparent 55%),
-    radial-gradient(at 50% 50%, rgba(251, 191, 36, 0.05) 0px, transparent 70%),
-    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,0.75) 50%, transparent 100%),
-    radial-gradient(1px 1px at 38% 71%, rgba(255,255,255,0.55) 50%, transparent 100%),
-    radial-gradient(1px 1px at 67% 18%, rgba(255,255,255,0.65) 50%, transparent 100%),
-    radial-gradient(1px 1px at 88% 44%, rgba(255,255,255,0.5) 50%, transparent 100%),
-    radial-gradient(1px 1px at 22% 88%, rgba(255,255,255,0.6) 50%, transparent 100%),
-    radial-gradient(1px 1px at 73% 92%, rgba(255,255,255,0.5) 50%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 5% 55%, rgba(255,255,255,0.85) 50%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 95% 8%, rgba(255,255,255,0.6) 50%, transparent 100%),
-    radial-gradient(1px 1px at 30% 5%, rgba(255,255,255,0.55) 50%, transparent 100%),
-    radial-gradient(1px 1px at 60% 60%, rgba(255,255,255,0.55) 50%, transparent 100%),
-    radial-gradient(1px 1px at 8% 38%, rgba(255,255,255,0.5) 50%, transparent 100%),
-    radial-gradient(1px 1px at 92% 70%, rgba(255,255,255,0.55) 50%, transparent 100%),
-    radial-gradient(1px 1px at 45% 30%, rgba(255,255,255,0.6) 50%, transparent 100%),
-    radial-gradient(2px 2px at 78% 35%, rgba(192,132,252,0.7) 50%, transparent 100%),
-    radial-gradient(2px 2px at 14% 65%, rgba(95,255,215,0.55) 50%, transparent 100%);
-  background-attachment: fixed;
-  background-size:
-    140% 140%, 140% 140%, 140% 140%, 140% 140%, 100% 100%,
-    100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%,
-    100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%,
-    100% 100%, 100% 100%, 100% 100%;
-  animation: nebula-drift 90s ease-in-out infinite alternate;
+  background-color: var(--color-darker);
 }
 
 @keyframes nebula-drift {
@@ -154,16 +127,21 @@ textarea:focus-visible {
 /*
  * Liquid-glass card. Bumped surface opacity for stronger contrast against
  * the cosmic bg, and a brighter top edge so cards visually lift.
+ *
+ * Perf note: backdrop-filter blur is hugely expensive when applied to
+ * dozens of cards on a single page (every scroll frame triggers a GPU
+ * composite of every blurred surface). On a dark page bg the blur does
+ * almost no visual work; we drop it from non-floating cards and keep it
+ * only on overlays (modals, sticky bars). The bg gradient + 1px border
+ * + shadow stack still reads as "glass."
  */
 .glass-card {
   position: relative;
   background:
     linear-gradient(135deg,
-      rgba(13, 28, 52, 0.78) 0%,
-      rgba(13, 28, 52, 0.92) 50%,
-      rgba(13, 28, 52, 0.78) 100%);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+      rgba(13, 28, 52, 0.92) 0%,
+      rgba(13, 28, 52, 0.97) 50%,
+      rgba(13, 28, 52, 0.92) 100%);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 18px;
   box-shadow:
@@ -209,11 +187,9 @@ textarea:focus-visible {
   position: relative;
   background:
     linear-gradient(135deg,
-      rgba(13, 28, 52, 0.75) 0%,
-      rgba(13, 28, 52, 0.90) 50%,
-      rgba(13, 28, 52, 0.75) 100%);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+      rgba(13, 28, 52, 0.92) 0%,
+      rgba(13, 28, 52, 0.97) 50%,
+      rgba(13, 28, 52, 0.92) 100%);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 18px;
   box-shadow:
@@ -259,9 +235,7 @@ textarea:focus-visible {
 }
 
 .glass-button {
-  background: rgba(13, 28, 52, 0.65);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  background: rgba(13, 28, 52, 0.85);
   color: var(--color-dark);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
