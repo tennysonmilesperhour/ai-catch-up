@@ -23,6 +23,7 @@ export function Footer() {
           <Link href="#flow" className="hover:text-[var(--color-dark)] transition-colors">The flow</Link>
           <Link href="#nexus" className="hover:text-[var(--color-dark)] transition-colors">Nexus</Link>
           <Link href="#prompts" className="hover:text-[var(--color-dark)] transition-colors">Prompts</Link>
+          <Link href="/preview/dashboard" className="hover:text-[var(--color-cyan)] transition-colors">Playground →</Link>
         </div>
 
         <div className="foot-col">

@@ -6,8 +6,17 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/admin", "/admin/", "/api", "/api/", "/preview"],
+        allow: ["/", "/preview/dashboard"],
+        disallow: [
+          "/admin",
+          "/admin/",
+          "/api",
+          "/api/",
+          // /preview is the post-login locked-tabs page; /preview/dashboard
+          // is the public Workspace Pulse playground (allowed above).
+          "/preview$",
+          "/preview/$",
+        ],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

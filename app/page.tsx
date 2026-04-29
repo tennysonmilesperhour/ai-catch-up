@@ -34,6 +34,7 @@ function buildPaletteItems(): PaletteItem[] {
     { kind: "section", id: "sec-pricing",  title: "Pricing", subtitle: "$49 · one-time", href: "#pricing" },
     { kind: "section", id: "sec-faq",      title: "FAQ", subtitle: "Things people ask", href: "#faq" },
     { kind: "section", id: "sec-email",    title: "Stay in touch", subtitle: "Email capture", href: "#email" },
+    { kind: "section", id: "sec-playground", title: "Dashboard playground", subtitle: "Standalone Workspace Pulse preview", href: "/preview/dashboard" },
   ];
 
   const promptsRaw = loadJson<PromptRecord[] | { prompts: PromptRecord[] }>(
