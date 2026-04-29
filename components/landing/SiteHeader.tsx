@@ -93,8 +93,11 @@ export function SiteHeader() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            aria-label="Search"
-            className="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-md border border-white/10 text-[var(--color-muted-dark)] hover:text-[var(--color-dark)] hover:border-white/30 transition-colors"
+            aria-label="Open command palette"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("command-palette:open"))
+            }
+            className="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-md border border-white/10 text-[var(--color-muted-dark)] hover:text-[var(--color-cyan)] hover:border-[rgba(95,255,215,0.45)] transition-colors"
           >
             <span className="font-mono text-[11px]">⌘K</span>
           </button>

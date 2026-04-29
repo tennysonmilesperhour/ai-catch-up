@@ -1870,6 +1870,170 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
+/* Command palette (⌘K). Centered modal; cosmic glass card with cyan
+   foreground accents. Opens via the global ⌘K listener or the custom
+   `command-palette:open` event dispatched from the SiteHeader button. */
+.cmdk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(40px, 12vh, 120px) 16px 16px;
+  animation: cmdk-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cmdk-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 14, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.cmdk-card {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: min(560px, calc(100vh - 80px));
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    135deg,
+    rgba(13, 28, 52, 0.92) 0%,
+    rgba(13, 28, 52, 0.96) 50%,
+    rgba(13, 28, 52, 0.92) 100%
+  );
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(95, 255, 215, 0.22);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 24px 70px rgba(2, 6, 14, 0.65),
+    0 0 0 1px rgba(95, 255, 215, 0.20),
+    0 0 60px rgba(95, 255, 215, 0.18);
+  overflow: hidden;
+}
+.cmdk-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(95, 255, 215, 0.14);
+}
+.cmdk-prefix {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(95, 255, 215, 0.35);
+  background: rgba(2, 6, 14, 0.55);
+}
+.cmdk-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--color-dark);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+.cmdk-input::placeholder { color: var(--color-muted); }
+.cmdk-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.cmdk-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+.cmdk-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.cmdk-row {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: background 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cmdk-row.active {
+  background: rgba(95, 255, 215, 0.07);
+  box-shadow: inset 2px 0 0 var(--color-cyan);
+}
+.cmdk-kind {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.cmdk-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cmdk-title {
+  color: var(--color-dark);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdk-sub {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdk-href {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  color: var(--color-muted);
+  text-transform: lowercase;
+}
+.cmdk-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid rgba(95, 255, 215, 0.14);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+@keyframes cmdk-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmdk-overlay { animation: none; }
+}
+
 /* RefreshBanner: pinned bottom-right toast when a new bundle is detected. */
 .refresh-banner {
   position: fixed;
