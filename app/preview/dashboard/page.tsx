@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { UtilityBar } from "@/components/landing/UtilityBar";
 import { Footer } from "@/components/landing/Footer";
-import { NexusDashPreview } from "@/components/landing/NexusDashPreview";
+import { ScenarioPicker } from "@/components/landing/ScenarioPicker";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { Reveal } from "@/components/shared/Reveal";
@@ -64,10 +64,11 @@ export default function DashboardPlaygroundPage() {
         </Reveal>
         <Reveal delay={160}>
           <p className="text-[var(--color-muted-dark)] max-w-3xl leading-relaxed text-base md:text-lg mb-2">
-            This is the same Workspace Pulse buyers see on day 61. Hover the
-            phase rail to swap the active card. Hover any stream chip below
-            the chart to see what it tracks. The chart sweeps live; the data
-            is illustrative until you connect your repos.
+            This is the same Workspace Pulse buyers see on day 61. Pick a
+            scenario below to watch the dashboard evolve from week one to
+            year one. Hover the phase rail or stream chips for live tooltips;
+            the chart sweeps regardless. The data is illustrative until you
+            connect your own repos.
           </p>
         </Reveal>
         <Reveal delay={220}>
@@ -77,8 +78,10 @@ export default function DashboardPlaygroundPage() {
         </Reveal>
       </section>
 
-      {/* The dashboard (re-uses the landing component verbatim). */}
-      <NexusDashPreview />
+      {/* Scenario picker swaps the demo dataset live; the dashboard
+          re-renders the chart, rail badges, signals, and activity feed
+          when you click. */}
+      <ScenarioPicker />
 
       {/* Stream-by-stream legend with full descriptions. */}
       <section className="px-6 md:px-12 py-8 md:py-12 max-w-7xl mx-auto">

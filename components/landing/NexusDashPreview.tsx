@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import {
+  SCENARIO_BASELINE,
+  type ActivityKind,
+  type RailRow,
+  type Scenario,
+  type Wave,
+} from "@/lib/dashboard-scenarios";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -10,37 +17,13 @@ const MONTHS = [
 ];
 const NOW_MONTH = 3; // April (0-indexed)
 
-type RailRow = {
-  id: string;
-  num: string;
-  title: string;
-  meta: string;
-  badge?: string;
-  badgeDot?: boolean;
-};
-
-const RAILS_PHASES: RailRow[] = [
-  { id: "P1", num: "01", title: "Capture", meta: "Brief · 5 min", badgeDot: true },
-  { id: "P2", num: "02", title: "Accounts", meta: "Wire-up · 15 min", badge: "5" },
-  { id: "P3", num: "03", title: "Starter pkg", meta: "Install · 10 min", badge: "4" },
-  { id: "P4", num: "04", title: "Configure", meta: "Claude · 20 min", badge: "12" },
-  { id: "P5", num: "05", title: "Outputs", meta: "Deliver · 10 min", badge: "4" },
-];
+// Workspace artifacts are stable across scenarios (the customer always
+// gets these three deliverables), so they live here rather than in the
+// scenario data.
 const RAILS_WORKSPACE: RailRow[] = [
   { id: "WS1", num: "MD", title: "CLAUDE.md", meta: "spec" },
   { id: "WS2", num: "NX", title: "Nexus map", meta: "live graph" },
   { id: "WS3", num: "PL", title: "Prompt library", meta: "20 prompts" },
-];
-
-// Workspace activity feed. In v1.0 this is a curated demo set; in v1.1+
-// the buyer's view is fed by file-watch + admin-tab events. Each entry
-// has a kind (drives the dot color) and a short human label.
-type ActivityKind = "edit" | "use" | "log" | "sync";
-const ACTIVITY: { kind: ActivityKind; label: string; detail: string; when: string }[] = [
-  { kind: "edit", label: "claude.md updated",       detail: "spec",            when: "13:43" },
-  { kind: "use",  label: "prompt P14 used",         detail: "weekly recap",    when: "13:51" },
-  { kind: "log",  label: "decision #28 logged",     detail: "lock pricing",    when: "11:22" },
-  { kind: "sync", label: "nexus map +1 tool",       detail: "1Password",       when: "09:51" },
 ];
 
 const KIND_COLOR: Record<ActivityKind, string> = {
@@ -49,45 +32,6 @@ const KIND_COLOR: Record<ActivityKind, string> = {
   log:  "var(--color-violet)",
   sync: "var(--color-terracotta)",
 };
-
-// Pattern-signal panel: replaces the SaaS-cosplay anomaly metrics with
-// signals AI Catch Up actually solves (stuck patterns, drift, plateau).
-// Each row maps to a real heuristic the v1.1+ engine will run over the
-// buyer's workspace. The 5-min-fix count below feeds the hero stat strip.
-const PATTERN_SIGNALS = [
-  { label: "Stuck patterns",  value: "3",   note: "prompts unused 30+ days" },
-  { label: "Drift detected",  value: "12%", note: "sessions asked context" },
-  { label: "Plateau risk",    value: "2 wk", note: "no new prompt added" },
-];
-const ACTIVE_ALERTS = 4;
-
-type Wave = {
-  name: string;
-  unit: string;
-  desc: string;
-  ampBase: number;
-  ampVar: number;
-  freq1: number;
-  freq2: number;
-  phase: number;
-  yBase: number;
-  drift: number;
-  color: string;
-  op: number;
-};
-
-// Five real workspace-pulse signals. In v1.0 the chart animates these
-// from a curated demo dataset (the marketing preview); in v1.1+ each one
-// is fed by a connector listed in DESIGN.md (GitHub API for Commits, the
-// admin tab usage tracker for Prompts, etc.). Same surface, different
-// data source.
-const WAVES: Wave[] = [
-  { name: "Sessions",    unit: "/wk", desc: "Claude Code sessions per week",       ampBase: 18, ampVar: 6, freq1: 0.0042, freq2: 0.0018, phase: 0.6, yBase: 90,  drift: 0.00012, color: "#5fffd7", op: 0.85 },
-  { name: "Commits",     unit: "/wk", desc: "Repo commits across your projects",   ampBase: 22, ampVar: 8, freq1: 0.0038, freq2: 0.0021, phase: 1.4, yBase: 115, drift: 0.00009, color: "#4ade80", op: 0.75 },
-  { name: "Prompts",     unit: "/wk", desc: "Prompts run from your library",       ampBase: 14, ampVar: 5, freq1: 0.0055, freq2: 0.0014, phase: 2.1, yBase: 140, drift: 0.00015, color: "#ff5fb3", op: 0.70 },
-  { name: "Decisions",   unit: "/mo", desc: "Entries added to your decisions log", ampBase: 28, ampVar: 9, freq1: 0.0029, freq2: 0.0026, phase: 3.0, yBase: 160, drift: 0.00007, color: "#c084fc", op: 0.65 },
-  { name: "Hours saved", unit: "/wk", desc: "Estimated hours saved vs baseline",   ampBase: 12, ampVar: 4, freq1: 0.0072, freq2: 0.0011, phase: 4.5, yBase: 180, drift: 0.00018, color: "#fbbf24", op: 0.55 },
-];
 
 // Decorative stream labels overlaid at fixed t=0 sample points; each
 // renders its parent wave's display name (no longer the placeholder
@@ -117,7 +61,7 @@ function genPath(w: Wave, t: number, samples: number, drift: number) {
   return d;
 }
 
-function NexusChart() {
+function NexusChart({ waves }: { waves: Wave[] }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
   const probeLineRef = useRef<SVGLineElement | null>(null);
@@ -127,6 +71,12 @@ function NexusChart() {
   const visibleRef = useRef(true);
   const rafRef = useRef<number | null>(null);
   const samplesRef = useRef(240);
+  // Hold current waves in a ref so the RAF reads the latest dataset on
+  // every frame without restarting when scenarios swap on the playground.
+  const wavesRef = useRef<Wave[]>(waves);
+  useEffect(() => {
+    wavesRef.current = waves;
+  }, [waves]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -138,12 +88,14 @@ function NexusChart() {
 
     function paint(t: number) {
       const samples = samplesRef.current;
-      WAVES.forEach((w, i) => {
+      const ws = wavesRef.current;
+      ws.forEach((w, i) => {
         const p = pathRefs.current[i];
         if (p) p.setAttribute("d", genPath(w, t, samples, w.drift));
       });
       const xProbe = ((t * 0.06) % 1) * CHART_W;
-      const probeWave = WAVES[0];
+      const probeWave = ws[0];
+      if (!probeWave) return;
       const yProbe =
         probeWave.yBase +
         Math.sin(xProbe * probeWave.freq1 + t * probeWave.phase) * probeWave.ampBase +
@@ -200,7 +152,7 @@ function NexusChart() {
   return (
     <div className="chart">
       <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${CHART_H}`} preserveAspectRatio="none">
-        {WAVES.map((w, i) => (
+        {waves.map((w, i) => (
           <path
             key={`w-${i}`}
             ref={(el) => {
@@ -239,7 +191,8 @@ function NexusChart() {
 
         {/* Decorative stream labels (static, anchored at t=0). */}
         {STREAM_LABELS.map((s, i) => {
-          const w = WAVES[s.wave];
+          const w = waves[s.wave];
+          if (!w) return null;
           const y =
             w.yBase +
             Math.sin(s.x * w.freq1 + 0) * w.ampBase +
@@ -266,8 +219,21 @@ function NexusChart() {
   );
 }
 
-export function NexusDashPreview() {
-  const [activeRail, setActiveRail] = useState<string>("P5");
+export function NexusDashPreview({
+  scenario = SCENARIO_BASELINE,
+}: {
+  scenario?: Scenario;
+}) {
+  const [activeRail, setActiveRail] = useState<string>(
+    scenario.railsPhases[0]?.id ?? "P1"
+  );
+  const {
+    waves,
+    railsPhases,
+    patternSignals,
+    activeAlerts,
+    activity,
+  } = scenario;
 
   return (
     <section
@@ -326,7 +292,7 @@ export function NexusDashPreview() {
             {/* left rail */}
             <Reveal as="div" delay={80} className="dash-rail">
               <div className="rail-h">Phases · 5</div>
-              {RAILS_PHASES.map((r) => (
+              {railsPhases.map((r) => (
                 <div
                   key={r.id}
                   className={`rail-card ${activeRail === r.id ? "active" : ""}`}
@@ -366,9 +332,9 @@ export function NexusDashPreview() {
                   </span>
                 ))}
               </div>
-              <NexusChart />
+              <NexusChart waves={waves} />
               <div className="stream-legend">
-                {WAVES.map((w) => (
+                {waves.map((w) => (
                   <span
                     key={w.name}
                     className="stream-chip"
@@ -396,7 +362,7 @@ export function NexusDashPreview() {
                   <span className="ext" aria-hidden>↗</span>
                 </div>
                 <div className="flex flex-col gap-1.5 mt-2 font-mono text-[11px] tracking-[0.04em] text-[var(--color-muted-dark)] num-tab">
-                  {PATTERN_SIGNALS.map((s) => (
+                  {patternSignals.map((s) => (
                     <div key={s.label} className="flex flex-col">
                       <div className="flex justify-between">
                         <span>{s.label}</span>
@@ -409,7 +375,7 @@ export function NexusDashPreview() {
                   ))}
                   <div className="flex justify-between mt-1 pt-2 border-t border-[rgba(255,95,179,0.20)]">
                     <span>Active alerts</span>
-                    <span className="text-[var(--color-magenta)]">●  {ACTIVE_ALERTS}</span>
+                    <span className="text-[var(--color-magenta)]">●  {activeAlerts}</span>
                   </div>
                 </div>
               </div>
@@ -417,7 +383,7 @@ export function NexusDashPreview() {
                 This week
               </div>
               <div className="loc-list">
-                {ACTIVITY.map((a, i) => (
+                {activity.map((a, i) => (
                   <div key={i} className="loc">
                     <span
                       className="city"

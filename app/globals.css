@@ -1870,6 +1870,81 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
+/* Scenario picker on /preview/dashboard. 3 cards, cosmic-tinted active
+   border + glow. Click swaps the dashboard dataset live. */
+.scenario-picker {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 768px) {
+  .scenario-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.scenario-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(95, 255, 215, 0.16);
+  background: rgba(2, 6, 14, 0.55);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scenario-card:hover {
+  border-color: rgba(95, 255, 215, 0.40);
+  transform: translateY(-1px);
+}
+.scenario-card.is-active {
+  border-color: rgba(95, 255, 215, 0.55);
+  background: rgba(95, 255, 215, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(95, 255, 215, 0.30),
+    0 0 32px rgba(95, 255, 215, 0.18);
+}
+.scenario-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--color-muted);
+  padding-top: 1px;
+}
+.scenario-card.is-active .scenario-num { color: var(--color-cyan); }
+.scenario-body { display: flex; flex-direction: column; gap: 4px; }
+.scenario-label {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  color: var(--color-dark);
+}
+.scenario-desc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  color: var(--color-muted);
+  line-height: 1.45;
+}
+.scenario-active-dot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(95, 255, 215, 0.65);
+}
+
 /* Command palette (⌘K). Centered modal; cosmic glass card with cyan
    foreground accents. Opens via the global ⌘K listener or the custom
    `command-palette:open` event dispatched from the SiteHeader button. */
