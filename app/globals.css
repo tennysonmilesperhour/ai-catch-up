@@ -789,6 +789,53 @@ textarea:focus-visible {
   max-height: 360px;
 }
 .globe-wrap svg { width: 100%; height: 100%; display: block; }
+/* WebGL-mounted globe variant (Three.js). The canvas is appended into
+   .globe-wrap-3d at runtime so the ratio + max-height contract still
+   applies. */
+.globe-wrap-3d {
+  cursor: grab;
+}
+.globe-wrap-3d canvas { display: block; width: 100% !important; height: 100% !important; }
+
+/* 3D globe stat strip: 3 cells below the canvas. */
+.globe-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(95, 255, 215, 0.18);
+}
+.globe-stat-strip .cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.globe-stat-strip .k {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.globe-stat-strip .v {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--color-cyan);
+  letter-spacing: -0.005em;
+}
+
+.globe-cities {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  color: var(--color-muted-dark);
+}
+.globe-cities span {
+  color: var(--color-cyan);
+}
 .stat-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

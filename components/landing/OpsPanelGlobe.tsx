@@ -1,194 +1,333 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+import {
+  DEMO_SESSIONS,
+  summariseSessions,
+  type GlobeFeed,
+  type GlobeSession,
+} from "@/lib/globe-sessions";
 
-const GLOBE_R = 170;
-const VIEW = 400;
-const CENTER = VIEW / 2;
-const DOT_COUNT = 140;
+const MARKER_COLOR: Record<GlobeSession["state"], number> = {
+  active: 0x5fffd7, // cyan
+  recent: 0xc084fc, // violet
+  stale: 0x7d8aad,  // muted blue (deemphasized)
+};
 
-type Dot = { x: number; y: number; r: number; cyan: boolean };
+const MARKER_GLOW: Record<GlobeSession["state"], number> = {
+  active: 0.75,
+  recent: 0.45,
+  stale: 0.25,
+};
 
-function generateDots(): Dot[] {
-  const dots: Dot[] = [];
-  let seed = 137;
-  function rnd() {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  }
-  while (dots.length < DOT_COUNT) {
-    const a = rnd() * Math.PI * 2;
-    const b = Math.acos(2 * rnd() - 1);
-    const x = Math.sin(b) * Math.cos(a);
-    const y = Math.sin(b) * Math.sin(a);
-    const z = Math.cos(b);
-    if (z < 0.05) continue;
-    dots.push({
-      x: CENTER + x * GLOBE_R * 0.95,
-      y: CENTER + y * GLOBE_R * 0.95,
-      r: 0.7 + (1 - z) * 1.4,
-      cyan: rnd() < 0.18,
-    });
-  }
-  return dots;
+function latLonToVec3(lat: number, lon: number, radius: number): THREE.Vector3 {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lon + 180) * (Math.PI / 180);
+  return new THREE.Vector3(
+    -radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
 }
 
-const PINGS = [
-  { x: CENTER - 70, y: CENTER + 30, color: "#5fffd7", delay: "0s",   label: "SF",  count: "2.1k" },
-  { x: CENTER + 80, y: CENTER - 40, color: "#ff5fb3", delay: "0.6s", label: "NYC", count: "3.8k" },
-  { x: CENTER + 30, y: CENTER + 70, color: "#c084fc", delay: "1.2s", label: "LDN", count: "1.4k" },
-];
-
 export function OpsPanelGlobe() {
-  const dots = useMemo(() => generateDots(), []);
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const [feed, setFeed] = useState<GlobeFeed>(() =>
+    summariseSessions(DEMO_SESSIONS, "demo")
+  );
+  const sessionsRef = useRef<GlobeSession[]>(feed.sessions);
+
+  // Keep sessionsRef in sync so the animation loop can read the latest
+  // dataset without restarting the renderer.
+  useEffect(() => {
+    sessionsRef.current = feed.sessions;
+  }, [feed.sessions]);
+
+  // Register this visit, then pull the live feed. Re-pulls every 60s so
+  // the globe shows recent visitors as they trickle in.
+  useEffect(() => {
+    let cancelled = false;
+    async function ping() {
+      try {
+        await fetch("/api/sessions", {
+          method: "POST",
+          cache: "no-store",
+          // Empty body — the API reads geo from Vercel headers, not the
+          // client. No personally identifying data is sent.
+        });
+      } catch {
+        /* ignore */
+      }
+    }
+    async function pull() {
+      try {
+        const res = await fetch("/api/sessions", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = (await res.json()) as Partial<GlobeFeed>;
+        if (cancelled || !json.sessions || json.sessions.length === 0) return;
+        const next = summariseSessions(json.sessions, json.source ?? "live");
+        setFeed(next);
+      } catch {
+        /* ignore — keep demo */
+      }
+    }
+    ping().then(pull);
+    const id = setInterval(pull, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // ----- Setup -----
+    const w = mount.clientWidth || 360;
+    const h = mount.clientHeight || 360;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+    camera.position.set(0, 0, 3.4);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h);
+    renderer.setClearColor(0x000000, 0);
+    mount.appendChild(renderer.domElement);
+
+    // ----- Globe wireframe -----
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    // Lat/lon hairlines built explicitly so we control opacity/density.
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0x5fffd7,
+      transparent: true,
+      opacity: 0.18,
+      depthWrite: false,
+    });
+    const RADIUS = 1.0;
+
+    // Latitude rings.
+    for (let i = 1; i < 12; i++) {
+      const phi = (i / 12) * Math.PI;
+      const r = Math.sin(phi) * RADIUS;
+      const y = Math.cos(phi) * RADIUS;
+      const points: THREE.Vector3[] = [];
+      const seg = 64;
+      for (let s = 0; s <= seg; s++) {
+        const t = (s / seg) * Math.PI * 2;
+        points.push(new THREE.Vector3(Math.cos(t) * r, y, Math.sin(t) * r));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      globeGroup.add(new THREE.Line(geo, lineMat));
+    }
+    // Longitude meridians.
+    for (let j = 0; j < 18; j++) {
+      const theta = (j / 18) * Math.PI * 2;
+      const points: THREE.Vector3[] = [];
+      const seg = 48;
+      for (let s = 0; s <= seg; s++) {
+        const phi = (s / seg) * Math.PI;
+        const x = Math.sin(phi) * Math.cos(theta) * RADIUS;
+        const y = Math.cos(phi) * RADIUS;
+        const z = Math.sin(phi) * Math.sin(theta) * RADIUS;
+        points.push(new THREE.Vector3(x, y, z));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      globeGroup.add(new THREE.Line(geo, lineMat));
+    }
+
+    // Subtle filled sphere behind the wireframe so back-side lines fade.
+    const fillGeo = new THREE.SphereGeometry(RADIUS * 0.99, 48, 32);
+    const fillMat = new THREE.MeshBasicMaterial({
+      color: 0x06101e,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: true,
+    });
+    globeGroup.add(new THREE.Mesh(fillGeo, fillMat));
+
+    // Outer halo ring (cyan equator-aligned faint glow).
+    const haloGeo = new THREE.RingGeometry(RADIUS * 1.04, RADIUS * 1.06, 96);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0x5fffd7,
+      transparent: true,
+      opacity: 0.40,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.rotation.x = Math.PI / 2;
+    scene.add(halo);
+
+    // Dashed magenta orbit to keep the prototype's signature.
+    const orbitPoints: THREE.Vector3[] = [];
+    const ORBIT_R = RADIUS * 1.18;
+    for (let s = 0; s <= 256; s++) {
+      const t = (s / 256) * Math.PI * 2;
+      orbitPoints.push(
+        new THREE.Vector3(Math.cos(t) * ORBIT_R, 0, Math.sin(t) * ORBIT_R)
+      );
+    }
+    const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+    const orbitMat = new THREE.LineDashedMaterial({
+      color: 0xff5fb3,
+      transparent: true,
+      opacity: 0.55,
+      dashSize: 0.08,
+      gapSize: 0.06,
+      depthWrite: false,
+    });
+    const orbit = new THREE.Line(orbitGeo, orbitMat);
+    orbit.computeLineDistances();
+    orbit.rotation.x = THREE.MathUtils.degToRad(-15);
+    scene.add(orbit);
+
+    // ----- Markers (lazy-rebuilt from sessionsRef each frame check) -----
+    const markersGroup = new THREE.Group();
+    globeGroup.add(markersGroup);
+
+    let lastSessionsHash = "";
+    function rebuildMarkers() {
+      const sessions = sessionsRef.current;
+      const hash = sessions.map((s) => s.id + s.state).join("|");
+      if (hash === lastSessionsHash) return;
+      lastSessionsHash = hash;
+      // Dispose + clear.
+      while (markersGroup.children.length) {
+        const c = markersGroup.children.pop()!;
+        if ((c as THREE.Mesh).geometry) (c as THREE.Mesh).geometry.dispose();
+      }
+      sessions.forEach((s) => {
+        const v = latLonToVec3(s.lat, s.lon, RADIUS * 1.005);
+        const color = MARKER_COLOR[s.state];
+        // Core dot.
+        const core = new THREE.Mesh(
+          new THREE.SphereGeometry(0.018, 12, 12),
+          new THREE.MeshBasicMaterial({ color })
+        );
+        core.position.copy(v);
+        core.userData = { kind: "core", state: s.state };
+        markersGroup.add(core);
+        // Glow ring (opacity-modulated each frame for active markers).
+        const glow = new THREE.Mesh(
+          new THREE.SphereGeometry(0.038, 12, 12),
+          new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: MARKER_GLOW[s.state],
+            depthWrite: false,
+          })
+        );
+        glow.position.copy(v);
+        glow.userData = { kind: "glow", state: s.state, baseOpacity: MARKER_GLOW[s.state] };
+        markersGroup.add(glow);
+      });
+    }
+    rebuildMarkers();
+
+    // ----- Animation loop -----
+    let raf = 0;
+    const start = performance.now();
+    function tick(now: number) {
+      const t = (now - start) / 1000;
+      rebuildMarkers();
+      if (!reduceMotion) {
+        globeGroup.rotation.y = t * 0.06;
+        orbit.rotation.y = -t * 0.03;
+        // Pulse active glow rings.
+        markersGroup.children.forEach((c) => {
+          if (c.userData.kind === "glow" && c.userData.state === "active") {
+            const m = (c as THREE.Mesh).material as THREE.MeshBasicMaterial;
+            m.opacity =
+              c.userData.baseOpacity *
+              (0.55 + Math.sin(t * 2.4 + c.position.x * 4) * 0.45);
+          }
+        });
+      }
+      renderer.render(scene, camera);
+      raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+
+    // ----- Resize handling -----
+    const ro = new ResizeObserver(() => {
+      const nw = mount.clientWidth || 360;
+      const nh = mount.clientHeight || 360;
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(nw, nh);
+    });
+    ro.observe(mount);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      renderer.dispose();
+      mount.removeChild(renderer.domElement);
+      // Walk scene + dispose geometries/materials for memory cleanup.
+      scene.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Line) {
+          obj.geometry?.dispose();
+          const mat = obj.material;
+          if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+          else (mat as THREE.Material | undefined)?.dispose();
+        }
+      });
+    };
+  }, []);
+
+  const topCities = useMemo(
+    () =>
+      feed.sessions
+        .filter((s) => s.state === "active")
+        .slice(0, 3)
+        .map((s) => s.city)
+        .join(" · "),
+    [feed.sessions]
+  );
 
   return (
     <div className="glass-card-static ops-panel">
       <div className="ops-panel-head">
         <span>Nexus · Live map</span>
         <span className="live">
-          <span className="dot" aria-hidden /> Tracking
+          <span className="dot" aria-hidden /> {feed.source === "live" ? "Live" : "Demo"}
         </span>
       </div>
 
-      <div className="globe-wrap">
-        <svg viewBox={`0 0 ${VIEW} ${VIEW}`} role="img" aria-label="Live nexus map">
-          <defs>
-            <radialGradient id="globe-fill" cx="40%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="rgba(95, 255, 215, 0.10)" />
-              <stop offset="60%" stopColor="rgba(13, 28, 52, 0.0)" />
-              <stop offset="100%" stopColor="rgba(2, 6, 14, 0.4)" />
-            </radialGradient>
-          </defs>
+      <div className="globe-wrap globe-wrap-3d" ref={mountRef} aria-hidden />
 
-          {/* base sphere */}
-          <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={GLOBE_R}
-            fill="url(#globe-fill)"
-            stroke="rgba(95, 255, 215, 0.4)"
-            strokeWidth="1.2"
-          />
-
-          {/* longitude lines */}
-          {[0.6, 1.0, 1.4].map((rx, i) => (
-            <ellipse
-              key={`lon-${i}`}
-              cx={CENTER}
-              cy={CENTER}
-              rx={GLOBE_R * rx * 0.55}
-              ry={GLOBE_R}
-              fill="none"
-              stroke="rgba(95, 217, 255, 0.18)"
-              strokeWidth="1"
-            />
-          ))}
-
-          {/* latitude lines */}
-          {[0.35, 0.65, 0.85, 0.95].map((ry, i) => (
-            <ellipse
-              key={`lat-${i}`}
-              cx={CENTER}
-              cy={CENTER}
-              rx={GLOBE_R}
-              ry={GLOBE_R * ry}
-              fill="none"
-              stroke="rgba(95, 217, 255, 0.18)"
-              strokeWidth="1"
-            />
-          ))}
-
-          {/* surface dots */}
-          {dots.map((d, i) => (
-            <circle
-              key={`d-${i}`}
-              cx={d.x}
-              cy={d.y}
-              r={d.r}
-              fill={d.cyan ? "rgba(95, 255, 215, 0.85)" : "rgba(125, 138, 173, 0.55)"}
-            />
-          ))}
-
-          {/* dashed magenta orbit */}
-          <g style={{ transformOrigin: `${CENTER}px ${CENTER}px` }}>
-            <ellipse
-              cx={CENTER}
-              cy={CENTER}
-              rx={GLOBE_R + 18}
-              ry={GLOBE_R * 0.45}
-              fill="none"
-              stroke="rgba(255, 95, 179, 0.55)"
-              strokeWidth="1.2"
-              strokeDasharray="4 6"
-            >
-              <animateTransform
-                attributeName="transform"
-                type="rotate"
-                from={`-15 ${CENTER} ${CENTER}`}
-                to={`345 ${CENTER} ${CENTER}`}
-                dur="40s"
-                repeatCount="indefinite"
-              />
-            </ellipse>
-          </g>
-
-          {/* location pings */}
-          {PINGS.map((p, i) => {
-            const labelOnLeft = p.x > CENTER;
-            const tx = labelOnLeft ? p.x - 12 : p.x + 12;
-            const anchor = labelOnLeft ? "end" : "start";
-            return (
-              <g key={`p-${i}`}>
-                <circle cx={p.x} cy={p.y} r="3" fill={p.color}>
-                  <animate
-                    attributeName="r"
-                    from="3"
-                    to="22"
-                    dur="2.4s"
-                    begin={p.delay}
-                    repeatCount="indefinite"
-                  />
-                  <animate
-                    attributeName="opacity"
-                    from="0.9"
-                    to="0"
-                    dur="2.4s"
-                    begin={p.delay}
-                    repeatCount="indefinite"
-                  />
-                </circle>
-                <circle cx={p.x} cy={p.y} r="3.2" fill={p.color} />
-                <text
-                  x={tx}
-                  y={p.y + 4}
-                  fontFamily="var(--font-mono)"
-                  fontSize="10"
-                  letterSpacing="0.14em"
-                  fill={p.color}
-                  textAnchor={anchor}
-                  opacity="0.95"
-                >
-                  {p.label} · {p.count}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* outer ring */}
-          <circle
-            cx={CENTER}
-            cy={CENTER}
-            r={GLOBE_R + 18}
-            fill="none"
-            stroke="rgba(95, 217, 255, 0.18)"
-            strokeWidth="1"
-          />
-        </svg>
+      <div className="globe-stat-strip">
+        <div className="cell">
+          <span className="k">Active now</span>
+          <span className="v num-tab">{feed.totals.active}</span>
+        </div>
+        <div className="cell">
+          <span className="k">Recent · 60m</span>
+          <span className="v num-tab">{feed.totals.recent}</span>
+        </div>
+        <div className="cell">
+          <span className="k">Countries</span>
+          <span className="v num-tab">{feed.totals.countries}</span>
+        </div>
       </div>
 
-      {/* Stat strip moved to Hero per the reference shots; OpsPanelGlobe now
-          carries just the globe + header chip. */}
+      {topCities && (
+        <p className="globe-cities">
+          Top live: <span>{topCities}</span>
+        </p>
+      )}
     </div>
   );
 }
