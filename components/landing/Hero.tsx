@@ -3,6 +3,7 @@ import { Reveal } from "@/components/shared/Reveal";
 import { OpsPanelGlobe } from "@/components/landing/OpsPanelGlobe";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { AutoLearnText } from "@/components/shared/LearnMode";
 
 type HeroFrontmatter = {
   eyebrow?: string;
@@ -68,7 +69,9 @@ export function Hero() {
             <div className="max-w-2xl text-base md:text-lg leading-relaxed text-[var(--color-muted-dark)] space-y-4 mb-9">
               {paragraphs.map((p, i) => (
                 <Reveal key={i} delay={500 + i * 80}>
-                  <p>{p}</p>
+                  <p>
+                    <AutoLearnText>{p}</AutoLearnText>
+                  </p>
                 </Reveal>
               ))}
             </div>

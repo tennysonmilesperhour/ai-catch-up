@@ -2,6 +2,7 @@ import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { AutoLearnText } from "@/components/shared/LearnMode";
 
 type AsideRow = { k: string; v: string; small?: string };
 
@@ -68,7 +69,9 @@ export function Pricing() {
             </div>
             <ul className="features">
               {features.map((f) => (
-                <li key={f}>{f}</li>
+                <li key={f}>
+                  <AutoLearnText>{f}</AutoLearnText>
+                </li>
               ))}
             </ul>
             <div className="mt-2">

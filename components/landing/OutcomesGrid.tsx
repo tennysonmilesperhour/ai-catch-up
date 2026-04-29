@@ -1,6 +1,7 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { AutoLearnText } from "@/components/shared/LearnMode";
 
 type Outcome = {
   glyph: string;
@@ -62,7 +63,9 @@ export function OutcomesGrid() {
                 {o.glyph}
               </span>
               <h3>{o.title}</h3>
-              <p>{o.description}</p>
+              <p>
+                <AutoLearnText>{o.description}</AutoLearnText>
+              </p>
               {(o.tag_left || o.tag_right) && (
                 <div className="tag-row">
                   <span>{o.tag_left}</span>

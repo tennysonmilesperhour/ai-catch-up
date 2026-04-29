@@ -1870,6 +1870,293 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
+/* ============================================================
+   Learn mode: dotted-underline tooltips on technical terms.
+   Toggleable from the UtilityBar; persisted in localStorage.
+   ============================================================ */
+
+.learn-term {
+  position: relative;
+  display: inline-flex;
+}
+.learn-term-trigger {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: help;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(95, 255, 215, 0.45);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.learn-term-trigger:hover,
+.learn-term.is-open .learn-term-trigger {
+  text-decoration-color: var(--color-cyan);
+  color: var(--color-cyan);
+}
+.learn-term-trigger.as-text { cursor: default; pointer-events: none; }
+
+.learn-term-pop {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 180;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(13, 28, 52, 0.96) 0%,
+    rgba(13, 28, 52, 0.98) 50%,
+    rgba(13, 28, 52, 0.96) 100%
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(95, 255, 215, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 18px 48px rgba(2, 6, 14, 0.55),
+    0 0 0 1px rgba(95, 255, 215, 0.18),
+    0 0 32px rgba(95, 255, 215, 0.14);
+  animation: learn-pop-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  text-align: left;
+  white-space: normal;
+}
+.learn-term-pop::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  background: rgba(13, 28, 52, 0.96);
+  border-left: 1px solid rgba(95, 255, 215, 0.30);
+  border-top: 1px solid rgba(95, 255, 215, 0.30);
+  transform: rotate(45deg);
+}
+.learn-term-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.learn-term-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+}
+.learn-term-kind {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.learn-term-brief {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-dark);
+}
+.learn-term-more {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-muted-dark);
+  padding-top: 6px;
+  border-top: 1px solid rgba(95, 255, 215, 0.14);
+}
+@keyframes learn-pop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .learn-term-pop { animation: none; }
+}
+
+/* Learn-mode toggle chip (UtilityBar). */
+.learn-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 255, 215, 0.30);
+  background: rgba(2, 6, 14, 0.55);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.learn-mode-chip:hover { border-color: rgba(95, 255, 215, 0.55); }
+.learn-mode-chip .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.learn-mode-chip.is-on .dot {
+  background: var(--color-cyan);
+  box-shadow: 0 0 6px rgba(95, 255, 215, 0.6);
+}
+.learn-mode-chip.is-off {
+  border-color: rgba(125, 138, 173, 0.30);
+  color: var(--color-muted);
+}
+.learn-mode-chip.is-off .dot {
+  background: var(--color-muted);
+  box-shadow: none;
+}
+
+/* Learn-mode toggle as a horizontal switch (settings page variant). */
+.learn-mode-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.learn-mode-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.learn-mode-switch .track {
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(125, 138, 173, 0.30);
+  border: 1px solid rgba(125, 138, 173, 0.35);
+  position: relative;
+  transition: background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.learn-mode-switch .thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-muted-dark);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              background 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.learn-mode-switch input:checked + .track {
+  background: rgba(95, 255, 215, 0.30);
+  border-color: rgba(95, 255, 215, 0.55);
+}
+.learn-mode-switch input:checked + .track .thumb {
+  transform: translateX(16px);
+  background: var(--color-cyan);
+  box-shadow: 0 0 10px rgba(95, 255, 215, 0.55);
+}
+.learn-mode-switch .label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted-dark);
+}
+
+/* First-visit welcome callout. */
+.learn-welcome {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 190;
+  max-width: 360px;
+  padding: 14px 16px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(95, 255, 215, 0.30);
+  background: linear-gradient(
+    135deg,
+    rgba(13, 28, 52, 0.92) 0%,
+    rgba(13, 28, 52, 0.96) 100%
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 16px 40px rgba(2, 6, 14, 0.55),
+    0 0 0 1px rgba(95, 255, 215, 0.18);
+  animation: learn-welcome-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.learn-welcome-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  margin-bottom: 6px;
+}
+.learn-welcome-eyebrow .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(95, 255, 215, 0.6);
+  animation: breath 2.4s ease-in-out infinite;
+}
+.learn-welcome-msg {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-dark);
+  margin-bottom: 10px;
+}
+.learn-welcome-msg .inline-demo .learn-term-trigger.as-text {
+  text-decoration-color: var(--color-cyan);
+  color: var(--color-cyan);
+  cursor: default;
+}
+.learn-welcome-button {
+  display: inline-flex;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 255, 215, 0.40);
+  background: rgba(95, 255, 215, 0.10);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  cursor: pointer;
+  transition: background 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.learn-welcome-button:hover { background: rgba(95, 255, 215, 0.18); }
+@keyframes learn-welcome-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .learn-welcome { animation: none; }
+  .learn-welcome-eyebrow .dot { animation: none; }
+}
+
+/* Mobile: tighten the welcome card so it doesn't crowd the bottom corner. */
+@media (max-width: 479px) {
+  .learn-welcome {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+}
+
 /* Scenario picker on /preview/dashboard. 3 cards, cosmic-tinted active
    border + glow. Click swaps the dashboard dataset live. */
 .scenario-picker {

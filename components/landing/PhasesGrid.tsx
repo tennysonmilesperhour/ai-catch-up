@@ -1,6 +1,7 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { AutoLearnText } from "@/components/shared/LearnMode";
 
 type Phase = {
   number: string;
@@ -59,7 +60,9 @@ export function PhasesGrid() {
             <article className="glass-card phase-card h-full">
               <p className="num">Phase · {p.number}</p>
               <h3>{p.title}</h3>
-              <p>{p.description}</p>
+              <p>
+                <AutoLearnText>{p.description}</AutoLearnText>
+              </p>
               <div className="time">
                 <span>Duration</span>
                 <span className="v">{p.time}</span>

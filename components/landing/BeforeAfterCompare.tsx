@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { AutoLearnText } from "@/components/shared/LearnMode";
 
 // STRATEGY CLAUDE: refine. The Aurora handoff said BeforeAfterCompare reads
 // existing before-after.mdx with no schema change, but the existing schema
@@ -55,7 +56,9 @@ export function BeforeAfterCompare() {
                   <span className="ic" aria-hidden>
                     ✕
                   </span>
-                  <span>{item}</span>
+                  <span>
+                    <AutoLearnText>{item}</AutoLearnText>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -73,7 +76,9 @@ export function BeforeAfterCompare() {
                   <span className="ic" aria-hidden>
                     ✓
                   </span>
-                  <span>{item}</span>
+                  <span>
+                    <AutoLearnText>{item}</AutoLearnText>
+                  </span>
                 </li>
               ))}
             </ul>

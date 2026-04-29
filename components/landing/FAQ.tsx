@@ -1,6 +1,7 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { AutoLearnText } from "@/components/shared/LearnMode";
 
 type FAQItem = {
   q: string;
@@ -57,7 +58,9 @@ export function FAQ() {
                 <span>{item.q}</span>
                 <span className="chev" aria-hidden />
               </summary>
-              <div className="a">{item.a}</div>
+              <div className="a">
+                <AutoLearnText>{item.a}</AutoLearnText>
+              </div>
             </details>
           </Reveal>
         ))}

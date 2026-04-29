@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LearnModeToggle } from "@/components/shared/LearnMode";
 
 type UtilityBarProps = {
   left?: string[];
@@ -44,6 +45,8 @@ export function UtilityBar({
         ))}
       </div>
       <div className="group">
+        <LearnModeToggle />
+        <span className="sep">·</span>
         {rightStatic.map((part, i) => (
           <span key={i} className="group">
             <span>{part}</span>

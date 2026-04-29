@@ -1,6 +1,7 @@
 import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { AutoLearnText } from "@/components/shared/LearnMode";
 
 type Testimonial = {
   initials: string;
@@ -49,7 +50,9 @@ export function TestimonialsRow() {
         {items.map((t, i) => (
           <Reveal key={t.initials + i} delay={i * 80}>
             <article className="glass-card-static testi h-full">
-              <q>{t.quote}</q>
+              <q>
+                <AutoLearnText>{t.quote}</AutoLearnText>
+              </q>
               <div className="who">
                 <span className="avatar" aria-hidden>
                   {t.initials}

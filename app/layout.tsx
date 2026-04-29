@@ -3,6 +3,7 @@ import { Outfit, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { RefreshBanner } from "@/components/shared/RefreshBanner";
 import { CommandPalette } from "@/components/shared/CommandPalette";
+import { LearnModeProvider } from "@/components/shared/LearnMode";
 import { buildPaletteItems } from "@/lib/palette";
 
 // Display: warm modern geometric sans for headings + UI labels.
@@ -79,9 +80,11 @@ export default function RootLayout({
       className={`${outfit.variable} ${inter.variable} ${spaceMono.variable}`}
     >
       <body>
-        {children}
-        <RefreshBanner />
-        <CommandPalette items={paletteItems} />
+        <LearnModeProvider>
+          {children}
+          <RefreshBanner />
+          <CommandPalette items={paletteItems} />
+        </LearnModeProvider>
       </body>
     </html>
   );
