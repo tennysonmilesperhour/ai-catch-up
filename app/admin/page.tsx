@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { loadJson } from "@/lib/content";
 import { listPosts } from "@/lib/blog";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
@@ -83,6 +84,17 @@ export default async function OverviewPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   const session = await verifySession(token);
+
+  // Buyers (non-admin authed users) get bounced to their own home
+  // (Pulse). The Overview below is Tennyson's vendor-side workspace
+  // dashboard; buyers shouldn't see project spec / connections / blog
+  // post status. Middleware also handles this redirect, but having it
+  // server-side here keeps the rule co-located with the page that
+  // owns the role-specific content.
+  if (session && session.role !== "admin") {
+    redirect("/admin/pulse");
+  }
+
   const handle = session?.email?.split("@")[0] ?? "admin";
 
   const prompts = loadJson<Prompt[] | { prompts: Prompt[] }>(

@@ -45,8 +45,11 @@ export async function POST(request: Request) {
     });
 
     const adminNext = safeAdminNext(next, request.url);
+    // Buyers (non-admin authed users) land on their workspace home
+    // (Pulse). Admins go to either ?next= (if it's a safe /admin path)
+    // or the Overview dashboard.
     const destination =
-      role === "admin" ? (adminNext ?? "/admin") : "/preview";
+      role === "admin" ? (adminNext ?? "/admin") : "/admin/pulse";
 
     const res = NextResponse.redirect(new URL(destination, request.url), {
       status: 303,

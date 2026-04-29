@@ -36,7 +36,7 @@ export function Footer() {
         <div className="foot-col">
           <h4>Account</h4>
           <Link href="/login" className="hover:text-[var(--color-dark)] transition-colors">Log in</Link>
-          <Link href="/preview" className="hover:text-[var(--color-dark)] transition-colors">Preview</Link>
+          <Link href="/preview/dashboard" className="hover:text-[var(--color-dark)] transition-colors">Dashboard demo</Link>
         </div>
       </div>
 
