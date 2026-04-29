@@ -23,7 +23,7 @@ const tabs = [
   {
     name: "Prompts",
     blurb:
-      "30 plus prompts organized by situation. Each one tested in real sessions, with notes on why it works.",
+      "20 prompts organized across nine situations (Getting unstuck, Project setup, Building, Prompting Claude, Research, Marketing, Operations, Brand, When things feel hard). Each one tested in real sessions, with a 'why it works' note.",
   },
   {
     name: "Decisions",
