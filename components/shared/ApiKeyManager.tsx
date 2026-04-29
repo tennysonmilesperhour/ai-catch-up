@@ -8,6 +8,7 @@ import {
   looksLikeAnthropicKey,
   setApiKey,
 } from "@/lib/byok";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 type Status = "empty" | "stored" | "validating" | "invalid";
 
@@ -46,9 +47,16 @@ export function ApiKeyManager() {
   return (
     <div className="api-key-manager">
       <div className="flex flex-col gap-2 mb-3">
-        <label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
-          Anthropic API key
-        </label>
+        <LearnHint
+          title="BYOK · bring your own key"
+          body="Your Anthropic API key lives in this browser only. Calls go from your browser to api.anthropic.com directly; the AI Catch Up server never sees the key or the prompts."
+          more="The trade-off: localStorage is XSS-readable, so anything that compromises the JS context could read the key. We don't roll our own encryption because anything decryptable from JS is theater."
+          side="top-left"
+        >
+          <label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
+            Anthropic API key
+          </label>
+        </LearnHint>
         <p className="text-sm text-[var(--color-muted-dark)] leading-relaxed">
           Paste your key from{" "}
           <a

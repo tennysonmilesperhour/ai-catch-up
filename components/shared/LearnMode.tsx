@@ -344,12 +344,24 @@ export function LearnModeToggle({
 }
 
 // ============================================================================
-// LearnModeWelcome: first-visit floating callout
+// LearnModeWelcome: first-visit floating callout with don't-show-again
 // ============================================================================
 
 function LearnModeWelcome() {
-  const { showWelcome, dismissWelcome } = useLearnMode();
-  if (!showWelcome) return null;
+  const { showWelcome, dismissWelcome, setEnabled } = useLearnMode();
+  const [dontShow, setDontShow] = useState(true);
+  const [hiddenForSession, setHiddenForSession] = useState(false);
+  if (!showWelcome || hiddenForSession) return null;
+
+  const onGotIt = () => {
+    if (dontShow) {
+      // Permanent dismissal: writes seen flag to localStorage.
+      dismissWelcome();
+    } else {
+      // Session-only: hides until next page load, never persists.
+      setHiddenForSession(true);
+    }
+  };
 
   return (
     <div className="learn-welcome" role="status" aria-live="polite">
@@ -365,16 +377,121 @@ function LearnModeWelcome() {
         <span className="learn-term inline-demo">
           <span className="learn-term-trigger as-text">Workspace Pulse</span>
         </span>{" "}
-        get a dotted underline. Hover or tap any of them for a plain-language
-        explanation. Toggle off in the bar at the top once you don't need it.
+        get a dotted underline. UI elements with a hidden how-it-works note
+        get a subtle cyan ring on hover. Toggle off in the bar at the top
+        once you don't need it.
       </p>
+      <label className="learn-welcome-check">
+        <input
+          type="checkbox"
+          checked={dontShow}
+          onChange={(e) => setDontShow(e.target.checked)}
+        />
+        <span>Don't show this again</span>
+      </label>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="learn-welcome-button"
+          onClick={onGotIt}
+        >
+          Got it
+        </button>
+        <button
+          type="button"
+          className="learn-welcome-secondary"
+          onClick={() => {
+            setEnabled(false);
+            dismissWelcome();
+          }}
+        >
+          Turn off Learn mode
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// LearnHint: wraps any UI element with a tooltip explaining what it does.
+// The embedded-tutorial half of Learn mode — extends beyond vocabulary to
+// cover buttons, panels, regions, processes.
+// ============================================================================
+
+type LearnHintProps = {
+  title: string;
+  body: string;
+  more?: string;
+  /** Position of the indicator badge relative to the wrapped element. */
+  side?: "top-right" | "top-left" | "bottom-right";
+  children: ReactNode;
+  /** Inline-style hint (no badge, just hover ring). Default true. */
+  inlineRing?: boolean;
+};
+
+export function LearnHint({
+  title,
+  body,
+  more,
+  side = "top-right",
+  children,
+  inlineRing = true,
+}: LearnHintProps) {
+  const { enabled } = useLearnMode();
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function onEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  if (!enabled) {
+    return <>{children}</>;
+  }
+
+  return (
+    <span
+      ref={wrapRef}
+      className={`learn-hint ${inlineRing ? "with-ring" : ""} ${open ? "is-open" : ""}`}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      {children}
       <button
         type="button"
-        className="learn-welcome-button"
-        onClick={dismissWelcome}
+        className={`learn-hint-badge side-${side}`}
+        aria-label={`Learn about ${title}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen((s) => !s);
+        }}
+        tabIndex={-1}
       >
-        Got it
+        ?
       </button>
-    </div>
+      {open && (
+        <span className={`learn-term-pop learn-hint-pop side-${side}`} role="tooltip">
+          <span className="learn-term-head">
+            <span className="learn-term-name">{title}</span>
+            <span className="learn-term-kind">· tutorial</span>
+          </span>
+          <span className="learn-term-brief">{body}</span>
+          {more && <span className="learn-term-more">{more}</span>}
+        </span>
+      )}
+    </span>
   );
 }

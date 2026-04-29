@@ -14,6 +14,7 @@ import {
   type WorkspaceSnapshot,
 } from "@/lib/workspace-state";
 import { PHASES } from "@/lib/setup-state";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 type Props = {
   decisionsCount: number;
@@ -71,9 +72,16 @@ export function PulseDashboard({ decisionsCount, promptsCount }: Props) {
               className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)]"
               aria-hidden
             />
-            <h2 className="font-display text-base text-[var(--color-dark)]">
-              Pattern signals
-            </h2>
+            <LearnHint
+              title="Pattern signals"
+              body="Three heuristics that watch your workspace for stuck patterns (prompts you stopped using), drift (sessions where Claude asked context questions), and plateau risk (weeks since you added a new prompt)."
+              more="Computed in your browser from localStorage state. v1.3 will swap in server-side reads from your real repo + session log."
+              side="top-left"
+            >
+              <h2 className="font-display text-base text-[var(--color-dark)]">
+                Pattern signals
+              </h2>
+            </LearnHint>
             <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
               live · this browser
             </span>
@@ -143,9 +151,16 @@ export function PulseDashboard({ decisionsCount, promptsCount }: Props) {
               className="w-1.5 h-1.5 rounded-full bg-[var(--color-terracotta)]"
               aria-hidden
             />
-            <h2 className="font-display text-base text-[var(--color-dark)]">
-              Suggested moves
-            </h2>
+            <LearnHint
+              title="Suggested moves"
+              body="The dynamic checklist. Up to five next moves ranked by severity (alert / warn / info), derived from the same workspace snapshot the pattern signals read."
+              more="Suggestions update on every page focus and every localStorage change, so finishing a setup phase or running a prompt re-ranks them immediately."
+              side="top-left"
+            >
+              <h2 className="font-display text-base text-[var(--color-dark)]">
+                Suggested moves
+              </h2>
+            </LearnHint>
           </header>
           {suggestions.length === 0 ? (
             <p className="text-sm text-[var(--color-muted-dark)] italic">

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { RunPrompt } from "@/components/shared/RunPrompt";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 export type Prompt = {
   id: number | string;
@@ -221,21 +222,28 @@ export function PromptsList({ prompts, categories }: Props) {
               <div className="flex items-baseline justify-between mb-2 gap-3 flex-wrap">
                 <p className="label text-[var(--color-muted-dark)]">Prompt</p>
                 <div className="flex items-center gap-2">
-                  <RunPrompt
-                    prompt={openPrompt.prompt}
-                    title={openPrompt.title}
-                    promptId={openPrompt.id}
+                  <LearnHint
+                    title="Run prompt"
+                    body="Fires this prompt against Claude using your stored API key. Variables in the prompt become input slots; result lands inline with token cost."
+                    more="Every run is recorded under Invocations and bumps a per-prompt usage counter that the heuristics on /admin/pulse read."
+                    side="bottom-right"
                   >
-                    {(open) => (
-                      <button
-                        type="button"
-                        onClick={open}
-                        className="font-mono text-[10px] uppercase tracking-[0.10em] px-3 py-1.5 rounded-[6px] border border-[rgba(95,255,215,0.45)] text-[var(--color-cyan)] hover:bg-[rgba(95,255,215,0.08)] hover:border-[var(--color-cyan)] transition-colors cursor-pointer"
-                      >
-                        Run →
-                      </button>
-                    )}
-                  </RunPrompt>
+                    <RunPrompt
+                      prompt={openPrompt.prompt}
+                      title={openPrompt.title}
+                      promptId={openPrompt.id}
+                    >
+                      {(open) => (
+                        <button
+                          type="button"
+                          onClick={open}
+                          className="font-mono text-[10px] uppercase tracking-[0.10em] px-3 py-1.5 rounded-[6px] border border-[rgba(95,255,215,0.45)] text-[var(--color-cyan)] hover:bg-[rgba(95,255,215,0.08)] hover:border-[var(--color-cyan)] transition-colors cursor-pointer"
+                        >
+                          Run →
+                        </button>
+                      )}
+                    </RunPrompt>
+                  </LearnHint>
                   <button
                     type="button"
                     onClick={() => handleCopy(openPrompt.prompt)}
