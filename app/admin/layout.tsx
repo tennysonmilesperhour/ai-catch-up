@@ -30,7 +30,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="aurora-page min-h-screen flex flex-col md:flex-row">
       <AdminSidebar groups={tabGroups} />
       <div className="flex-1 flex flex-col min-w-0">
         <AdminMobileNav tabs={flatTabs} />

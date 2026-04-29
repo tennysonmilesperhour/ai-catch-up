@@ -14,15 +14,18 @@ export function AdminSidebar({ groups }: Props) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[var(--color-border)] bg-[rgba(2,6,14,0.65)] backdrop-blur-md">
+    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[rgba(95,255,215,0.12)] bg-[rgba(2,6,14,0.65)] backdrop-blur-md">
       <div className="px-5 pt-6 pb-8">
-        <Link href="/admin" className="block">
-          <p className="label text-[var(--color-terracotta)] leading-tight">
-            AI Catch Up
-          </p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)] mt-1">
-            admin workspace
-          </p>
+        <Link href="/admin" className="brand-mark">
+          <span className="box" aria-hidden>
+            <span className="core" />
+          </span>
+          <span className="flex flex-col gap-0.5">
+            <span className="text">AI · Catch · Up</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
+              Admin workspace
+            </span>
+          </span>
         </Link>
       </div>
       <nav className="flex-1 px-3 flex flex-col gap-5 overflow-y-auto pb-4">
@@ -43,14 +46,15 @@ export function AdminSidebar({ groups }: Props) {
                   href={tab.href}
                   className={`relative px-4 py-2.5 rounded-[10px] font-mono text-xs uppercase tracking-[0.08em] transition-colors ${
                     isActive
-                      ? "text-[var(--color-dark)] bg-[rgba(251,191,36,0.10)]"
-                      : "text-[var(--color-muted)] hover:text-[var(--color-dark)] hover:bg-[rgba(255,255,255,0.04)]"
+                      ? "text-[var(--color-cyan)] bg-[rgba(95,255,215,0.08)]"
+                      : "text-[var(--color-muted-dark)] hover:text-[var(--color-dark)] hover:bg-[rgba(95,255,215,0.04)]"
                   }`}
                 >
                   {isActive && (
                     <span
                       aria-hidden
-                      className="absolute left-1 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[var(--color-terracotta)] cosmic-glow-soft"
+                      className="absolute left-1 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[var(--color-cyan)]"
+                      style={{ boxShadow: "0 0 12px rgba(95, 255, 215, 0.55)" }}
                     />
                   )}
                   <span className="ml-2">{tab.label}</span>
@@ -60,17 +64,17 @@ export function AdminSidebar({ groups }: Props) {
           </div>
         ))}
       </nav>
-      <div className="px-5 py-5 border-t border-[var(--color-border)] flex flex-col gap-3">
+      <div className="px-5 py-5 border-t border-[rgba(95,255,215,0.12)] flex flex-col gap-3">
         <Link
           href="/"
-          className="font-mono text-[11px] uppercase tracking-[0.10em] text-[var(--color-muted)] hover:text-[var(--color-dark)] transition-colors"
+          className="font-mono text-[11px] uppercase tracking-[0.10em] text-[var(--color-muted)] hover:text-[var(--color-cyan)] transition-colors"
         >
           &larr; View site
         </Link>
         <form method="POST" action="/api/logout">
           <button
             type="submit"
-            className="font-mono text-[11px] uppercase tracking-[0.10em] text-[var(--color-muted)] hover:text-[var(--color-terracotta)] transition-colors bg-transparent border-0 p-0 cursor-pointer"
+            className="font-mono text-[11px] uppercase tracking-[0.10em] text-[var(--color-muted)] hover:text-[var(--color-magenta)] transition-colors bg-transparent border-0 p-0 cursor-pointer"
           >
             Log out
           </button>
