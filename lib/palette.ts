@@ -24,6 +24,12 @@ export function buildPaletteItems(): PaletteItem[] {
     { kind: "section", id: "sec-playground", title: "Dashboard playground", subtitle: "Standalone Workspace Pulse preview",     href: "/preview/dashboard" },
     { kind: "section", id: "sec-blog",       title: "Writing",             subtitle: "Recent posts",                           href: "/blog" },
     { kind: "section", id: "sec-login",      title: "Log in",              subtitle: "Existing customers + admins",            href: "/login" },
+    { kind: "section", id: "sec-setup",      title: "Begin onboarding",    subtitle: "5-phase guided setup (60 minutes)",      href: "/setup" },
+    { kind: "section", id: "sec-setup-cap",  title: "Phase 01 · Capture",  subtitle: "Claude interviews you for the spec",     href: "/setup/capture" },
+    { kind: "section", id: "sec-setup-acc",  title: "Phase 02 · Accounts", subtitle: "Wire up the 4-5 accounts you need",      href: "/setup/accounts" },
+    { kind: "section", id: "sec-setup-str",  title: "Phase 03 · Starter",  subtitle: "Fork, install, deploy",                  href: "/setup/starter" },
+    { kind: "section", id: "sec-setup-cfg",  title: "Phase 04 · Configure", subtitle: "Generate your CLAUDE.md",               href: "/setup/configure" },
+    { kind: "section", id: "sec-setup-out",  title: "Phase 05 · Outputs",  subtitle: "Receive your four artifacts",            href: "/setup/outputs" },
   ];
 
   let prompts: PaletteItem[] = [];

@@ -2227,6 +2227,272 @@ textarea:focus-visible {
 }
 
 /* ============================================================
+   Setup flow shell (/setup/*). v1.1 buyer onboarding surface.
+   ============================================================ */
+
+.setup-shell { position: relative; min-height: 100vh; }
+.setup-head {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: rgba(2, 6, 14, 0.80);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(95, 255, 215, 0.12);
+}
+.setup-progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.setup-progress-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(95, 255, 215, 0.10);
+  overflow: hidden;
+}
+.setup-progress-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-cyan), var(--color-violet), var(--color-magenta));
+  box-shadow: 0 0 12px rgba(95, 255, 215, 0.35);
+  transition: width 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.setup-progress-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--color-cyan);
+  text-transform: uppercase;
+}
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding: 32px 24px 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+@media (min-width: 1024px) {
+  .setup-grid {
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+.setup-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: start;
+  position: sticky;
+  top: 80px;
+}
+.setup-rail-card {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(95, 255, 215, 0.10);
+  background: rgba(2, 6, 14, 0.45);
+  text-decoration: none;
+  transition: border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.setup-rail-card:hover {
+  border-color: rgba(95, 255, 215, 0.30);
+  transform: translateY(-1px);
+}
+.setup-rail-card.active {
+  border-color: rgba(95, 255, 215, 0.55);
+  background: rgba(95, 255, 215, 0.07);
+  box-shadow: inset 3px 0 0 var(--color-cyan), 0 0 24px rgba(95, 255, 215, 0.10);
+}
+.setup-rail-card.is-done {
+  border-color: rgba(74, 222, 128, 0.30);
+  background: rgba(74, 222, 128, 0.04);
+}
+.setup-rail-card .row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.setup-rail-card .num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--color-muted);
+}
+.setup-rail-card.active .num { color: var(--color-cyan); }
+.setup-rail-card .ttl {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--color-dark);
+  letter-spacing: -0.005em;
+}
+.setup-rail-card .meta-row {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.setup-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.setup-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.setup-phase-head { margin-bottom: 8px; }
+.setup-phase-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+}
+.setup-phase-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--color-dark);
+  margin: 8px 0;
+}
+.setup-phase-lead {
+  color: var(--color-muted-dark);
+  line-height: 1.55;
+  max-width: 720px;
+}
+
+.setup-card {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.setup-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: -0.005em;
+  color: var(--color-dark);
+}
+.setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.setup-action-primary {
+  padding: 10px 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+.setup-action-ghost {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 255, 215, 0.30);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted-dark);
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.setup-action-ghost:hover {
+  border-color: var(--color-cyan);
+  color: var(--color-cyan);
+}
+
+/* Account checklist (Phase 2). */
+.setup-checklist { display: flex; flex-direction: column; gap: 10px; }
+.setup-checklist-item {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(95, 255, 215, 0.14);
+  background: rgba(2, 6, 14, 0.45);
+  align-items: center;
+  text-decoration: none;
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.setup-checklist-item:hover { border-color: rgba(95, 255, 215, 0.40); }
+.setup-checklist-item.is-done {
+  border-color: rgba(74, 222, 128, 0.40);
+  background: rgba(74, 222, 128, 0.04);
+}
+.setup-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(95, 255, 215, 0.40);
+  background: rgba(2, 6, 14, 0.55);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: transparent;
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.setup-checkbox.is-done {
+  background: var(--color-organic);
+  border-color: var(--color-organic);
+  color: var(--color-darker);
+}
+.setup-checklist-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.setup-checklist-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-dark);
+}
+.setup-checklist-detail {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  color: var(--color-muted);
+}
+.setup-checklist-link {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+}
+
+/* ============================================================
    RunPrompt modal: BYOK Claude invocation surface.
    ============================================================ */
 

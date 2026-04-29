@@ -8,6 +8,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/preview/dashboard",
     "/thank-you",
     "/login",
+    // /setup is gated by purchase but linked from /thank-you and the
+    // command palette; including it in the sitemap helps post-purchase
+    // search-engine-redirect flows pick it up if anyone deep-links.
+    "/setup",
   ];
   return publicRoutes.map((path) => ({
     url: `${base}${path}`,
