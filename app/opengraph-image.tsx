@@ -1,9 +1,16 @@
 import { ImageResponse } from "next/og";
+import promptsData from "@/content/admin/prompts.json";
 
 export const runtime = "edge";
 export const alt = "AI Catch Up — a 60-minute onboarding for the de facto AI lead";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const PROMPT_COUNT = Array.isArray(promptsData)
+  ? promptsData.length
+  : Array.isArray((promptsData as { prompts?: unknown[] }).prompts)
+    ? ((promptsData as { prompts: unknown[] }).prompts.length)
+    : 0;
 
 // Generated at build time. Stays in sync with the Aurora theme: deep
 // midnight bg, cyan-hairline grid, cyan→violet→magenta gradient on the
@@ -197,7 +204,7 @@ export default async function OgImage() {
         >
           {[
             { k: "Setup time", v: "60 min", d: "one sitting" },
-            { k: "Prompt library", v: "20", d: "tuned to your voice" },
+            { k: "Prompt library", v: String(PROMPT_COUNT), d: "tuned to your voice" },
             { k: "Updates", v: "lifetime", d: "with Claude" },
           ].map((c) => (
             <div

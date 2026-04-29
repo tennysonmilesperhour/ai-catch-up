@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import promptsData from "@/content/admin/prompts.json";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import {
@@ -10,6 +11,14 @@ import {
   type Scenario,
   type Wave,
 } from "@/lib/dashboard-scenarios";
+
+// Resolved at module init from prompts.json so the workspace rail-card
+// "n prompts" label tracks Strategy Claude's actual library size.
+const PROMPT_COUNT = Array.isArray(promptsData)
+  ? promptsData.length
+  : Array.isArray((promptsData as { prompts?: unknown[] }).prompts)
+    ? ((promptsData as { prompts: unknown[] }).prompts.length)
+    : 0;
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -23,7 +32,7 @@ const NOW_MONTH = 3; // April (0-indexed)
 const RAILS_WORKSPACE: RailRow[] = [
   { id: "WS1", num: "MD", title: "CLAUDE.md", meta: "spec" },
   { id: "WS2", num: "NX", title: "Nexus map", meta: "live graph" },
-  { id: "WS3", num: "PL", title: "Prompt library", meta: "20 prompts" },
+  { id: "WS3", num: "PL", title: "Prompt library", meta: `${PROMPT_COUNT} prompts` },
 ];
 
 const KIND_COLOR: Record<ActivityKind, string> = {

@@ -1,4 +1,4 @@
-import { loadContent } from "@/lib/content";
+import { loadContent, loadJson } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { OpsPanelGlobe } from "@/components/landing/OpsPanelGlobe";
 import { MagneticButton } from "@/components/shared/MagneticButton";
@@ -17,6 +17,14 @@ export function Hero() {
   const { frontmatter, body } = loadContent<HeroFrontmatter>("landing/hero.mdx");
   const paragraphs = body.split(/\n\s*\n/).filter(Boolean);
   const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
+  // Prompt library count tracks Strategy Claude's actual library size
+  // so the hero stat stays in sync if the JSON grows.
+  const promptsRaw = loadJson<unknown>("admin/prompts.json");
+  const promptCount = Array.isArray(promptsRaw)
+    ? promptsRaw.length
+    : Array.isArray((promptsRaw as { prompts?: unknown[] }).prompts)
+      ? (promptsRaw as { prompts: unknown[] }).prompts.length
+      : 0;
 
   const plainLines = [
     frontmatter.headline_line_1,
@@ -94,7 +102,7 @@ export function Hero() {
                 <div className="cell">
                   <span className="k">Prompt library</span>
                   <span className="v num-tab">
-                    20 <span className="delta pos">tuned to your voice</span>
+                    {promptCount} <span className="delta pos">tuned to your voice</span>
                   </span>
                 </div>
                 <div className="cell">
