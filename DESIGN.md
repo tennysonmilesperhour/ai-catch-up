@@ -88,15 +88,38 @@ Already auto-hides on scroll-down per the prior polish-pass. Add the 6-tab strip
 
 The two-column hero is what shifts the page from "marketing" to "console." On mobile the globe stacks below the text and shrinks to ~280px tall — keep it visible, don't hide it. The globe's surface dots are generated client-side once on mount; do not regenerate on resize. The dashed magenta orbit and the three pings are pure SVG `<animateTransform>` / `<animate>` — no JS — which means they run even before hydration. Keep it that way.
 
-### NexusDashPreview
+### NexusDashPreview (Workspace Pulse)
 
-The most visually expensive section. The chart RAF is fine on a modern laptop but throttle considerations:
+The most visually expensive section, and the one that does the most marketing work. Concept: this is the *same surface* that buyers will see in v1.1+ as their post-purchase Workspace Pulse — only the data source changes. On the marketing page it animates from a curated demo dataset; on the buyer's view it reads from real connectors.
+
+**Five streams.** Sessions, Commits, Prompts, Decisions, Hours saved. Each `WAVES[i]` carries a `name`, a `unit` (/wk or /mo), and a one-line `desc` that surfaces in the chip tooltip. Don't add a sixth stream — the visual density was tuned for five and the colors deliberately reuse the existing palette tokens (cyan / organic / magenta / violet / amber).
+
+**Probe label.** The sweeping probe reads `Sessions 12 /wk` in the lead wave's color, recomputed every frame. The reading number is a presentational mapping `(220 - yProbe) / 4` so the value stays in the 10-40 range no matter how the y-base shifts.
+
+**Stream legend.** Below the chart, one chip per wave: color dot + name + unit. Hover any chip to see the description. Without the legend the colors read as decorative; with it, the colors carry meaning.
+
+**Demo pill.** The dash-tabbar carries a `Demo · live for buyers` violet-dashed pill so visitors understand the data is illustrative and the buyer view will be live. This intentionally contrasts the "marketing demo" frame with the "real product" promise.
+
+**Pattern signals box** (replaces the old SaaS-cosplay anomaly metrics). Three rows of stuck-signals AI Catch Up actually solves: stuck patterns, drift, plateau risk. Each maps to a real heuristic the v1.1+ engine will run over the buyer's workspace. Active alerts count is the actionable tail.
+
+**Activity feed** (replaces the old city sync stamps). Four workspace events with kind-colored dots: edit (cyan), use (magenta), log (violet), sync (amber). Each is `{label} → {detail}` followed by a HH:MM timestamp. Demo data is a curated single-day slice ("today") rather than a clock.
+
+**Performance.**
 - Use `requestAnimationFrame` (not `setInterval`) so the browser can pause it on hidden tabs.
 - Stop the RAF when the section scrolls off-screen using an IntersectionObserver. Restart when it comes back.
 - On mobile (≤ 640px), reduce `samples` from 240 to 100. Visual fidelity is fine, perf is much better.
 - The `genPath` function is intentionally not extracted into a hook — keep it inline at the top of the component.
 
-The 4 location sync stamps in the right rail use today's date (`2026-04-27`) as their prefix. **Do not make these `new Date()` and live-update**; they should look like real entries in a logfile, not a clock. Hardcode the time portion. (If we want them live in the future, that's a v1.1 ticket.)
+**v1.1+ data sources** (the connector spec for when this becomes a live buyer dashboard):
+- *Sessions*: a small client log emitted by Claude Code on session start, posted to a `/api/pulse/session` endpoint. Falls back to GitHub PR/commit cadence if the local log isn't installed.
+- *Commits*: GitHub API `users/{username}/events?type=PushEvent` aggregated to a weekly count. Reuses the existing `lib/github.ts` plumbing and `GITHUB_USERNAME` env var.
+- *Prompts*: increment when the Prompts admin tab's `Run` action fires, persisted to a per-user `pulse.json`. Matches the existing localStorage pattern in `LaunchChecklist`.
+- *Decisions*: file-stat on `content/admin/decisions.json` gives the count and the most recent entry's timestamp.
+- *Hours saved*: derived. `prompts_run * baseline_minutes_saved_per_prompt + sessions_avoided_via_claude_md`. Tunable in Settings.
+- *Pattern signals* (stuck/drift/plateau): a once-per-day cron in v1.2 reads the buyer's prompts.json + sessions log + claude.md mtime and emits the heuristic outputs. v1.1 ships a static "rules of thumb" version computed at request time.
+- *Activity feed*: union of file-watch events on the buyer's content + admin tab actions, capped at the last 6 entries.
+
+**Don't lift any of this into a generic chart abstraction.** It's intentionally a one-off visual.
 
 ### PhasesGrid
 

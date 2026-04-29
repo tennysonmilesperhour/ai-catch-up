@@ -1775,6 +1775,63 @@ textarea:focus-visible {
   background-attachment: fixed;
 }
 
+/* Demo data pill (lives in the dash-tabbar so visitors know the data is
+   illustrative; after purchase the same surface reads live signals). */
+.demo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px dashed rgba(192, 132, 252, 0.55);
+  background: rgba(192, 132, 252, 0.08);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-violet);
+  cursor: help;
+}
+
+/* Stream legend: chips below the chart, one per wave, so the colors
+   carry meaning instead of being arbitrary decoration. */
+.stream-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(95, 217, 255, 0.14);
+}
+.stream-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 255, 215, 0.16);
+  background: rgba(2, 6, 14, 0.45);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  color: var(--color-muted-dark);
+  cursor: help;
+  transition: border-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stream-chip:hover { border-color: rgba(95, 255, 215, 0.45); }
+.stream-chip .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.stream-chip .name { color: var(--color-dark); }
+.stream-chip .unit {
+  color: var(--color-muted);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 /* RefreshBanner: pinned bottom-right toast when a new bundle is detected. */
 .refresh-banner {
   position: fixed;

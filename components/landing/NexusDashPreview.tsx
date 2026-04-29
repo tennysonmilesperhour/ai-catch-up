@@ -32,41 +32,66 @@ const RAILS_WORKSPACE: RailRow[] = [
   { id: "WS3", num: "PL", title: "Prompt library", meta: "20 prompts" },
 ];
 
-const LOCATIONS = [
-  { who: "LA", when: "26-04-27T 13:43:18" },
-  { who: "SF", when: "26-04-27T 16:08:15" },
-  { who: "NYC", when: "26-04-27T 11:22:04" },
-  { who: "LDN", when: "26-04-27T 09:51:47" },
+// Workspace activity feed. In v1.0 this is a curated demo set; in v1.1+
+// the buyer's view is fed by file-watch + admin-tab events. Each entry
+// has a kind (drives the dot color) and a short human label.
+type ActivityKind = "edit" | "use" | "log" | "sync";
+const ACTIVITY: { kind: ActivityKind; label: string; detail: string; when: string }[] = [
+  { kind: "edit", label: "claude.md updated",       detail: "spec",            when: "13:43" },
+  { kind: "use",  label: "prompt P14 used",         detail: "weekly recap",    when: "13:51" },
+  { kind: "log",  label: "decision #28 logged",     detail: "lock pricing",    when: "11:22" },
+  { kind: "sync", label: "nexus map +1 tool",       detail: "1Password",       when: "09:51" },
 ];
 
-function cityFor(code: string): string {
-  switch (code) {
-    case "LA":
-      return "Los Angeles, CA";
-    case "SF":
-      return "San Francisco, CA";
-    case "NYC":
-      return "New York, NY";
-    case "LDN":
-      return "London, UK";
-    case "BER":
-      return "Berlin, DE";
-    default:
-      return code;
-  }
-}
+const KIND_COLOR: Record<ActivityKind, string> = {
+  edit: "var(--color-cyan)",
+  use:  "var(--color-magenta)",
+  log:  "var(--color-violet)",
+  sync: "var(--color-terracotta)",
+};
 
-const WAVES = [
-  { name: "ST-983", ampBase: 18, ampVar: 6, freq1: 0.0042, freq2: 0.0018, phase: 0.6, yBase: 90, drift: 0.00012, color: "#5fffd7", op: 0.85 },
-  { name: "VYG1", ampBase: 22, ampVar: 8, freq1: 0.0038, freq2: 0.0021, phase: 1.4, yBase: 115, drift: 0.00009, color: "#ff5fb3", op: 0.75 },
-  { name: "ST-156", ampBase: 14, ampVar: 5, freq1: 0.0055, freq2: 0.0014, phase: 2.1, yBase: 140, drift: 0.00015, color: "#c084fc", op: 0.7 },
-  { name: "ST-204", ampBase: 28, ampVar: 9, freq1: 0.0029, freq2: 0.0026, phase: 3.0, yBase: 160, drift: 0.00007, color: "#fbbf24", op: 0.6 },
-  { name: "ST-077", ampBase: 12, ampVar: 4, freq1: 0.0072, freq2: 0.0011, phase: 4.5, yBase: 180, drift: 0.00018, color: "#4ade80", op: 0.55 },
+// Pattern-signal panel: replaces the SaaS-cosplay anomaly metrics with
+// signals AI Catch Up actually solves (stuck patterns, drift, plateau).
+// Each row maps to a real heuristic the v1.1+ engine will run over the
+// buyer's workspace. The 5-min-fix count below feeds the hero stat strip.
+const PATTERN_SIGNALS = [
+  { label: "Stuck patterns",  value: "3",   note: "prompts unused 30+ days" },
+  { label: "Drift detected",  value: "12%", note: "sessions asked context" },
+  { label: "Plateau risk",    value: "2 wk", note: "no new prompt added" },
+];
+const ACTIVE_ALERTS = 4;
+
+type Wave = {
+  name: string;
+  unit: string;
+  desc: string;
+  ampBase: number;
+  ampVar: number;
+  freq1: number;
+  freq2: number;
+  phase: number;
+  yBase: number;
+  drift: number;
+  color: string;
+  op: number;
+};
+
+// Five real workspace-pulse signals. In v1.0 the chart animates these
+// from a curated demo dataset (the marketing preview); in v1.1+ each one
+// is fed by a connector listed in DESIGN.md (GitHub API for Commits, the
+// admin tab usage tracker for Prompts, etc.). Same surface, different
+// data source.
+const WAVES: Wave[] = [
+  { name: "Sessions",    unit: "/wk", desc: "Claude Code sessions per week",       ampBase: 18, ampVar: 6, freq1: 0.0042, freq2: 0.0018, phase: 0.6, yBase: 90,  drift: 0.00012, color: "#5fffd7", op: 0.85 },
+  { name: "Commits",     unit: "/wk", desc: "Repo commits across your projects",   ampBase: 22, ampVar: 8, freq1: 0.0038, freq2: 0.0021, phase: 1.4, yBase: 115, drift: 0.00009, color: "#4ade80", op: 0.75 },
+  { name: "Prompts",     unit: "/wk", desc: "Prompts run from your library",       ampBase: 14, ampVar: 5, freq1: 0.0055, freq2: 0.0014, phase: 2.1, yBase: 140, drift: 0.00015, color: "#ff5fb3", op: 0.70 },
+  { name: "Decisions",   unit: "/mo", desc: "Entries added to your decisions log", ampBase: 28, ampVar: 9, freq1: 0.0029, freq2: 0.0026, phase: 3.0, yBase: 160, drift: 0.00007, color: "#c084fc", op: 0.65 },
+  { name: "Hours saved", unit: "/wk", desc: "Estimated hours saved vs baseline",   ampBase: 12, ampVar: 4, freq1: 0.0072, freq2: 0.0011, phase: 4.5, yBase: 180, drift: 0.00018, color: "#fbbf24", op: 0.55 },
 ];
 
-// Stream label overlay positions (x along the chart, anchored to the
-// underlying wave so the dot sits on the curve at t=0). These are
-// decorative; they don't track the live RAF.
+// Decorative stream labels overlaid at fixed t=0 sample points; each
+// renders its parent wave's display name (no longer the placeholder
+// ST-983 / VYG1 codes).
 const STREAM_LABELS = [
   { wave: 0, x: 220 },
   { wave: 1, x: 360 },
@@ -76,8 +101,6 @@ const STREAM_LABELS = [
 
 const CHART_W = 720;
 const CHART_H = 220;
-
-type Wave = (typeof WAVES)[number];
 
 function genPath(w: Wave, t: number, samples: number, drift: number) {
   const step = CHART_W / (samples - 1);
@@ -129,7 +152,11 @@ function NexusChart() {
       probeLineRef.current?.setAttribute("x2", xProbe.toFixed(2));
       probeDotRef.current?.setAttribute("cx", xProbe.toFixed(2));
       probeDotRef.current?.setAttribute("cy", yProbe.toFixed(2));
-      const label = `VYG1 ${(yProbe * 0.84 + 12).toFixed(2)}`;
+      // Map the wave's y back into a presentable count. The wave amplitude
+      // is roughly 0..200, so dividing by 5 gives plausible "sessions/wk"
+      // values in the 10-40 range.
+      const reading = Math.max(0, Math.round((220 - yProbe) / 4));
+      const label = `${probeWave.name} ${reading} ${probeWave.unit}`;
       probeLabelRef.current?.setAttribute("x", (xProbe + 8).toFixed(2));
       probeLabelRef.current?.setAttribute("y", (yProbe - 8).toFixed(2));
       if (probeLabelRef.current) probeLabelRef.current.textContent = label;
@@ -207,7 +234,7 @@ function NexusChart() {
           letterSpacing="0.14em"
           fill="#5fffd7"
         >
-          VYG1
+          Sessions
         </text>
 
         {/* Decorative stream labels (static, anchored at t=0). */}
@@ -255,15 +282,15 @@ export function NexusDashPreview() {
       <div className="section-head">
         <Reveal delay={80}>
           <h2 className="font-serif text-3xl md:text-5xl leading-tight text-[var(--color-dark)] max-w-3xl">
-            The Nexus dashboard.{" "}
+            Workspace Pulse.{" "}
             <span className="headline-gradient">Live for every customer</span>{" "}
             from minute 60.
           </h2>
         </Reveal>
         <Reveal delay={160}>
           <p className="section-subhead">
-            What your workspace looks like the moment onboarding ends.
-            Auto-syncing, observable, yours forever.
+            Sessions, commits, prompts, decisions, hours saved. All five
+            streams auto-synced from your repos and tools.
           </p>
         </Reveal>
       </div>
@@ -280,6 +307,12 @@ export function NexusDashPreview() {
                   {p}
                 </span>
               ))}
+              <span
+                className="demo-pill"
+                title="Demo data. After purchase, this view is fed by your repos, sessions, and prompts."
+              >
+                ● Demo · live for buyers
+              </span>
             </div>
             <span className="search">⌘K · Search</span>
           </div>
@@ -329,9 +362,22 @@ export function NexusDashPreview() {
                 ))}
               </div>
               <NexusChart />
+              <div className="stream-legend">
+                {WAVES.map((w) => (
+                  <span
+                    key={w.name}
+                    className="stream-chip"
+                    title={w.desc}
+                  >
+                    <span className="dot" style={{ background: w.color, boxShadow: `0 0 6px ${w.color}` }} />
+                    <span className="name">{w.name}</span>
+                    <span className="unit">{w.unit}</span>
+                  </span>
+                ))}
+              </div>
               <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)] flex justify-between pt-1">
-                <span>Throughput · 5 streams</span>
-                <span className="num-tab">VYG1 · live</span>
+                <span>5 streams · auto-synced</span>
+                <span className="num-tab">Sessions · live probe</span>
               </div>
             </div>
 
@@ -340,38 +386,42 @@ export function NexusDashPreview() {
               <div className="anomaly">
                 <div className="h-row">
                   <span className="h">
-                    <span className="dot" aria-hidden /> Anomaly detection
+                    <span className="dot" aria-hidden /> Pattern signals
                   </span>
                   <span className="ext" aria-hidden>↗</span>
                 </div>
                 <div className="flex flex-col gap-1.5 mt-2 font-mono text-[11px] tracking-[0.04em] text-[var(--color-muted-dark)] num-tab">
-                  <div className="flex justify-between">
-                    <span>Service availability</span>
-                    <span className="text-[var(--color-dark)]">29.3%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>P95 utilization</span>
-                    <span className="text-[var(--color-dark)]">43.5 MHz</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Overload [24h]</span>
-                    <span className="text-[var(--color-dark)]">41 min</span>
-                  </div>
-                  <div className="flex justify-between">
+                  {PATTERN_SIGNALS.map((s) => (
+                    <div key={s.label} className="flex flex-col">
+                      <div className="flex justify-between">
+                        <span>{s.label}</span>
+                        <span className="text-[var(--color-dark)]">{s.value}</span>
+                      </div>
+                      <span className="text-[10px] text-[var(--color-muted)] tracking-[0.10em]">
+                        {s.note}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between mt-1 pt-2 border-t border-[rgba(255,95,179,0.20)]">
                     <span>Active alerts</span>
-                    <span className="text-[var(--color-magenta)]">●  34</span>
+                    <span className="text-[var(--color-magenta)]">●  {ACTIVE_ALERTS}</span>
                   </div>
                 </div>
               </div>
               <div className="rail-h" style={{ marginTop: 0 }}>
-                Recent syncs
+                This week
               </div>
               <div className="loc-list">
-                {LOCATIONS.map((l) => (
-                  <div key={l.who} className="loc">
-                    <span className="city">{cityFor(l.who)}</span>
-                    <span className="label">Last sync</span>
-                    <span className="when">{l.when}</span>
+                {ACTIVITY.map((a, i) => (
+                  <div key={i} className="loc">
+                    <span
+                      className="city"
+                      style={{ color: KIND_COLOR[a.kind] }}
+                    >
+                      ●  {a.label}
+                    </span>
+                    <span className="label">{a.detail}</span>
+                    <span className="when">{a.when} · today</span>
                   </div>
                 ))}
               </div>
