@@ -672,3 +672,56 @@ textarea:focus-visible {
   margin: 2rem 0;
 }
 .prose-blog strong { color: var(--color-dark); }
+
+/*
+ * Roster glow. Applied to a roster category card once the user has picked a
+ * tool AND marked both "signed up" and "integrated". Layers an amber +
+ * organic-green outer glow with a soft pulse so the completed cards are
+ * unmistakable at a glance.
+ */
+.roster-card {
+  transition:
+    box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.roster-card.is-complete {
+  border-color: rgba(74, 222, 128, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 0 0 1px rgba(74, 222, 128, 0.25),
+    0 0 0 1px rgba(251, 191, 36, 0.30),
+    0 0 38px rgba(74, 222, 128, 0.32),
+    0 0 70px rgba(251, 191, 36, 0.22);
+  animation: roster-breath 4.2s ease-in-out infinite;
+}
+.roster-card.is-complete .roster-card-number {
+  color: var(--color-organic);
+  text-shadow:
+    0 0 14px rgba(74, 222, 128, 0.55),
+    0 0 36px rgba(251, 191, 36, 0.25);
+}
+.roster-card.is-complete .roster-card-status {
+  color: var(--color-organic);
+}
+@keyframes roster-breath {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.20),
+      inset 0 0 0 1px rgba(74, 222, 128, 0.25),
+      0 0 0 1px rgba(251, 191, 36, 0.30),
+      0 0 38px rgba(74, 222, 128, 0.32),
+      0 0 70px rgba(251, 191, 36, 0.22);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 0 0 1px rgba(74, 222, 128, 0.35),
+      0 0 0 1px rgba(251, 191, 36, 0.40),
+      0 0 52px rgba(74, 222, 128, 0.42),
+      0 0 90px rgba(251, 191, 36, 0.30);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .roster-card.is-complete { animation: none; }
+}
