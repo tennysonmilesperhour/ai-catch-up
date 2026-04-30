@@ -1893,6 +1893,36 @@ textarea:focus-visible {
   background-attachment: fixed;
 }
 
+/* Progress chart lines animate in once on mount via a stroke-dash reveal,
+   then sit static. End-of-line dots pulse gently to suggest "current
+   moment" without burning a per-frame RAF. */
+@keyframes progress-draw {
+  from {
+    stroke-dasharray: 1500;
+    stroke-dashoffset: 1500;
+  }
+  to {
+    stroke-dasharray: 1500;
+    stroke-dashoffset: 0;
+  }
+}
+.progress-line {
+  animation: progress-draw 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes progress-end-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.45); opacity: 1; }
+}
+.progress-end-dot {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: progress-end-pulse 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-line { animation: none; }
+  .progress-end-dot { animation: none; }
+}
+
 /* Demo data pill (lives in the dash-tabbar so visitors know the data is
    illustrative; after purchase the same surface reads live signals). */
 .demo-pill {
@@ -1909,6 +1939,12 @@ textarea:focus-visible {
   text-transform: uppercase;
   color: var(--color-violet);
   cursor: help;
+}
+.demo-pill.is-live {
+  border-style: solid;
+  border-color: rgba(95, 255, 215, 0.55);
+  background: rgba(95, 255, 215, 0.08);
+  color: var(--color-cyan);
 }
 
 /* ============================================================

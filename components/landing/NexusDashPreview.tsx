@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import promptsData from "@/content/admin/prompts.json";
+import decisionsData from "@/content/admin/decisions.json";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import {
@@ -10,8 +11,15 @@ import {
   type ActivityKind,
   type RailRow,
   type Scenario,
-  type Wave,
 } from "@/lib/dashboard-scenarios";
+import {
+  getAggregateProgressData,
+  getPersonalProgressData,
+  hasPersonalData,
+  type ProgressFeed,
+  type ProgressSeries,
+} from "@/lib/progress-chart-data";
+import { readWorkspaceSnapshot } from "@/lib/workspace-state";
 
 // Resolved at module init from prompts.json so the workspace rail-card
 // "n prompts" label tracks Strategy Claude's actual library size.
@@ -102,194 +110,129 @@ const STREAM_LABELS = [
 
 const CHART_W = 720;
 const CHART_H = 220;
+const CHART_PAD_R = 130; // reserve right gutter for end-of-line labels
 
-function genPath(w: Wave, t: number, samples: number, drift: number) {
-  const step = CHART_W / (samples - 1);
-  let d = "";
-  for (let i = 0; i < samples; i++) {
-    const x = i * step;
-    const y =
-      w.yBase +
-      Math.sin(x * w.freq1 + t * w.phase) * w.ampBase +
-      Math.cos(x * w.freq2 + t * 0.7) * w.ampVar +
-      Math.sin(t * drift + i * 0.012) * 4;
-    d += i === 0 ? `M ${x.toFixed(2)} ${y.toFixed(2)} ` : `L ${x.toFixed(2)} ${y.toFixed(2)} `;
+/**
+ * Convert a series of {x: 0..1, y: 0..1} points into a smooth Catmull-Rom
+ * SVG path. y is flipped (1 = top of chart). Stable enough for 12-point
+ * progress lines; smooth without going all bezier-spaghetti.
+ */
+function smoothPath(points: ProgressSeries["points"]): string {
+  if (points.length === 0) return "";
+  const pts = points.map((p) => ({
+    x: p.x * (CHART_W - CHART_PAD_R),
+    y: (1 - p.y) * (CHART_H - 24) + 12, // 12px top + bottom padding
+  }));
+  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[0];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)} ${cp2x.toFixed(2)} ${cp2y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
   }
   return d;
 }
 
-function NexusChart({ waves }: { waves: Wave[] }) {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const pathRefs = useRef<(SVGPathElement | null)[]>([]);
-  const probeLineRef = useRef<SVGLineElement | null>(null);
-  const probeDotRef = useRef<SVGCircleElement | null>(null);
-  const probeLabelRef = useRef<SVGTextElement | null>(null);
-  const reducedRef = useRef(false);
-  const visibleRef = useRef(true);
-  const rafRef = useRef<number | null>(null);
-  const samplesRef = useRef(240);
-  // Hold current waves in a ref so the RAF reads the latest dataset on
-  // every frame without restarting when scenarios swap on the playground.
-  const wavesRef = useRef<Wave[]>(waves);
-  useEffect(() => {
-    wavesRef.current = waves;
-  }, [waves]);
+function endPoint(points: ProgressSeries["points"]) {
+  const last = points[points.length - 1];
+  return {
+    x: last.x * (CHART_W - CHART_PAD_R),
+    y: (1 - last.y) * (CHART_H - 24) + 12,
+  };
+}
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    reducedRef.current = reduce;
-
-    const mobile = window.matchMedia("(max-width: 640px)").matches;
-    // Cut sample density: 60 mobile / 140 desktop. Visually identical at
-    // chart scale, ~2× cheaper per frame than the previous 100/240.
-    samplesRef.current = mobile ? 60 : 140;
-    // Frame throttle: paint at ~30fps instead of every frame. The chart
-    // is decorative; halving the work doesn't change how it reads.
-    const FRAME_INTERVAL = 1000 / 30;
-    let lastPaintAt = 0;
-
-    function paint(t: number) {
-      const samples = samplesRef.current;
-      const ws = wavesRef.current;
-      ws.forEach((w, i) => {
-        const p = pathRefs.current[i];
-        if (p) p.setAttribute("d", genPath(w, t, samples, w.drift));
-      });
-      const xProbe = ((t * 0.06) % 1) * CHART_W;
-      const probeWave = ws[0];
-      if (!probeWave) return;
-      const yProbe =
-        probeWave.yBase +
-        Math.sin(xProbe * probeWave.freq1 + t * probeWave.phase) * probeWave.ampBase +
-        Math.cos(xProbe * probeWave.freq2 + t * 0.7) * probeWave.ampVar;
-      probeLineRef.current?.setAttribute("x1", xProbe.toFixed(2));
-      probeLineRef.current?.setAttribute("x2", xProbe.toFixed(2));
-      probeDotRef.current?.setAttribute("cx", xProbe.toFixed(2));
-      probeDotRef.current?.setAttribute("cy", yProbe.toFixed(2));
-      // Map the wave's y back into a presentable count. The wave amplitude
-      // is roughly 0..200, so dividing by 5 gives plausible "sessions/wk"
-      // values in the 10-40 range.
-      const reading = Math.max(0, Math.round((220 - yProbe) / 4));
-      const label = `${probeWave.name} ${reading} ${probeWave.unit}`;
-      probeLabelRef.current?.setAttribute("x", (xProbe + 8).toFixed(2));
-      probeLabelRef.current?.setAttribute("y", (yProbe - 8).toFixed(2));
-      if (probeLabelRef.current) probeLabelRef.current.textContent = label;
-    }
-
-    if (reduce) {
-      paint(0);
-      return;
-    }
-
-    const svgEl = svgRef.current;
-    if (!svgEl) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          visibleRef.current = e.isIntersecting;
-          if (e.isIntersecting && rafRef.current == null) tick(performance.now());
-        }
-      },
-      { threshold: 0.05 }
-    );
-    io.observe(svgEl);
-
-    function tick(now: number) {
-      if (!visibleRef.current) {
-        rafRef.current = null;
-        return;
-      }
-      if (now - lastPaintAt >= FRAME_INTERVAL) {
-        paint(now / 1000);
-        lastPaintAt = now;
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    }
-    rafRef.current = requestAnimationFrame(tick);
-
-    // Pause cleanly when the tab goes hidden so background tabs don't
-    // burn CPU on a chart no one's looking at.
-    function onVis() {
-      if (document.visibilityState === "hidden") {
-        if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      } else if (visibleRef.current && rafRef.current == null) {
-        lastPaintAt = 0;
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    }
-    document.addEventListener("visibilitychange", onVis);
-
-    return () => {
-      io.disconnect();
-      document.removeEventListener("visibilitychange", onVis);
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
+/**
+ * Progress chart: one SVG path per series + an end-of-line label with the
+ * current value. Static curves (no per-frame compute), pulsing dots at
+ * the rightmost point ("now") via CSS animation, gentle stroke-dash
+ * reveal on first mount.
+ */
+function NexusChart({ feed }: { feed: ProgressFeed }) {
   return (
-    <div className="chart">
-      <svg ref={svgRef} viewBox={`0 0 ${CHART_W} ${CHART_H}`} preserveAspectRatio="none">
-        {waves.map((w, i) => (
+    <div className="chart" data-source={feed.source}>
+      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} preserveAspectRatio="none">
+        <defs>
+          {feed.series.map((s, i) => (
+            <linearGradient
+              key={`grad-${i}`}
+              id={`progress-fade-${i}`}
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor={s.color} stopOpacity="0.0" />
+              <stop offset="20%" stopColor={s.color} stopOpacity="0.55" />
+              <stop offset="100%" stopColor={s.color} stopOpacity="0.85" />
+            </linearGradient>
+          ))}
+        </defs>
+
+        {/* Lines */}
+        {feed.series.map((s, i) => (
           <path
-            key={`w-${i}`}
-            ref={(el) => {
-              pathRefs.current[i] = el;
-            }}
-            d=""
+            key={`line-${i}`}
+            d={smoothPath(s.points)}
             fill="none"
-            stroke={w.color}
-            strokeOpacity={w.op}
-            strokeWidth="1.2"
+            stroke={`url(#progress-fade-${i})`}
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="progress-line"
+            style={{ animationDelay: `${i * 80}ms` }}
           />
         ))}
-        {/* probe sweep */}
-        <line
-          ref={probeLineRef}
-          x1="0"
-          y1="0"
-          x2="0"
-          y2={CHART_H}
-          stroke="rgba(95, 217, 255, 0.4)"
-          strokeWidth="1"
-          strokeDasharray="2 4"
-        />
-        <circle ref={probeDotRef} cx="0" cy="0" r="3.2" fill="#5fffd7" />
-        <text
-          ref={probeLabelRef}
-          x="0"
-          y="0"
-          fontFamily="var(--font-mono)"
-          fontSize="9"
-          letterSpacing="0.14em"
-          fill="#5fffd7"
-        >
-          Sessions
-        </text>
 
-        {/* Decorative stream labels (static, anchored at t=0). */}
-        {STREAM_LABELS.map((s, i) => {
-          const w = waves[s.wave];
-          if (!w) return null;
-          const y =
-            w.yBase +
-            Math.sin(s.x * w.freq1 + 0) * w.ampBase +
-            Math.cos(s.x * w.freq2 + 0) * w.ampVar;
+        {/* Right gutter divider hairline */}
+        <line
+          x1={CHART_W - CHART_PAD_R}
+          y1="8"
+          x2={CHART_W - CHART_PAD_R}
+          y2={CHART_H - 8}
+          stroke="rgba(95, 217, 255, 0.18)"
+          strokeWidth="1"
+          strokeDasharray="2 6"
+        />
+
+        {/* "Now" markers + end-of-line labels */}
+        {feed.series.map((s, i) => {
+          const p = endPoint(s.points);
           return (
-            <g key={`label-${i}`}>
-              <circle cx={s.x} cy={y} r="3" fill={w.color} />
+            <g key={`end-${i}`}>
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r="3.2"
+                fill={s.color}
+                className="progress-end-dot"
+                style={{ animationDelay: `${i * 240}ms` }}
+              />
               <text
-                x={s.x + 8}
-                y={y - 8}
+                x={p.x + 10}
+                y={p.y - 6}
                 fontFamily="var(--font-mono)"
-                fontSize="9"
-                letterSpacing="0.14em"
-                fill={w.color}
+                fontSize="10"
+                letterSpacing="0.12em"
+                fill={s.color}
+                opacity="0.95"
+              >
+                {s.name}
+              </text>
+              <text
+                x={p.x + 10}
+                y={p.y + 10}
+                fontFamily="var(--font-mono)"
+                fontSize="11"
+                letterSpacing="0.04em"
+                fill="var(--color-dark)"
                 opacity="0.85"
               >
-                {w.name}
+                {s.currentLabel}
               </text>
             </g>
           );
@@ -360,13 +303,46 @@ export function NexusDashPreview({
   scenario?: Scenario;
 }) {
   const [activeTab, setActiveTab] = useState<DashTab>("Overview");
-  const {
-    waves,
-    railsPhases,
-    patternSignals,
-    activeAlerts,
-    activity,
-  } = scenario;
+  const { railsPhases, patternSignals, activeAlerts, activity } = scenario;
+
+  // Progress chart data source. Defaults to the curated aggregate
+  // (what the average member looks like over 12 months) — this is
+  // what unauthenticated marketing visitors see. After mount, if any
+  // workspace state exists in localStorage, swap to the personal feed
+  // (this user's own setup progress + prompt usage + decisions).
+  const promptsCount = useMemo(() => PROMPT_COUNT, []);
+  const decisionsCount = useMemo(
+    () =>
+      Array.isArray(decisionsData)
+        ? decisionsData.length
+        : Array.isArray((decisionsData as { decisions?: unknown[] }).decisions)
+          ? (decisionsData as { decisions: unknown[] }).decisions.length
+          : 0,
+    []
+  );
+  const [feed, setFeed] = useState<ProgressFeed>(() =>
+    getAggregateProgressData()
+  );
+  useEffect(() => {
+    function refresh() {
+      const snap = readWorkspaceSnapshot({
+        promptsCount,
+        decisionsCount,
+      });
+      if (hasPersonalData(snap)) {
+        setFeed(getPersonalProgressData(snap));
+      } else {
+        setFeed(getAggregateProgressData());
+      }
+    }
+    refresh();
+    window.addEventListener("focus", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, [promptsCount, decisionsCount]);
 
   const openPalette = () =>
     typeof window !== "undefined" &&
@@ -418,10 +394,14 @@ export function NexusDashPreview({
                   </button>
                 ))}
                 <span
-                  className="demo-pill"
-                  title="Demo data. After purchase, this view is fed by your repos, sessions, and prompts."
+                  className={`demo-pill ${feed.source === "personal" ? "is-live" : ""}`}
+                  title={
+                    feed.source === "personal"
+                      ? "Showing your workspace progress. Resets if you clear localStorage."
+                      : "Cohort average across all members over 12 months. Sign in to see your own."
+                  }
                 >
-                  ● Demo · live for buyers
+                  ● {feed.source === "personal" ? "Live · your data" : "Cohort · 12-mo average"}
                 </span>
               </div>
               <button
@@ -451,23 +431,32 @@ export function NexusDashPreview({
                   </span>
                 ))}
               </div>
-              <NexusChart waves={waves} />
+              <NexusChart feed={feed} />
               <div className="stream-legend">
-                {waves.map((w) => (
+                {feed.series.map((s) => (
                   <span
-                    key={w.name}
+                    key={s.name}
                     className="stream-chip"
-                    title={w.desc}
+                    title={s.desc}
                   >
-                    <span className="dot" style={{ background: w.color, boxShadow: `0 0 6px ${w.color}` }} />
-                    <span className="name">{w.name}</span>
-                    <span className="unit">{w.unit}</span>
+                    <span
+                      className="dot"
+                      style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
+                    />
+                    <span className="name">{s.name}</span>
+                    <span className="unit">{s.unit}</span>
                   </span>
                 ))}
               </div>
               <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)] flex justify-between pt-1">
-                <span>5 streams · auto-synced</span>
-                <span className="num-tab">Sessions · live probe</span>
+                <span>
+                  {feed.source === "personal"
+                    ? "your progress · live"
+                    : "cohort average · 12 months"}
+                </span>
+                <span className="num-tab">
+                  {feed.source === "personal" ? "Personal" : "Aggregate"}
+                </span>
               </div>
             </Reveal>
 
