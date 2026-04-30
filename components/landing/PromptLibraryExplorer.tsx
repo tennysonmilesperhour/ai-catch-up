@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import promptsData from "@/content/admin/prompts.json";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 type Prompt = {
   id: number | string;
@@ -160,32 +161,63 @@ export function PromptLibraryExplorer() {
                   · {promptIdLabel}
                 </span>
               </h3>
-              <button type="button" onClick={onCopy} className="copy-pill">
-                <span aria-hidden>⧉</span>
-                {copied ? "Copied" : "Copy"}
-              </button>
+              <LearnHint
+                title="Copy prompt"
+                body="Copies the full prompt body to your clipboard with the variable slots intact (so you can paste into your own Claude session and fill them in there)."
+                more="On the admin Prompts tab, the same prompt has a Run button that fires it directly via your stored API key."
+                side="bottom-right"
+              >
+                <button type="button" onClick={onCopy} className="copy-pill">
+                  <span aria-hidden>⧉</span>
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </LearnHint>
             </div>
             <pre
               className="prompt-body"
               dangerouslySetInnerHTML={{ __html: highlight(active.prompt) }}
             />
             <div className="prompt-meta">
-              <div className="cell">
-                <span className="v num-tab">{vars}</span>
-                <span>Variables</span>
-              </div>
-              <div className="cell">
-                <span className="v num-tab">{active.avg_tokens ?? "-"}</span>
-                <span>Avg tokens</span>
-              </div>
-              <div className="cell">
-                <span className="v num-tab">{active.used_by_pct ?? "-"}</span>
-                <span>Used by</span>
-              </div>
-              <div className="cell">
-                <span className="v num-tab">{active.updated_at ?? "-"}</span>
-                <span>Updated</span>
-              </div>
+              <LearnHint
+                title="Variables"
+                body="How many slots in this prompt template you fill in before running. Detected via {{var_name}} or [PLACEHOLDER] patterns in the body."
+                side="top-left"
+              >
+                <div className="cell">
+                  <span className="v num-tab">{vars}</span>
+                  <span>Variables</span>
+                </div>
+              </LearnHint>
+              <LearnHint
+                title="Avg tokens"
+                body="Mean total tokens (input + output) per run, observed across the cohort. A budgeting hint, not a hard cap."
+                side="top-left"
+              >
+                <div className="cell">
+                  <span className="v num-tab">{active.avg_tokens ?? "-"}</span>
+                  <span>Avg tokens</span>
+                </div>
+              </LearnHint>
+              <LearnHint
+                title="Used by"
+                body="Percentage of active members who run this prompt at least once a month. The high-percentage ones are the workhorses; the low-percentage ones are the niche tools."
+                side="top-left"
+              >
+                <div className="cell">
+                  <span className="v num-tab">{active.used_by_pct ?? "-"}</span>
+                  <span>Used by</span>
+                </div>
+              </LearnHint>
+              <LearnHint
+                title="Updated"
+                body="Last time the prompt body was edited by Strategy Claude. Updates ship to your library automatically."
+                side="top-right"
+              >
+                <div className="cell">
+                  <span className="v num-tab">{active.updated_at ?? "-"}</span>
+                  <span>Updated</span>
+                </div>
+              </LearnHint>
             </div>
             {active.whyItWorks && (
               <p className="text-[var(--color-muted-dark)] italic text-sm leading-relaxed">

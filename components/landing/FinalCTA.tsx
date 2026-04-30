@@ -2,6 +2,7 @@ import { loadContent } from "@/lib/content";
 import { resolveCheckout } from "@/lib/checkout";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { Reveal } from "@/components/shared/Reveal";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 type FinalCTAFrontmatter = {
   eyebrow?: string;
@@ -49,13 +50,19 @@ export function FinalCTA() {
         </Reveal>
       )}
       <Reveal delay={240}>
-        <MagneticButton href={checkout.href}>
-          <span className="glass-button-primary inline-flex items-center justify-center px-8 py-4 font-mono text-sm uppercase tracking-[0.08em]">
-            {checkout.ready
-              ? frontmatter.button_text || "Get the onboarding"
-              : checkout.fallbackLabel}
-          </span>
-        </MagneticButton>
+        <LearnHint
+          title="Final CTA"
+          body="Same destination as the Begin onboarding button at the top of the page (Stripe checkout → /setup). The MagneticButton wrapper is the subtle pull-toward-cursor effect on hover."
+          side="bottom-right"
+        >
+          <MagneticButton href={checkout.href}>
+            <span className="glass-button-primary inline-flex items-center justify-center px-8 py-4 font-mono text-sm uppercase tracking-[0.08em]">
+              {checkout.ready
+                ? frontmatter.button_text || "Get the onboarding"
+                : checkout.fallbackLabel}
+            </span>
+          </MagneticButton>
+        </LearnHint>
       </Reveal>
       {frontmatter.footnote && (
         <Reveal delay={320}>

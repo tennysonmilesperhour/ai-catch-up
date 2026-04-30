@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LearnModeToggle } from "@/components/shared/LearnMode";
+import { LearnHint, LearnModeToggle } from "@/components/shared/LearnMode";
 
 type UtilityBarProps = {
   left?: string[];
@@ -69,7 +69,13 @@ export function UtilityBar({
         ))}
       </div>
       <div className="group">
-        <LearnModeToggle />
+        <LearnHint
+          title="Learn mode"
+          body="Toggles the dotted-underline tooltips on technical terms and the ? badges on UI elements. On by default; turn off here once the workspace feels familiar."
+          side="bottom-right"
+        >
+          <LearnModeToggle />
+        </LearnHint>
         <span className="sep">·</span>
         {rightStatic.map((part, i) => (
           <span key={i} className="group">
@@ -77,14 +83,27 @@ export function UtilityBar({
             <span className="sep">·</span>
           </span>
         ))}
-        <span
-          className="num-tab"
-          title="Bundle build id (compares against /api/version for stale-page detection)"
+        <LearnHint
+          title="Build id"
+          body="Short hash of the bundle this browser loaded. Compared against /api/version every 30 seconds; when they diverge, a refresh banner offers to reload."
+          more="In production this is the first 7 chars of VERCEL_GIT_COMMIT_SHA. In dev it reads 'dev'."
+          side="bottom-right"
         >
-          {BUILD_TAG}
-        </span>
+          <span
+            className="num-tab"
+            title="Bundle build id (compares against /api/version for stale-page detection)"
+          >
+            {BUILD_TAG}
+          </span>
+        </LearnHint>
         <span className="sep">·</span>
-        <UtcClock />
+        <LearnHint
+          title="UTC clock"
+          body="Live UTC time. Cosmetic; pauses when the tab is hidden so background tabs don't burn cycles on a clock no one's watching."
+          side="bottom-right"
+        >
+          <UtcClock />
+        </LearnHint>
       </div>
     </div>
   );

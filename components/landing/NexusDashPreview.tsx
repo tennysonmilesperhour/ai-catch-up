@@ -6,6 +6,7 @@ import promptsData from "@/content/admin/prompts.json";
 import decisionsData from "@/content/admin/decisions.json";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { LearnHint } from "@/components/shared/LearnMode";
 import {
   SCENARIO_BASELINE,
   type ActivityKind,
@@ -382,36 +383,56 @@ export function NexusDashPreview({
           <Reveal delay={0}>
             <div className="dash-tabbar">
               <div className="pills">
-                {DASH_TABS.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setActiveTab(p)}
-                    className={`pill ${activeTab === p ? "is-active" : ""}`}
-                    aria-pressed={activeTab === p}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <span
-                  className={`demo-pill ${feed.source === "personal" ? "is-live" : ""}`}
-                  title={
-                    feed.source === "personal"
-                      ? "Showing your workspace progress. Resets if you clear localStorage."
-                      : "Cohort average across all members over 12 months. Sign in to see your own."
-                  }
+                <LearnHint
+                  title="Dashboard tabs"
+                  body="Switch what the right column of the dashboard shows. Overview = pattern signals + activity feed. Tools = connection status. Prompts = recent library entries. Decisions = recent locked decisions."
+                  more="On the marketing demo, all four pull from curated data. In your post-purchase admin, the same tabs read your real workspace state."
+                  side="bottom-right"
                 >
-                  ● {feed.source === "personal" ? "Live · your data" : "Cohort · 12-mo average"}
-                </span>
+                  <span className="inline-flex gap-2 flex-wrap">
+                    {DASH_TABS.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setActiveTab(p)}
+                        className={`pill ${activeTab === p ? "is-active" : ""}`}
+                        aria-pressed={activeTab === p}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </span>
+                </LearnHint>
+                <LearnHint
+                  title={feed.source === "personal" ? "Live · your data" : "Cohort · 12-mo average"}
+                  body={
+                    feed.source === "personal"
+                      ? "The chart below is reading your localStorage workspace state. Setup % from completed phases, prompts from your invocation history, decisions from your log."
+                      : "The chart below shows the curated 12-month cohort trajectory — what an average member looks like. Sign in (or do anything in the workspace) and it switches to your data."
+                  }
+                  side="bottom-right"
+                >
+                  <span
+                    className={`demo-pill ${feed.source === "personal" ? "is-live" : ""}`}
+                  >
+                    ● {feed.source === "personal" ? "Live · your data" : "Cohort · 12-mo average"}
+                  </span>
+                </LearnHint>
               </div>
-              <button
-                type="button"
-                onClick={openPalette}
-                className="search"
-                aria-label="Open command palette (⌘K)"
+              <LearnHint
+                title="⌘K · Search"
+                body="Opens the global command palette (same as ⌘K from the keyboard). Search across page sections, prompts, FAQs."
+                side="bottom-right"
               >
-                ⌘K · Search
-              </button>
+                <button
+                  type="button"
+                  onClick={openPalette}
+                  className="search"
+                  aria-label="Open command palette (⌘K)"
+                >
+                  ⌘K · Search
+                </button>
+              </LearnHint>
             </div>
           </Reveal>
 
@@ -424,30 +445,49 @@ export function NexusDashPreview({
 
             {/* center: month strip + chart */}
             <Reveal as="div" delay={160} className="flex flex-col gap-3">
-              <div className="month-strip">
-                {MONTHS.map((m, i) => (
-                  <span key={m} className={i === NOW_MONTH ? "is-now" : ""}>
-                    {m}
-                  </span>
-                ))}
-              </div>
-              <NexusChart feed={feed} />
-              <div className="stream-legend">
-                {feed.series.map((s) => (
-                  <span
-                    key={s.name}
-                    className="stream-chip"
-                    title={s.desc}
-                  >
+              <LearnHint
+                title="Month strip"
+                body="The 12-month time axis for the chart below. Apr is highlighted as 'now' on the demo; on your personal feed the rightmost month is the current one."
+                side="bottom-right"
+              >
+                <div className="month-strip">
+                  {MONTHS.map((m, i) => (
+                    <span key={m} className={i === NOW_MONTH ? "is-now" : ""}>
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </LearnHint>
+              <LearnHint
+                title="Progress chart"
+                body="Five progress lines: Setup completion %, Prompts run, Decisions logged, Sessions, Hours saved. Each line tapers from low opacity (history) to bright (now). End-of-line dots pulse to mark the current value."
+                more="When you have any workspace activity, the chart switches from the cohort demo to your personal data automatically."
+                side="bottom-right"
+              >
+                <NexusChart feed={feed} />
+              </LearnHint>
+              <LearnHint
+                title="Stream legend"
+                body="The five tracked streams. Hover any chip to see its definition. Sessions = Claude Code sessions per week. Commits = repo commits. Prompts = library Run-button fires. Decisions = entries in your decisions log. Hours saved = derived from prompts × baseline."
+                side="bottom-right"
+              >
+                <div className="stream-legend">
+                  {feed.series.map((s) => (
                     <span
-                      className="dot"
-                      style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
-                    />
-                    <span className="name">{s.name}</span>
-                    <span className="unit">{s.unit}</span>
-                  </span>
-                ))}
-              </div>
+                      key={s.name}
+                      className="stream-chip"
+                      title={s.desc}
+                    >
+                      <span
+                        className="dot"
+                        style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
+                      />
+                      <span className="name">{s.name}</span>
+                      <span className="unit">{s.unit}</span>
+                    </span>
+                  ))}
+                </div>
+              </LearnHint>
               <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)] flex justify-between pt-1">
                 <span>
                   {feed.source === "personal"

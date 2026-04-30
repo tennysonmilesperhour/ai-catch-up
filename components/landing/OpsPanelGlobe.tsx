@@ -8,6 +8,7 @@ import {
   type GlobeFeed,
   type GlobeSession,
 } from "@/lib/globe-sessions";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 const MARKER_COLOR: Record<GlobeSession["state"], number> = {
   active: 0x5fffd7, // cyan
@@ -313,28 +314,57 @@ export function OpsPanelGlobe() {
 
   return (
     <div className="glass-card-static ops-panel">
-      <div className="ops-panel-head">
-        <span>Nexus · Live map</span>
-        <span className="live">
-          <span className="dot" aria-hidden /> {feed.source === "live" ? "Live" : "Demo"}
-        </span>
-      </div>
+      <LearnHint
+        title="Nexus · Live map"
+        body="The 3D globe shows where people have logged in from in the last 24 hours. Each dot is one session; cyan = active in last 5 min, violet = recent, muted = stale."
+        more={
+          feed.source === "live"
+            ? "Currently showing real Vercel-geolocated visits. Cold-start wipes the in-memory roster, so during low traffic this falls back to a curated demo dataset."
+            : "Currently showing the curated demo dataset (23 cities across 18 countries). Switches to live the instant 3+ real visits register."
+        }
+        side="top-left"
+      >
+        <div className="ops-panel-head">
+          <span>Nexus · Live map</span>
+          <span className="live">
+            <span className="dot" aria-hidden /> {feed.source === "live" ? "Live" : "Demo"}
+          </span>
+        </div>
+      </LearnHint>
 
       <div className="globe-wrap globe-wrap-3d" ref={mountRef} aria-hidden />
 
       <div className="globe-stat-strip">
-        <div className="cell">
-          <span className="k">Active now</span>
-          <span className="v num-tab">{feed.totals.active}</span>
-        </div>
-        <div className="cell">
-          <span className="k">Recent · 60m</span>
-          <span className="v num-tab">{feed.totals.recent}</span>
-        </div>
-        <div className="cell">
-          <span className="k">Countries</span>
-          <span className="v num-tab">{feed.totals.countries}</span>
-        </div>
+        <LearnHint
+          title="Active now"
+          body="Sessions registered in the last 5 minutes. Cyan core dots on the globe correspond to these."
+          side="top-left"
+        >
+          <div className="cell">
+            <span className="k">Active now</span>
+            <span className="v num-tab">{feed.totals.active}</span>
+          </div>
+        </LearnHint>
+        <LearnHint
+          title="Recent (60 min)"
+          body="Sessions registered in the last hour. Violet dots on the globe."
+          side="top-left"
+        >
+          <div className="cell">
+            <span className="k">Recent · 60m</span>
+            <span className="v num-tab">{feed.totals.recent}</span>
+          </div>
+        </LearnHint>
+        <LearnHint
+          title="Countries"
+          body="Distinct countries represented in the current roster (active + recent + stale combined)."
+          side="top-right"
+        >
+          <div className="cell">
+            <span className="k">Countries</span>
+            <span className="v num-tab">{feed.totals.countries}</span>
+          </div>
+        </LearnHint>
       </div>
 
       {topCities && (

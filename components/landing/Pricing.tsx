@@ -2,7 +2,7 @@ import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
-import { AutoLearnText } from "@/components/shared/LearnMode";
+import { AutoLearnText, LearnHint } from "@/components/shared/LearnMode";
 import { resolveCheckout } from "@/lib/checkout";
 
 type AsideRow = { k: string; v: string; small?: string };
@@ -62,27 +62,45 @@ export function Pricing() {
       <div className="pricing">
         <Reveal>
           <article className="glass-card price-card h-full">
-            <div>
-              <span className="amount num-tab">{frontmatter.amount}</span>
-              {frontmatter.amount_qualifier && (
-                <sub>{frontmatter.amount_qualifier}</sub>
-              )}
-            </div>
-            <ul className="features">
-              {features.map((f) => (
-                <li key={f}>
-                  <AutoLearnText>{f}</AutoLearnText>
-                </li>
-              ))}
-            </ul>
+            <LearnHint
+              title="The price"
+              body="$49 one-time. Locked in v1.0; never going up for existing buyers. Includes lifetime updates, the full prompt library, the live Workspace Pulse, and chat support with real humans."
+              side="top-left"
+            >
+              <div>
+                <span className="amount num-tab">{frontmatter.amount}</span>
+                {frontmatter.amount_qualifier && (
+                  <sub>{frontmatter.amount_qualifier}</sub>
+                )}
+              </div>
+            </LearnHint>
+            <LearnHint
+              title="What's included"
+              body="The full setup, every artifact, the prompt library, lifetime updates. No tiers, no per-seat, no upsells. Hover any line for the AutoLearnText definition of any technical term inside it."
+              side="top-left"
+            >
+              <ul className="features">
+                {features.map((f) => (
+                  <li key={f}>
+                    <AutoLearnText>{f}</AutoLearnText>
+                  </li>
+                ))}
+              </ul>
+            </LearnHint>
             <div className="mt-2">
-              <MagneticButton href={checkout.href}>
-                <span className="glass-button-primary inline-flex items-center justify-center w-full px-7 py-3.5 font-mono text-sm uppercase tracking-[0.08em]">
-                  {checkout.ready
-                    ? frontmatter.button_text || "Buy and start setup"
-                    : checkout.fallbackLabel}
-                </span>
-              </MagneticButton>
+              <LearnHint
+                title="Buy and start setup"
+                body="Goes to Stripe checkout. After payment you're redirected to /setup where Phase 01 begins. Refund window is 30 days, no questions asked."
+                side="top-right"
+              >
+                <MagneticButton href={checkout.href}>
+                  <span className="glass-button-primary inline-flex items-center justify-center w-full px-7 py-3.5 font-mono text-sm uppercase tracking-[0.08em]">
+                    {checkout.ready
+                      ? frontmatter.button_text || "Buy and start setup"
+                      : checkout.fallbackLabel}
+                  </span>
+                </MagneticButton>
+              </LearnHint>
             </div>
           </article>
         </Reveal>

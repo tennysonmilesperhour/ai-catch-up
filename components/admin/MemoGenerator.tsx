@@ -7,6 +7,7 @@ import {
   readWorkspaceSnapshot,
   type WorkspaceSnapshot,
 } from "@/lib/workspace-state";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 const MEMO_TEMPLATE = `You are writing a 30-day distillation memo for the operator of an AI workspace. The memo should be short (under 200 words), warm, and honest. It is for them, not for an audience.
 
@@ -179,13 +180,20 @@ export function MemoGenerator({ decisionsCount, promptsCount }: Props) {
             onResult={onMemo}
           >
             {(open) => (
-              <button
-                type="button"
-                onClick={open}
-                className="glass-button-primary px-5 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
+              <LearnHint
+                title="Run memo"
+                body="Fires the memo prompt against Claude with your last-30-days workspace context auto-injected. Output is a 3-section markdown memo: what moved, what stalled, next three moves."
+                more="Run this once a month. Past memos persist below as downloadable .md files. The trick is comparing month over month — read last month's before writing this month's."
+                side="bottom-right"
               >
-                Run memo →
-              </button>
+                <button
+                  type="button"
+                  onClick={open}
+                  className="glass-button-primary px-5 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
+                >
+                  Run memo →
+                </button>
+              </LearnHint>
             )}
           </RunPrompt>
           <Link

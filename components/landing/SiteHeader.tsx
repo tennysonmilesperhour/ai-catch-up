@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 type Tab = { id: string; label: string };
 
@@ -108,28 +109,46 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="Open command palette"
-            onClick={() =>
-              window.dispatchEvent(new CustomEvent("command-palette:open"))
-            }
-            className="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-md border border-white/10 text-[var(--color-muted-dark)] hover:text-[var(--color-cyan)] hover:border-[rgba(95,255,215,0.45)] transition-colors"
+          <LearnHint
+            title="Command palette · ⌘K"
+            body="Press ⌘K (or Ctrl+K on Windows) anywhere on the site to open a search palette that jumps to any section, prompt, or FAQ. ↑↓ navigate, ↵ open, esc closes."
+            side="bottom-right"
           >
-            <span className="font-mono text-[11px]">⌘K</span>
-          </button>
-          <Link
-            href="/login"
-            className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] transition-colors"
+            <button
+              type="button"
+              aria-label="Open command palette"
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("command-palette:open"))
+              }
+              className="hidden md:inline-flex items-center justify-center w-8 h-8 rounded-md border border-white/10 text-[var(--color-muted-dark)] hover:text-[var(--color-cyan)] hover:border-[rgba(95,255,215,0.45)] transition-colors"
+            >
+              <span className="font-mono text-[11px]">⌘K</span>
+            </button>
+          </LearnHint>
+          <LearnHint
+            title="Log in"
+            body="Email-only sign-in. Existing customers + the admin (Tennyson). New emails get a buyer session; the admin email gets the vendor view."
+            side="bottom-right"
           >
-            Log in
-          </Link>
-          <Link
-            href={tabHref("pricing")}
-            className="glass-button-primary px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em]"
+            <Link
+              href="/login"
+              className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted-dark)] hover:text-[var(--color-terracotta)] transition-colors"
+            >
+              Log in
+            </Link>
+          </LearnHint>
+          <LearnHint
+            title="Get access"
+            body="Goes to the Pricing section. Click Begin onboarding from there to start checkout."
+            side="bottom-right"
           >
-            Get access
-          </Link>
+            <Link
+              href={tabHref("pricing")}
+              className="glass-button-primary px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em]"
+            >
+              Get access
+            </Link>
+          </LearnHint>
         </div>
       </div>
     </header>

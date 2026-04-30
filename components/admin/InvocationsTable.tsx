@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { readHistory, type HistoryEntry } from "@/lib/run-history-shape";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 export function InvocationsTable() {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
@@ -27,9 +28,33 @@ export function InvocationsTable() {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-3 gap-3 num-tab">
-        <Stat label="Total runs" value={String(entries.length)} />
-        <Stat label="Input tokens" value={totalIn.toLocaleString()} />
-        <Stat label="Output tokens" value={totalOut.toLocaleString()} />
+        <LearnHint
+          title="Total runs"
+          body="How many times the Run button has fired across all prompts. Each run is one round-trip to Claude with one input + one output."
+          side="top-left"
+        >
+          <div>
+            <Stat label="Total runs" value={String(entries.length)} />
+          </div>
+        </LearnHint>
+        <LearnHint
+          title="Input tokens"
+          body="Sum of input tokens across all stored invocations. Tokens ≈ ¾ of a word; Claude charges by token consumed."
+          side="top-left"
+        >
+          <div>
+            <Stat label="Input tokens" value={totalIn.toLocaleString()} />
+          </div>
+        </LearnHint>
+        <LearnHint
+          title="Output tokens"
+          body="Sum of output tokens (what Claude wrote back). Output is typically more expensive per token than input. Watching this number is how you keep your spend honest."
+          side="top-right"
+        >
+          <div>
+            <Stat label="Output tokens" value={totalOut.toLocaleString()} />
+          </div>
+        </LearnHint>
       </div>
 
       <ul className="flex flex-col">

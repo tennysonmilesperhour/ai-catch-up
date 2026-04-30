@@ -6,7 +6,7 @@ import { Reveal } from "@/components/shared/Reveal";
 import { OpsPanelGlobeClient as OpsPanelGlobe } from "@/components/landing/OpsPanelGlobeClient";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
-import { AutoLearnText } from "@/components/shared/LearnMode";
+import { AutoLearnText, LearnHint } from "@/components/shared/LearnMode";
 
 type HeroFrontmatter = {
   eyebrow?: string;
@@ -81,42 +81,73 @@ export function Hero() {
 
             <Reveal delay={680}>
               <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-                <MagneticButton href={checkout.href}>
-                  <span className="glass-button-primary inline-flex items-center justify-center px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em]">
-                    {checkout.ready ? "Begin onboarding →" : checkout.fallbackLabel}
-                  </span>
-                </MagneticButton>
-                <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted-dark)]">
-                  <strong className="font-display text-2xl text-[var(--color-dark)] tracking-tight">
-                    $49
-                  </strong>{" "}
-                  <span className="block sm:inline mt-1 sm:mt-0 sm:ml-2">
-                    one-time · lifetime access
-                  </span>
-                </p>
+                <LearnHint
+                  title="Begin onboarding"
+                  body="Goes to the Stripe checkout for the $49 one-time payment. After payment you're redirected to /setup where the 60-minute guided setup begins."
+                  more="Set STRIPE_PAYMENT_LINK in Vercel env vars to wire the real checkout. Without it, the button falls back to a copy-only label."
+                  side="bottom-right"
+                >
+                  <MagneticButton href={checkout.href}>
+                    <span className="glass-button-primary inline-flex items-center justify-center px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em]">
+                      {checkout.ready ? "Begin onboarding →" : checkout.fallbackLabel}
+                    </span>
+                  </MagneticButton>
+                </LearnHint>
+                <LearnHint
+                  title="The price"
+                  body="$49 one-time. Includes lifetime updates as Claude gains capabilities. No subscription, no tiers, no upsells. 30-day refund."
+                  side="top-left"
+                >
+                  <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted-dark)]">
+                    <strong className="font-display text-2xl text-[var(--color-dark)] tracking-tight">
+                      $49
+                    </strong>{" "}
+                    <span className="block sm:inline mt-1 sm:mt-0 sm:ml-2">
+                      one-time · lifetime access
+                    </span>
+                  </p>
+                </LearnHint>
               </div>
             </Reveal>
 
             <Reveal delay={780}>
               <div className="hero-stats">
-                <div className="cell">
-                  <span className="k">Setup time</span>
-                  <span className="v num-tab">
-                    60 <span className="delta pos">min · one sitting</span>
-                  </span>
-                </div>
-                <div className="cell">
-                  <span className="k">Prompt library</span>
-                  <span className="v num-tab">
-                    {promptCount} <span className="delta pos">tuned to your voice</span>
-                  </span>
-                </div>
-                <div className="cell">
-                  <span className="k">Updates</span>
-                  <span className="v num-tab">
-                    lifetime <span className="delta pos">with Claude</span>
-                  </span>
-                </div>
+                <LearnHint
+                  title="Setup time"
+                  body="The full guided onboarding takes 60 minutes start to finish. Best done in one sitting; pause and resume any time — progress saves locally."
+                  side="top-left"
+                >
+                  <div className="cell">
+                    <span className="k">Setup time</span>
+                    <span className="v num-tab">
+                      60 <span className="delta pos">min · one sitting</span>
+                    </span>
+                  </div>
+                </LearnHint>
+                <LearnHint
+                  title="Prompt library"
+                  body={`${promptCount} prompts across 9 categories, each with a Run button. Strategy Claude maintains and expands the library; updates ship to your workspace automatically.`}
+                  side="top-left"
+                >
+                  <div className="cell">
+                    <span className="k">Prompt library</span>
+                    <span className="v num-tab">
+                      {promptCount} <span className="delta pos">tuned to your voice</span>
+                    </span>
+                  </div>
+                </LearnHint>
+                <LearnHint
+                  title="Updates"
+                  body="Lifetime access means new prompts, new Claude features, and new heuristics ship to your workspace as they're built. No upgrade path; no version lock-in."
+                  side="top-right"
+                >
+                  <div className="cell">
+                    <span className="k">Updates</span>
+                    <span className="v num-tab">
+                      lifetime <span className="delta pos">with Claude</span>
+                    </span>
+                  </div>
+                </LearnHint>
               </div>
             </Reveal>
           </div>

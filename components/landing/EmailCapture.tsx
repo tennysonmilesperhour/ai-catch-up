@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/shared/Reveal";
 import { EmailCaptureForm } from "@/components/shared/EmailCaptureForm";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 export function EmailCapture() {
   return (
@@ -21,13 +22,20 @@ export function EmailCapture() {
             One email a week. New prompts, new tools, what changed in Claude
             this week. Unsubscribe anytime.
           </p>
-          <div className="capture-form">
-            <EmailCaptureForm
-              buttonLabel="Send"
-              successMessage="Sent ✓"
-              tone="dark"
-            />
-          </div>
+          <LearnHint
+            title="Newsletter signup"
+            body="One email a week with new prompts, new tools, and what changed in Claude. POSTs to /api/subscribe; in production it forwards to whatever ESP you wired up via SUBSCRIBE_WEBHOOK_URL."
+            more="No tracking pixels. Unsubscribe link in every email. Email is stored only in your subscriber list, never sold or shared."
+            side="bottom-right"
+          >
+            <div className="capture-form">
+              <EmailCaptureForm
+                buttonLabel="Send"
+                successMessage="Sent ✓"
+                tone="dark"
+              />
+            </div>
+          </LearnHint>
         </div>
       </Reveal>
     </section>

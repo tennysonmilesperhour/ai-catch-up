@@ -440,6 +440,28 @@ export function LearnHint({
   const { enabled } = useLearnMode();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLSpanElement | null>(null);
+  // Delay-on-hover so dense coverage doesn't spam popovers when the user
+  // is casually mousing across the page. Tap/click-on-badge opens
+  // immediately. Hover-out cancels the pending open.
+  const HOVER_DELAY_MS = 320;
+  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelHover = () => {
+    if (openTimerRef.current) {
+      clearTimeout(openTimerRef.current);
+      openTimerRef.current = null;
+    }
+  };
+  const onMouseEnter = () => {
+    cancelHover();
+    openTimerRef.current = setTimeout(() => {
+      setOpen(true);
+      openTimerRef.current = null;
+    }, HOVER_DELAY_MS);
+  };
+  const onMouseLeave = () => {
+    cancelHover();
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -457,6 +479,9 @@ export function LearnHint({
     };
   }, [open]);
 
+  // Cleanup pending hover timer on unmount.
+  useEffect(() => () => cancelHover(), []);
+
   if (!enabled) {
     return <>{children}</>;
   }
@@ -465,8 +490,8 @@ export function LearnHint({
     <span
       ref={wrapRef}
       className={`learn-hint ${inlineRing ? "with-ring" : ""} ${open ? "is-open" : ""}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {children}
       <button
@@ -476,6 +501,7 @@ export function LearnHint({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
+          cancelHover();
           setOpen((s) => !s);
         }}
         tabIndex={-1}
