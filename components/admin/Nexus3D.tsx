@@ -10,6 +10,10 @@ import type {
 import { ActionButton, type Action } from "@/components/shared/ActionButton";
 import { StepsModal } from "@/components/shared/StepsModal";
 import { buildOrbitalLayout } from "@/lib/nexus-layout";
+import {
+  deriveConnectionStatus,
+  STATUS_PALETTE,
+} from "@/lib/nexus-status";
 
 // three.js and the force graph library are heavy — lazy-load only when 3D
 // mode is toggled on.
@@ -416,9 +420,14 @@ function DetailPanel({
           color: "#f5efe0",
           marginBottom: 8,
           lineHeight: 1.2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
         }}
       >
-        {node.label}
+        <span>{node.label}</span>
+        <StatusBadge3D node={node} />
       </div>
       <div
         style={{
@@ -429,6 +438,7 @@ function DetailPanel({
       >
         {node.desc}
       </div>
+      <BeginnerSections3D node={node} accent={accent} />
       <SkillSections3D node={node} accent={accent} />
       {hasActions && node.actions && pinned && (
         <div
@@ -475,6 +485,110 @@ function DetailPanel({
           }}
         >
           click to open
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusBadge3D({ node }: { node: NexusNode }) {
+  const status = deriveConnectionStatus(node);
+  const pal = STATUS_PALETTE[status];
+  return (
+    <span
+      title={pal.description}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "2px 8px",
+        background: `${pal.color}1a`,
+        border: `1px solid ${pal.color}80`,
+        color: pal.color,
+        fontSize: 9,
+        letterSpacing: "0.12em",
+        textTransform: "uppercase",
+        fontFamily: "ui-monospace, Menlo, monospace",
+        fontWeight: 600,
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 999,
+          background: pal.color,
+          display: "inline-block",
+        }}
+      />
+      {pal.label}
+    </span>
+  );
+}
+
+function BeginnerSections3D({
+  node,
+  accent,
+}: {
+  node: NexusNode;
+  accent: string;
+}) {
+  const hasAny =
+    !!node.gettingStarted ||
+    (node.examples && node.examples.length > 0) ||
+    (node.connectionChecks && node.connectionChecks.length > 0);
+  if (!hasAny) return null;
+
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 9,
+    letterSpacing: "0.16em",
+    textTransform: "uppercase",
+    color: accent,
+    fontFamily: "ui-monospace, Menlo, monospace",
+    marginBottom: 4,
+    opacity: 0.85,
+  };
+  const body: React.CSSProperties = {
+    fontSize: 12,
+    color: "#cbbfa9",
+    lineHeight: 1.5,
+  };
+
+  return (
+    <div
+      style={{
+        marginTop: 12,
+        paddingTop: 10,
+        borderTop: `1px dashed ${accent}40`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      {node.examples && node.examples.length > 0 && (
+        <div>
+          <div style={sectionLabel}>Examples</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.examples.map((ex, i) => (
+              <li key={i}>{ex}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {node.gettingStarted && (
+        <div>
+          <div style={sectionLabel}>Getting started</div>
+          <div style={body}>{node.gettingStarted}</div>
+        </div>
+      )}
+      {node.connectionChecks && node.connectionChecks.length > 0 && (
+        <div>
+          <div style={sectionLabel}>You'll know it's connected when</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.connectionChecks.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

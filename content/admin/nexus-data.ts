@@ -16,6 +16,12 @@ export interface NodeAction {
   payload: string;
 }
 
+export type ConnectionStatus =
+  | "connected"      // installed/deployed/wired up; nothing to do
+  | "partial"        // partially set up, half-installed, or known-broken
+  | "needs-setup"    // marked priority and ready to install; high-leverage
+  | "not-installed"; // nice-to-have gap
+
 export interface NexusNode {
   id: string;
   label: string;
@@ -34,6 +40,15 @@ export interface NexusNode {
   triggers?: string[];
   useCases?: string[];
   relatedRepos?: string[];
+  // Beginner-onboarding fields (any node can opt in).
+  // examples: 1-3 short, concrete things you can do with this node.
+  examples?: string[];
+  // gettingStarted: 1-2 sentence "first 30 seconds" instructions.
+  gettingStarted?: string;
+  // connectionChecks: bulleted "you'll know it's working when..." list.
+  connectionChecks?: string[];
+  // Override the derived status when the heuristic is wrong.
+  connectionStatus?: ConnectionStatus;
 }
 
 export interface NexusLink {
@@ -62,7 +77,19 @@ export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
   { id: "geck-inspect", label: "geck-inspect", domain: "apps", kind: "real", weight: 5,
     desc: "Crested gecko breeding and collection management. Your flagship. Also the demo example for the new product.",
-    deployed: true, github: "geck-inspect", homepage: "https://geck-inspect.vercel.app" },
+    deployed: true, github: "geck-inspect", homepage: "https://geck-inspect.vercel.app",
+    connectionStatus: "connected",
+    examples: [
+      "Track which gecko pairings produced the strongest clutches",
+      "Show a buyer the lineage of any animal in 30 seconds",
+      "Generate a weekly snapshot of available animals",
+    ],
+    gettingStarted: "Already deployed. Open the homepage and add an animal record - the rest of the app builds out from there.",
+    connectionChecks: [
+      "Production URL loads without auth issues",
+      "Adding a new animal persists in Supabase",
+      "Geck Data layer (geck-data) responds when you open the dashboard",
+    ] },
   { id: "geck-data", label: "geck-data", domain: "apps", kind: "real", weight: 3,
     desc: "Geck Inspect data layer. No README yet - that's a gap.",
     deployed: true, github: "geck-data", homepage: "https://geck-data.vercel.app" },
@@ -80,6 +107,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "this-product", label: "The Onboarding Product", domain: "apps", kind: "ghost", weight: 5,
     desc: "The v1.0 you're building right now. Sits at the center of everything else.",
     priority: "high",
+    connectionStatus: "partial",
+    examples: [
+      "Buyer lands on /, pays $49, lands on thank-you",
+      "Admin reviews progress on /admin/plan",
+      "Hermes pulls Nexus state via /api/nexus to give buyers personalized advice",
+    ],
+    gettingStarted: "Run `npm run dev`, fill in `.env.local` from `.env.example`, hit http://localhost:3000.",
+    connectionChecks: [
+      "Landing page renders without console errors",
+      "Stripe payment link redirects to /thank-you",
+      "Admin login works against ADMIN_PASSWORD",
+    ],
     actions: [
       { kind: "view-steps", label: "See v1.0 build plan", payload: "# Building v1.0 of the onboarding product\n\nThis node represents the product you're currently building. The full build plan lives in:\n\n- Admin → The Plan tab (strategic overview)\n- Admin → Content Schedule tab (week-by-week tasks)\n- Admin → Locked Decisions tab (decisions that are final)\n\n## Current status\n\nCheck the Content Schedule tab for what's in progress, what's blocked, and what's next.\n\n## If you're losing steam\n\nRead the Locked Decisions tab. The decisions are made. You are not re-deciding whether to build this. You are executing the build." },
     ] },
@@ -98,7 +137,19 @@ export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
   { id: "memory-palace", label: "memory-palace", domain: "ai-infra", kind: "fork", weight: 3,
     desc: "Best-benchmarked open-source AI memory system.",
-    github: "memory-palace", homepage: "http://mempalaceofficial.com/" },
+    github: "memory-palace", homepage: "http://mempalaceofficial.com/",
+    connectionStatus: "partial",
+    examples: [
+      "Persist conversation context across sessions",
+      "Power a 'remember what I told you' feature in any web app",
+      "Share memory between Geck Inspect, the onboarding product, and Hermes",
+    ],
+    gettingStarted: "Clone the fork, follow its README to spin up the local server, then point one app's memory client at it.",
+    connectionChecks: [
+      "Local server boots without errors",
+      "A test write+read round-trips through the API",
+      "At least one of your apps is configured to use it",
+    ] },
   { id: "GeckNexus", label: "GeckNexus", domain: "ai-infra", kind: "fork", weight: 3,
     desc: "GitNexus fork - browser-based code knowledge graph with built-in Graph RAG agent.",
     github: "GeckNexus", homepage: "https://gitnexus.vercel.app" },
@@ -164,6 +215,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "claude-sync", label: ".claude sync", domain: "sync", kind: "ghost", weight: 4,
     desc: "Sync ~/.claude folder between Mac mini and laptop via private GitHub repo. Highest-leverage 30 minutes you could spend.",
     priority: "high",
+    connectionStatus: "needs-setup",
+    examples: [
+      "Configure a hook on the Mac mini, get it on the laptop next session",
+      "Add a custom slash command once and have both machines use it",
+      "Recover your CLAUDE.md if a machine dies",
+    ],
+    gettingStarted: "Init `~/.claude` as a git repo on your primary Mac, push it to a private GitHub repo, then clone it as `~/.claude` on the second Mac.",
+    connectionChecks: [
+      "Both Macs run `git pull` in `~/.claude` cleanly",
+      "A custom slash command added on one Mac shows up on the other after pull",
+      "You have an alias for the pull/push pair",
+    ],
     actions: [
       { kind: "copy-prompt", label: "Copy Claude Code setup prompt", payload: "I want to sync my ~/.claude folder between my Mac mini and my laptop so my CLAUDE.md, skills, and custom commands are the same on both machines. Walk me through: 1) creating a private GitHub repo called 'claude-config', 2) moving ~/.claude into that repo, 3) setting up the sync so that 'claude pull' before work and 'claude push' after work becomes my habit, 4) handling the case where both machines made changes. Also suggest a shell alias to make this frictionless." },
       { kind: "view-steps", label: "See manual walkthrough", payload: "# Syncing .claude across Macs\n\n## What you're solving\n\nRight now, if you configure Claude Code on your Mac mini, your laptop doesn't benefit. This fixes that permanently.\n\n## Steps\n\n1. On your primary Mac (the one with the most up-to-date .claude folder), open Terminal\n2. `cd ~/.claude && git init`\n3. Create a new private repo on GitHub called 'claude-config'\n4. `git remote add origin [YOUR_REPO_URL]`\n5. `git add . && git commit -m 'initial'`\n6. `git push -u origin main`\n7. On your other Mac: `cd ~ && mv .claude .claude-backup` (just in case)\n8. `git clone [YOUR_REPO_URL] .claude`\n9. Test by opening Claude Code on the second Mac and confirming your CLAUDE.md is there\n\n## Daily habit\n\nAt session start on either machine: `cd ~/.claude && git pull`\nAt session end: `cd ~/.claude && git add . && git commit -m 'updates' && git push`\n\nA shell alias makes this one command. Ask Claude Code to help you set one up." },
@@ -184,6 +247,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "cursor", label: "Cursor", domain: "must-have", kind: "ghost", weight: 5,
     desc: "AI-first visual code editor. The missing piece for 'seeing what's happening' you mentioned. Complements Claude Code, doesn't replace it.",
     priority: "high",
+    connectionStatus: "needs-setup",
+    examples: [
+      "See the diff Claude is about to apply before accepting it",
+      "Highlight a chunk of code and ask 'why does this exist?'",
+      "Run a quick refactor across an open project visually",
+    ],
+    gettingStarted: "Download from cursor.sh, sign in with your Anthropic account, open one of your existing repos, run your first AI-assisted edit.",
+    connectionChecks: [
+      "Cursor opens your project without missing dependencies",
+      "AI panel responds to a 'what does this file do?' question",
+      "You can apply an edit and see the diff before saving",
+    ],
     actions: [
       { kind: "open-url", label: "Open Cursor download", payload: "https://cursor.sh" },
       { kind: "copy-prompt", label: "Copy post-install prompt", payload: "I just installed Cursor. Walk me through: 1) signing in with my Claude/Anthropic account, 2) opening my existing project at [PATH], 3) enabling the AI features, and 4) running my first AI-assisted edit. Assume I've never used Cursor before." },
@@ -191,6 +266,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "1password", label: "1Password", domain: "must-have", kind: "ghost", weight: 4,
     desc: "Secrets manager for all your API keys. Supabase, Vercel, Stripe, Mapbox, Auth0, Anthropic, Base44. Highest-leverage tool on this list.",
     priority: "high",
+    connectionStatus: "needs-setup",
+    examples: [
+      "Look up a project's .env contents in seconds on either Mac",
+      "Share an API key with a contractor without emailing it",
+      "Auto-fill SSH passphrases and 2FA codes",
+    ],
+    gettingStarted: "Sign up, install the Mac app + browser extension, create a 'Dev Secrets' vault, paste each project's .env into a Secure Note named 'projectname.env'.",
+    connectionChecks: [
+      "Mac app and browser extension both signed in",
+      "'Dev Secrets' vault contains at least your top 2-3 projects",
+      "You can paste a key from 1Password directly into a terminal",
+    ],
     actions: [
       { kind: "open-url", label: "Open 1Password signup", payload: "https://1password.com/sign-up" },
       { kind: "view-steps", label: "See setup walkthrough", payload: "# Setting up 1Password for your dev secrets\n\n1. Sign up for a personal account ($2.99/month as of last check)\n2. Install the Mac app and browser extension\n3. Create a new vault called 'Dev Secrets'\n4. For each project, create a Secure Note titled 'projectname.env'\n5. Paste the contents of that project's .env file into the note\n6. When setting up a repo on your other machine, open the note and copy the contents into a new .env file\n\n## Why this matters\n\nAPI keys and secrets should never go into GitHub. 1Password gives you a sync mechanism between your Mac mini and laptop that's secure and effortless." },
@@ -290,7 +377,18 @@ export const NEXUS_NODES: NexusNode[] = [
     howToUse: "Activates when code imports anthropic / @anthropic-ai/sdk, or when you ask about prompt caching, thinking, batch, files, citations, memory, or model selection.",
     triggers: ["importing anthropic / @anthropic-ai/sdk", "tuning prompt caching", "migrating Opus 4.6 -> 4.7", "tool use, batch, files, citations"],
     useCases: ["Add prompt caching to an existing app", "Migrate to the latest Claude model IDs", "Wire up tool use / batch / citations correctly"],
-    relatedRepos: ["ai-boardroom", "memory-palace", "this-product"] },
+    relatedRepos: ["ai-boardroom", "memory-palace", "this-product"],
+    connectionStatus: "connected",
+    examples: [
+      "Add prompt caching to a chat endpoint and watch cost drop",
+      "Migrate ai-boardroom from Opus 4.6 to 4.7",
+      "Wire tool-use with citations into a research agent",
+    ],
+    gettingStarted: "Already installed. Just write code that imports `@anthropic-ai/sdk` and the skill activates.",
+    connectionChecks: [
+      "/help shows `claude-api` in the available skills list",
+      "Editing a file with `import Anthropic from \"@anthropic-ai/sdk\"` triggers the skill",
+    ] },
   { id: "skill-init", label: "init", domain: "skills", kind: "real", weight: 3,
     desc: "Initialize a new CLAUDE.md with codebase documentation tailored to the current repo.",
     howToUse: "Run at the start of a fresh project. The skill explores the repo and proposes a CLAUDE.md scaffolded with tech stack, conventions, and current focus.",
@@ -318,7 +416,18 @@ export const NEXUS_NODES: NexusNode[] = [
     howToUse: "Install from Anthropic's skills repo. Activates whenever Claude is generating React/Tailwind UI - it consults the design system instead of inventing styles.",
     triggers: ["Generating React or Tailwind UI", "Building a new screen or component", "Polishing visual hierarchy"],
     useCases: ["Consistent typography, spacing, color across an app", "Bold, opinionated layouts instead of generic", "Replaces ad-hoc style decisions with a single source of truth"],
-    relatedRepos: ["this-product", "geck-inspect", "creditrepair"] },
+    relatedRepos: ["this-product", "geck-inspect", "creditrepair"],
+    connectionStatus: "needs-setup",
+    examples: [
+      "New landing-page section that matches the editorial brand without prompting",
+      "Add a polished settings panel to admin without re-inventing the type scale",
+      "Refresh creditrepair.works with consistent visual hierarchy",
+    ],
+    gettingStarted: "`npx skills add anthropics/skills/frontend-design` (or clone the official skills repo into `~/.claude/skills`).",
+    connectionChecks: [
+      "/help shows `frontend-design` in the available skills list",
+      "Asking 'build me a hero section' produces output that matches the design tokens",
+    ] },
   { id: "skill-webapp-testing", label: "webapp-testing", domain: "skills", kind: "ghost", weight: 4,
     desc: "Tests local web apps with Playwright automation. Lets Claude verify features end-to-end instead of guessing.",
     priority: "high",

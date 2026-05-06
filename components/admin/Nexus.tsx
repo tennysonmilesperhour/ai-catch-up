@@ -21,6 +21,10 @@ import {
   planetTextureRim,
   SUN_TEXTURE_ID,
 } from "@/components/admin/NexusPlanetTextures";
+import {
+  deriveConnectionStatus,
+  STATUS_PALETTE,
+} from "@/lib/nexus-status";
 
 export type NexusKind = "real" | "ghost" | "fork";
 
@@ -54,6 +58,15 @@ export type NexusNode = {
   triggers?: string[];
   useCases?: string[];
   relatedRepos?: string[];
+  // Beginner-onboarding fields (any node can opt in).
+  examples?: string[];
+  gettingStarted?: string;
+  connectionChecks?: string[];
+  connectionStatus?:
+    | "connected"
+    | "partial"
+    | "needs-setup"
+    | "not-installed";
 };
 
 export type NexusLink = {
@@ -1077,6 +1090,22 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
                     <circle r={Math.max(2, r * 0.25)} fill="#faf7f2" />
                   </>
                 )}
+                {/* Status pip — small filled dot at upper-right of every
+                    node that signals connection state at a glance. */}
+                {(() => {
+                  const status = deriveConnectionStatus(n);
+                  const pal = STATUS_PALETTE[status];
+                  const offset = r + 2;
+                  return (
+                    <g
+                      transform={`translate(${offset * 0.7}, -${offset * 0.7})`}
+                      style={{ pointerEvents: "none" }}
+                    >
+                      <circle r={3.6} fill="#0d0a14" />
+                      <circle r={3} fill={pal.color} />
+                    </g>
+                  );
+                })()}
                 <text
                   x={0}
                   y={r + 16}
@@ -1148,6 +1177,23 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
             }}
           />
           <span>Fork</span>
+        </div>
+        <div className="mt-2 pt-2 border-t border-[var(--color-border-dark)] flex flex-col gap-1">
+          <div className="opacity-70">Status pip</div>
+          {(
+            ["connected", "partial", "needs-setup", "not-installed"] as const
+          ).map((s) => {
+            const pal = STATUS_PALETTE[s];
+            return (
+              <div key={s} className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ background: pal.color }}
+                />
+                <span title={pal.description}>{pal.label}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -1270,9 +1316,14 @@ const HoverTooltip = forwardRef<
           color: "#f5efe0",
           marginBottom: 8,
           lineHeight: 1.2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
         }}
       >
-        {node.label}
+        <span>{node.label}</span>
+        <StatusBadge node={node} />
       </div>
       <div
         style={{
@@ -1283,6 +1334,7 @@ const HoverTooltip = forwardRef<
       >
         {node.desc}
       </div>
+      <BeginnerSections node={node} accent={domainColor} />
       <SkillSections node={node} accent={domainColor} />
       {hasActions && node.actions && (
         <div
@@ -1320,6 +1372,110 @@ const HoverTooltip = forwardRef<
     </div>
   );
 });
+
+function StatusBadge({ node }: { node: NexusNode }) {
+  const status = deriveConnectionStatus(node);
+  const pal = STATUS_PALETTE[status];
+  return (
+    <span
+      title={pal.description}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "2px 8px",
+        background: `${pal.color}1a`,
+        border: `1px solid ${pal.color}80`,
+        color: pal.color,
+        fontSize: 9,
+        letterSpacing: "0.12em",
+        textTransform: "uppercase",
+        fontFamily: "ui-monospace, Menlo, monospace",
+        fontWeight: 600,
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 999,
+          background: pal.color,
+          display: "inline-block",
+        }}
+      />
+      {pal.label}
+    </span>
+  );
+}
+
+function BeginnerSections({
+  node,
+  accent,
+}: {
+  node: NexusNode;
+  accent: string;
+}) {
+  const hasAny =
+    !!node.gettingStarted ||
+    (node.examples && node.examples.length > 0) ||
+    (node.connectionChecks && node.connectionChecks.length > 0);
+  if (!hasAny) return null;
+
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 9,
+    letterSpacing: "0.16em",
+    textTransform: "uppercase",
+    color: accent,
+    fontFamily: "ui-monospace, Menlo, monospace",
+    marginBottom: 4,
+    opacity: 0.85,
+  };
+  const body: React.CSSProperties = {
+    fontSize: 12,
+    color: "#cbbfa9",
+    lineHeight: 1.5,
+  };
+
+  return (
+    <div
+      style={{
+        marginTop: 12,
+        paddingTop: 10,
+        borderTop: `1px dashed ${accent}40`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      {node.examples && node.examples.length > 0 && (
+        <div>
+          <div style={sectionLabel}>Examples</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.examples.map((ex, i) => (
+              <li key={i}>{ex}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {node.gettingStarted && (
+        <div>
+          <div style={sectionLabel}>Getting started</div>
+          <div style={body}>{node.gettingStarted}</div>
+        </div>
+      )}
+      {node.connectionChecks && node.connectionChecks.length > 0 && (
+        <div>
+          <div style={sectionLabel}>You'll know it's connected when</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.connectionChecks.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SkillSections({
   node,
