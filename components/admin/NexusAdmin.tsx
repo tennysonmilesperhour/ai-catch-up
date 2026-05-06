@@ -17,6 +17,7 @@ import {
 const STORAGE_KEY = "nexus-custom-nodes-v1";
 const VIEW_STORAGE_KEY = "nexus-view-mode-v1";
 const FILTER_STORAGE_KEY = "nexus-filter-v1";
+const SKILLS_STORAGE_KEY = "nexus-skills-active-v1";
 
 type CustomAddition = {
   id: string;
@@ -69,6 +70,7 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
   const [kind, setKind] = useState<"real" | "ghost" | "fork">("ghost");
   const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
   const [filter, setFilter] = useState<NexusFilter>("everything");
+  const [skillsActive, setSkillsActive] = useState<boolean>(false);
 
   useEffect(() => {
     setCustom(loadCustom());
@@ -84,8 +86,20 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
       ) {
         setFilter(savedFilter);
       }
+      const savedSkills = window.localStorage.getItem(SKILLS_STORAGE_KEY);
+      if (savedSkills === "1") setSkillsActive(true);
     }
   }, []);
+
+  const toggleSkills = () => {
+    setSkillsActive((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(SKILLS_STORAGE_KEY, next ? "1" : "0");
+      }
+      return next;
+    });
+  };
 
   const switchView = (mode: "2d" | "3d") => {
     setViewMode(mode);
@@ -223,6 +237,23 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
               3D
             </button>
           </div>
+          <button
+            type="button"
+            onClick={toggleSkills}
+            aria-pressed={skillsActive}
+            title={
+              skillsActive
+                ? "Skills layer visible. Click to fade to overlay."
+                : "Skills layer is a translucent overlay. Click to bring forward."
+            }
+            className={`font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border transition-colors ${
+              skillsActive
+                ? "bg-[#c4b5fd] text-[#1a1612] border-[#c4b5fd]"
+                : "bg-transparent text-[var(--color-muted-dark)] border-[var(--color-border)] hover:border-[#c4b5fd] hover:text-[#c4b5fd]"
+            }`}
+          >
+            {skillsActive ? "Skills: on" : "Skills: overlay"}
+          </button>
           <button
             onClick={() => setFormOpen((v) => !v)}
             className="self-start sm:self-auto font-mono text-xs uppercase tracking-[0.08em] px-3 py-2 border border-[var(--color-border)] text-[var(--color-dark)] glass-card-static hover:border-[var(--color-terracotta)] hover:text-[var(--color-terracotta)] transition-colors"
@@ -384,12 +415,14 @@ export function NexusAdmin({ domains, nodes, links }: Props) {
           domains={domains}
           nodes={visible.nodes}
           links={visible.links}
+          skillsActive={skillsActive}
         />
       ) : (
         <Nexus
           domains={domains}
           nodes={visible.nodes}
           links={visible.links}
+          skillsActive={skillsActive}
         />
       )}
 

@@ -49,6 +49,11 @@ export type NexusNode = {
   homepage?: string;
   actions?: NexusAction[];
   synced?: boolean;
+  // Skill-only fields (rendered in the tooltip when present).
+  howToUse?: string;
+  triggers?: string[];
+  useCases?: string[];
+  relatedRepos?: string[];
 };
 
 export type NexusLink = {
@@ -69,7 +74,17 @@ type Props = {
   domains: DomainsRecord;
   nodes: NexusNode[];
   links: NexusLink[];
+  /**
+   * When false, nodes/links/planet in the "skills" domain render at low
+   * opacity so they read as a translucent overlay layer. Hovering an
+   * individual skill still surfaces it. When true, skills are fully
+   * visible alongside everything else.
+   */
+  skillsActive?: boolean;
 };
+
+const SKILLS_DOMAIN = "skills";
+const SKILLS_DIM_OPACITY = 0.18;
 
 type OrbitState = {
   cx: number;       // orbit center x (planet anchor or origin)
@@ -266,7 +281,7 @@ function darken(hex: string, amount = 0.5): string {
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
-export function Nexus({ domains, nodes, links }: Props) {
+export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const positionsRef = useRef<Map<string, OrbitState>>(new Map());
   const draggingRef = useRef<string | null>(null);
@@ -605,6 +620,13 @@ export function Nexus({ domains, nodes, links }: Props) {
     return m;
   }, [nodes, orbitalDomains]);
 
+  // Quick id -> domain lookup for skill-layer dimming.
+  const nodeDomainById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const n of nodes) m.set(n.id, n.domain);
+    return m;
+  }, [nodes]);
+
   // While pinned, click outside the tooltip (and not on a node) closes it.
   useEffect(() => {
     if (!isPinned) return;
@@ -741,15 +763,21 @@ export function Nexus({ domains, nodes, links }: Props) {
 
         {/* Atmospheric halos for each visible planet. */}
         <g>
-          {layout.planets.map((p) => (
-            <circle
-              key={`halo-circle-${p.id}`}
-              cx={p.x}
-              cy={p.y}
-              r={170}
-              fill={`url(#halo-${p.id})`}
-            />
-          ))}
+          {layout.planets.map((p) => {
+            const isSkill = p.id === SKILLS_DOMAIN;
+            const dim = isSkill && !skillsActive;
+            return (
+              <circle
+                key={`halo-circle-${p.id}`}
+                cx={p.x}
+                cy={p.y}
+                r={170}
+                fill={`url(#halo-${p.id})`}
+                opacity={dim ? SKILLS_DIM_OPACITY : 1}
+                style={{ transition: "opacity 280ms" }}
+              />
+            );
+          })}
         </g>
 
         {/* The central sun: photographic gradient body. Replaces the
@@ -821,8 +849,14 @@ export function Nexus({ domains, nodes, links }: Props) {
             const textureId = planetTextureFor(p.id);
             const hasBands = planetTextureHasBands(textureId);
             const rim = planetTextureRim(textureId);
+            const isSkill = p.id === SKILLS_DOMAIN;
+            const planetOpacity = isSkill && !skillsActive ? SKILLS_DIM_OPACITY : 1;
             return (
-              <g key={`planet-g-${p.id}`}>
+              <g
+                key={`planet-g-${p.id}`}
+                opacity={planetOpacity}
+                style={{ transition: "opacity 280ms" }}
+              >
                 {/* Soft single halo (subtle so the photographic body
                     reads as the focal point). */}
                 <circle
@@ -921,6 +955,16 @@ export function Nexus({ domains, nodes, links }: Props) {
             // color. On hover the highlighted link uses its own color
             // at full strength so it doesn't blend into the neighbors.
             const sourceColor = nodeColorById.get(l.source) ?? "#7d8aad";
+            const touchesSkill =
+              nodeDomainById.get(l.source) === SKILLS_DOMAIN ||
+              nodeDomainById.get(l.target) === SKILLS_DOMAIN;
+            const skillDimmed =
+              touchesSkill && !skillsActive && !isHighlighted;
+            const baseOpacity = dimmed
+              ? 0.06
+              : isHighlighted
+                ? 0.95
+                : 0.30;
             return (
               <line
                 key={i}
@@ -929,8 +973,9 @@ export function Nexus({ domains, nodes, links }: Props) {
                 x2={b.x}
                 y2={b.y}
                 stroke={sourceColor}
-                strokeOpacity={dimmed ? 0.06 : isHighlighted ? 0.95 : 0.30}
+                strokeOpacity={skillDimmed ? 0.05 : baseOpacity}
                 strokeWidth={isHighlighted ? 1.8 : 1}
+                strokeDasharray={touchesSkill ? "2 4" : undefined}
               />
             );
           })}
@@ -950,6 +995,14 @@ export function Nexus({ domains, nodes, links }: Props) {
             const dimmed =
               hoveredId !== null && !isHovered && !isNeighbor;
             const r = nodeRadius(n);
+            const isSkillNode = n.domain === SKILLS_DOMAIN;
+            const skillDimmed =
+              isSkillNode && !skillsActive && !isHovered && !isNeighbor;
+            const finalOpacity = dimmed
+              ? 0.22
+              : skillDimmed
+                ? SKILLS_DIM_OPACITY
+                : 1;
 
             return (
               <g
@@ -958,8 +1011,8 @@ export function Nexus({ domains, nodes, links }: Props) {
                 transform={`translate(${p.x}, ${p.y})`}
                 style={{
                   cursor: "pointer",
-                  opacity: dimmed ? 0.22 : 1,
-                  transition: "opacity 200ms",
+                  opacity: finalOpacity,
+                  transition: "opacity 280ms",
                 }}
                 onPointerDown={(e) => onNodePointerDown(e, n.id)}
                 onPointerMove={(e) => onNodePointerMove(e, n.id)}
@@ -1230,6 +1283,7 @@ const HoverTooltip = forwardRef<
       >
         {node.desc}
       </div>
+      <SkillSections node={node} accent={domainColor} />
       {hasActions && node.actions && (
         <div
           style={{
@@ -1266,3 +1320,103 @@ const HoverTooltip = forwardRef<
     </div>
   );
 });
+
+function SkillSections({
+  node,
+  accent,
+}: {
+  node: NexusNode;
+  accent: string;
+}) {
+  const hasAny =
+    !!node.howToUse ||
+    (node.triggers && node.triggers.length > 0) ||
+    (node.useCases && node.useCases.length > 0) ||
+    (node.relatedRepos && node.relatedRepos.length > 0);
+  if (!hasAny) return null;
+
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 9,
+    letterSpacing: "0.16em",
+    textTransform: "uppercase",
+    color: accent,
+    fontFamily: "ui-monospace, Menlo, monospace",
+    marginBottom: 4,
+    opacity: 0.85,
+  };
+  const body: React.CSSProperties = {
+    fontSize: 12,
+    color: "#cbbfa9",
+    lineHeight: 1.5,
+  };
+
+  return (
+    <div
+      style={{
+        marginTop: 12,
+        paddingTop: 10,
+        borderTop: `1px dashed ${accent}40`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      {node.howToUse && (
+        <div>
+          <div style={sectionLabel}>How to use</div>
+          <div style={body}>{node.howToUse}</div>
+        </div>
+      )}
+      {node.triggers && node.triggers.length > 0 && (
+        <div>
+          <div style={sectionLabel}>Triggers</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.triggers.map((t, i) => (
+              <li key={i}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {node.useCases && node.useCases.length > 0 && (
+        <div>
+          <div style={sectionLabel}>What it does for you</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.useCases.map((u, i) => (
+              <li key={i}>{u}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {node.relatedRepos && node.relatedRepos.length > 0 && (
+        <div>
+          <div style={sectionLabel}>Repos / projects</div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 4,
+              marginTop: 2,
+            }}
+          >
+            {node.relatedRepos.map((r, i) => (
+              <span
+                key={i}
+                style={{
+                  fontFamily: "ui-monospace, Menlo, monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.04em",
+                  padding: "2px 6px",
+                  background: `${accent}1a`,
+                  border: `1px solid ${accent}40`,
+                  color: "#e7dccb",
+                }}
+              >
+                {r}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

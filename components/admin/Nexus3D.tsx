@@ -22,7 +22,15 @@ type Props = {
   domains: DomainsRecord;
   nodes: NexusNode[];
   links: NexusLink[];
+  /**
+   * When false, skill-domain nodes/links/planet render at low opacity so
+   * the skills layer feels like a translucent overlay. Hovering still
+   * surfaces individual skills.
+   */
+  skillsActive?: boolean;
 };
+
+const SKILLS_DOMAIN = "skills";
 
 type GraphNode = {
   id: string;
@@ -54,7 +62,7 @@ function brighten(hex: string, amount = 1.2): string {
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
-export function Nexus3D({ domains, nodes, links }: Props) {
+export function Nexus3D({ domains, nodes, links, skillsActive = false }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState({ width: 800, height: 600 });
   const [selected, setSelected] = useState<NexusNode | null>(null);
@@ -185,8 +193,18 @@ export function Nexus3D({ domains, nodes, links }: Props) {
   const focusId = selected?.id ?? hoveredId;
   const focusNeighbors = focusId ? neighborsById.get(focusId) : null;
 
+  const isSkillId = (id: string): boolean => {
+    if (id === `__planet_${SKILLS_DOMAIN}__`) return true;
+    const n = nodes.find((x) => x.id === id);
+    return n?.domain === SKILLS_DOMAIN;
+  };
+
   const getNodeColor = (raw: object): string => {
     const g = raw as GraphNode;
+    const isSkill = isSkillId(g.id);
+    if (isSkill && !skillsActive && g.id !== focusId && !focusNeighbors?.has(g.id)) {
+      return dim(g.color, 0.18);
+    }
     if (!focusId) return g.color;
     if (g.id === focusId) return g.color;
     if (focusNeighbors?.has(g.id)) return g.color;
@@ -198,8 +216,13 @@ export function Nexus3D({ domains, nodes, links }: Props) {
     const l = raw as { source: string | { id: string }; target: string | { id: string } };
     const sId = typeof l.source === "string" ? l.source : l.source.id;
     const tId = typeof l.target === "string" ? l.target : l.target.id;
+    const touchesSkill = isSkillId(sId) || isSkillId(tId);
+    const focused = sId === focusId || tId === focusId;
+    if (touchesSkill && !skillsActive && !focused) {
+      return "rgba(196, 181, 253, 0.06)";
+    }
     if (!focusId) return "rgba(245, 239, 224, 0.25)";
-    if (sId === focusId || tId === focusId) return "#d97757";
+    if (focused) return "#d97757";
     return "rgba(245, 239, 224, 0.06)";
   };
 
@@ -207,8 +230,11 @@ export function Nexus3D({ domains, nodes, links }: Props) {
     const l = raw as { source: string | { id: string }; target: string | { id: string } };
     const sId = typeof l.source === "string" ? l.source : l.source.id;
     const tId = typeof l.target === "string" ? l.target : l.target.id;
+    const touchesSkill = isSkillId(sId) || isSkillId(tId);
+    const focused = sId === focusId || tId === focusId;
+    if (touchesSkill && !skillsActive && !focused) return 0.4;
     if (!focusId) return 0.8;
-    if (sId === focusId || tId === focusId) return 2;
+    if (focused) return 2;
     return 0.6;
   };
 
@@ -403,6 +429,7 @@ function DetailPanel({
       >
         {node.desc}
       </div>
+      <SkillSections3D node={node} accent={accent} />
       {hasActions && node.actions && pinned && (
         <div
           style={{
@@ -448,6 +475,106 @@ function DetailPanel({
           }}
         >
           click to open
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SkillSections3D({
+  node,
+  accent,
+}: {
+  node: NexusNode;
+  accent: string;
+}) {
+  const hasAny =
+    !!node.howToUse ||
+    (node.triggers && node.triggers.length > 0) ||
+    (node.useCases && node.useCases.length > 0) ||
+    (node.relatedRepos && node.relatedRepos.length > 0);
+  if (!hasAny) return null;
+
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 9,
+    letterSpacing: "0.16em",
+    textTransform: "uppercase",
+    color: accent,
+    fontFamily: "ui-monospace, Menlo, monospace",
+    marginBottom: 4,
+    opacity: 0.85,
+  };
+  const body: React.CSSProperties = {
+    fontSize: 12,
+    color: "#cbbfa9",
+    lineHeight: 1.5,
+  };
+
+  return (
+    <div
+      style={{
+        marginTop: 12,
+        paddingTop: 10,
+        borderTop: `1px dashed ${accent}40`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      {node.howToUse && (
+        <div>
+          <div style={sectionLabel}>How to use</div>
+          <div style={body}>{node.howToUse}</div>
+        </div>
+      )}
+      {node.triggers && node.triggers.length > 0 && (
+        <div>
+          <div style={sectionLabel}>Triggers</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.triggers.map((t, i) => (
+              <li key={i}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {node.useCases && node.useCases.length > 0 && (
+        <div>
+          <div style={sectionLabel}>What it does for you</div>
+          <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
+            {node.useCases.map((u, i) => (
+              <li key={i}>{u}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {node.relatedRepos && node.relatedRepos.length > 0 && (
+        <div>
+          <div style={sectionLabel}>Repos / projects</div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 4,
+              marginTop: 2,
+            }}
+          >
+            {node.relatedRepos.map((r, i) => (
+              <span
+                key={i}
+                style={{
+                  fontFamily: "ui-monospace, Menlo, monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.04em",
+                  padding: "2px 6px",
+                  background: `${accent}1a`,
+                  border: `1px solid ${accent}40`,
+                  color: "#e7dccb",
+                }}
+              >
+                {r}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>
