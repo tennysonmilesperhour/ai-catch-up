@@ -92,7 +92,7 @@ export function buildOrbitalLayout(
     });
   });
 
-  // Orphan domains — their (single) node sits on the mid-ring, anchor lives
+  // Orphan domains, their (single) node sits on the mid-ring, anchor lives
   // there too so the simulation pulls the node into place.
   const orphanCount = orphanDomains.reduce(
     (sum, k) => sum + (byDomain.get(k)?.length ?? 0),
