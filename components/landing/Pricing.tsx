@@ -3,7 +3,9 @@ import { Reveal } from "@/components/shared/Reveal";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { AutoLearnText, LearnHint } from "@/components/shared/LearnMode";
+import { JsonLd } from "@/components/shared/JsonLd";
 import { resolveCheckout } from "@/lib/checkout";
+import { productJsonLd } from "@/lib/structured-data";
 
 type AsideRow = { k: string; v: string; small?: string };
 
@@ -26,6 +28,9 @@ export function Pricing() {
   const checkout = resolveCheckout();
   const features = frontmatter.features || [];
   const aside = frontmatter.aside || [];
+  // Strip leading "$" from the displayed amount; schema.org price expects
+  // a numeric string. Falls back to "49" if frontmatter is missing.
+  const numericPrice = (frontmatter.amount || "$49").replace(/[^0-9.]/g, "") || "49";
 
   return (
     <section
@@ -122,6 +127,14 @@ export function Pricing() {
           </aside>
         </Reveal>
       </div>
+
+      <JsonLd
+        data={productJsonLd({
+          price: numericPrice,
+          features,
+          refundDays: 30,
+        })}
+      />
     </section>
   );
 }

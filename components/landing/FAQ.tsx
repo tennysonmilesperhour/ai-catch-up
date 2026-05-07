@@ -2,6 +2,8 @@ import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { AutoLearnText } from "@/components/shared/LearnMode";
+import { JsonLd } from "@/components/shared/JsonLd";
+import { faqPageJsonLd, faqSlug } from "@/lib/structured-data";
 
 type FAQItem = {
   q: string;
@@ -51,20 +53,33 @@ export function FAQ() {
       )}
 
       <div className="faqs">
-        {items.map((item, i) => (
-          <Reveal key={i} delay={i * 60}>
-            <details className="faq" open={item.open}>
-              <summary>
-                <span>{item.q}</span>
-                <span className="chev" aria-hidden />
-              </summary>
-              <div className="a">
-                <AutoLearnText>{item.a}</AutoLearnText>
-              </div>
-            </details>
-          </Reveal>
-        ))}
+        {items.map((item, i) => {
+          const slug = faqSlug(item.q);
+          return (
+            <Reveal key={i} delay={i * 60}>
+              <details
+                id={`faq-${slug}`}
+                className="faq"
+                open={item.open}
+              >
+                <summary>
+                  <span>{item.q}</span>
+                  <span className="chev" aria-hidden />
+                </summary>
+                <div className="a">
+                  <AutoLearnText>{item.a}</AutoLearnText>
+                </div>
+              </details>
+            </Reveal>
+          );
+        })}
       </div>
+
+      {items.length > 0 && (
+        <JsonLd
+          data={faqPageJsonLd(items.map(({ q, a }) => ({ q, a })))}
+        />
+      )}
     </section>
   );
 }
