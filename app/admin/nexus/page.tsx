@@ -7,16 +7,23 @@ import {
 } from "@/content/admin/nexus-data";
 import { fetchUserRepos } from "@/lib/github";
 import { mergeNexus } from "@/lib/nexus-merge";
+import { readHermesStoreFromDisk } from "@/lib/hermes-store";
 
 export const metadata = { title: "Nexus" };
 export const revalidate = 900; // 15 min — matches the GitHub fetch cache
 
 export default async function NexusPage() {
-  const outcome = await fetchUserRepos();
-  const { nodes, links } =
+  const [outcome, hermes] = await Promise.all([
+    fetchUserRepos(),
+    readHermesStoreFromDisk(),
+  ]);
+  const merged =
     outcome.ok
       ? mergeNexus(NEXUS_NODES, NEXUS_LINKS, outcome.repos)
       : { nodes: NEXUS_NODES, links: NEXUS_LINKS };
+
+  const nodes = [...merged.nodes, ...hermes.nodes];
+  const links = [...merged.links, ...hermes.links];
 
   const autoCount = outcome.ok
     ? outcome.repos.filter(
@@ -26,6 +33,7 @@ export default async function NexusPage() {
           )
       ).length
     : 0;
+  const hermesCount = hermes.nodes.length;
 
   return (
     <div>
@@ -38,12 +46,14 @@ export default async function NexusPage() {
             {outcome.ok
               ? `GitHub synced, ${autoCount} auto-added`
               : `GitHub sync off (${outcome.reason})`}
+            {hermesCount > 0 ? ` · Hermes contributed ${hermesCount}` : ""}
           </p>
         </div>
         <p className="text-[var(--color-muted-dark)] mt-2 max-w-2xl">
           A living map of the onboarding. Drag a node, hover to see neighbors,
           click to pin. New GitHub repos appear here automatically within 15
-          minutes.
+          minutes. Hermes can read this graph at <code>/api/nexus</code> and
+          add nodes via <code>POST /api/nexus/nodes</code>.
         </p>
       </header>
       <NexusAdmin
