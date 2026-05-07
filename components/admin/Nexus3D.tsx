@@ -15,7 +15,7 @@ import {
   STATUS_PALETTE,
 } from "@/lib/nexus-status";
 
-// three.js and the force graph library are heavy — lazy-load only when 3D
+// three.js and the force graph library are heavy, lazy-load only when 3D
 // mode is toggled on.
 const ForceGraph3D = dynamic(
   () => import("react-force-graph-3d").then((m) => m.default),
@@ -193,7 +193,7 @@ export function Nexus3D({ domains, nodes, links, skillsActive = false }: Props) 
     ? nodes.find((n) => n.id === hoveredId) || null
     : null;
 
-  // "Context" node — either the pinned one (wins) or the hovered one.
+  // "Context" node, either the pinned one (wins) or the hovered one.
   const focusId = selected?.id ?? hoveredId;
   const focusNeighbors = focusId ? neighborsById.get(focusId) : null;
 

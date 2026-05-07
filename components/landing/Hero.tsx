@@ -114,7 +114,7 @@ export function Hero() {
               <div className="hero-stats">
                 <LearnHint
                   title="Setup time"
-                  body="The full guided onboarding takes 60 minutes start to finish. Best done in one sitting; pause and resume any time — progress saves locally."
+                  body="The full guided onboarding takes 60 minutes start to finish. Best done in one sitting; pause and resume any time, progress saves locally."
                   side="top-left"
                 >
                   <div className="cell">

@@ -169,7 +169,7 @@ export default function WorkflowsPage() {
                             {isJson
                               ? f.sourceUrl
                                 ? "Not yet imported. Use the script or paste-import."
-                                : "Source URL missing — flag for manual download."
+                                : "Source URL missing, flag for manual download."
                               : "Companion document, not parsed."}
                           </p>
                         )}

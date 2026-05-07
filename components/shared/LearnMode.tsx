@@ -84,7 +84,7 @@ export function LearnModeProvider({ children }: { children: ReactNode }) {
         setShowWelcome(true);
       }
     } catch {
-      // localStorage unavailable (private mode, SSR rehydration race) —
+      // localStorage unavailable (private mode, SSR rehydration race),
       // default state is fine.
     }
   }, []);
@@ -129,7 +129,7 @@ export function useLearnMode() {
 // ============================================================================
 // AutoLearnText: scans a string and wraps the first occurrence of each
 // known glossary term with <LearnTerm>. Lets us tooltip MDX-sourced copy
-// without rewriting the markdown — Strategy Claude keeps owning the
+// without rewriting the markdown, Strategy Claude keeps owning the
 // content, and Learn mode adds the affordance on top.
 // ============================================================================
 
@@ -414,7 +414,7 @@ function LearnModeWelcome() {
 
 // ============================================================================
 // LearnHint: wraps any UI element with a tooltip explaining what it does.
-// The embedded-tutorial half of Learn mode — extends beyond vocabulary to
+// The embedded-tutorial half of Learn mode, extends beyond vocabulary to
 // cover buttons, panels, regions, processes.
 // ============================================================================
 

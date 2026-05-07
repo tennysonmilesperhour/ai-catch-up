@@ -24,7 +24,7 @@ export function buildPaletteItems(): PaletteItem[] {
     { kind: "section", id: "sec-playground", title: "Dashboard playground", subtitle: "Standalone Workspace Pulse preview",     href: "/preview/dashboard" },
     { kind: "section", id: "sec-blog",       title: "Writing",             subtitle: "Recent posts",                           href: "/blog" },
     { kind: "section", id: "sec-login",      title: "Log in",              subtitle: "Existing customers + admins",            href: "/login" },
-    // Single onboarding entry — the rail on /setup itself shows the 5
+    // Single onboarding entry, the rail on /setup itself shows the 5
     // phases visually, so collapsing the per-phase palette rows keeps
     // the search results cleaner without losing reachability.
     { kind: "section", id: "sec-setup",      title: "Begin onboarding",    subtitle: "5-phase guided setup (60 minutes)",      href: "/setup" },
@@ -50,7 +50,7 @@ export function buildPaletteItems(): PaletteItem[] {
       href: "/#prompts",
     }));
   } catch {
-    // prompts.json missing or malformed — palette degrades gracefully.
+    // prompts.json missing or malformed, palette degrades gracefully.
   }
 
   let faqs: PaletteItem[] = [];
@@ -66,7 +66,7 @@ export function buildPaletteItems(): PaletteItem[] {
       href: "/#faq",
     }));
   } catch {
-    // faq.mdx missing — palette degrades gracefully.
+    // faq.mdx missing, palette degrades gracefully.
   }
 
   return [...sections, ...prompts, ...faqs];

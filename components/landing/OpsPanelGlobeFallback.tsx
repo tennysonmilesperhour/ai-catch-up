@@ -57,15 +57,15 @@ export function OpsPanelGlobeFallback() {
       <div className="globe-stat-strip">
         <div className="cell">
           <span className="k">Active now</span>
-          <span className="v num-tab">—</span>
+          <span className="v num-tab">-</span>
         </div>
         <div className="cell">
           <span className="k">Recent · 60m</span>
-          <span className="v num-tab">—</span>
+          <span className="v num-tab">-</span>
         </div>
         <div className="cell">
           <span className="k">Countries</span>
-          <span className="v num-tab">—</span>
+          <span className="v num-tab">-</span>
         </div>
       </div>
     </div>

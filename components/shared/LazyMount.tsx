@@ -15,7 +15,7 @@ type Props = {
 /**
  * Mounts children only after the wrapper has scrolled within `rootMargin`
  * of the viewport. Used to keep below-fold landing sections out of the
- * initial hydration / paint pass — Hero + dashboard hydrate immediately,
+ * initial hydration / paint pass, Hero + dashboard hydrate immediately,
  * Pricing + FAQ + the rest wait until you scroll near them.
  */
 export function LazyMount({

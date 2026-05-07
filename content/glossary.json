@@ -113,7 +113,7 @@
     },
     "tone": {
       "brief": "How your prompts read. The setup interviews you to capture your voice so the library doesn't sound like generic ChatGPT output.",
-      "more": "Candid, warm, brisk, sober — pick the closest match or describe your own. The same prompt template comes out differently in different tones.",
+      "more": "Candid, warm, brisk, sober, pick the closest match or describe your own. The same prompt template comes out differently in different tones.",
       "kind": "concept"
     },
     "onboarding": {
@@ -142,7 +142,7 @@
       "kind": "concept"
     },
     "the de facto AI lead": {
-      "brief": "The person on your team who became the AI person by default — usually because nobody else volunteered. This product is for them.",
+      "brief": "The person on your team who became the AI person by default, usually because nobody else volunteered. This product is for them.",
       "kind": "concept"
     },
     "JSON": {
@@ -162,7 +162,7 @@
       "kind": "acronym"
     },
     "RAG": {
-      "brief": "Retrieval-Augmented Generation. Letting Claude search your own files before answering. Skipped in v1.0 — CLAUDE.md does the same job for most projects.",
+      "brief": "Retrieval-Augmented Generation. Letting Claude search your own files before answering. Skipped in v1.0, CLAUDE.md does the same job for most projects.",
       "kind": "acronym"
     },
     "build id": {

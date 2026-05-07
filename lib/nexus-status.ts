@@ -11,7 +11,7 @@ export type ConnectionStatus =
   | "not-installed";
 
 export function deriveConnectionStatus(node: NexusNode): ConnectionStatus {
-  // Explicit override wins — the data file knows best.
+  // Explicit override wins, the data file knows best.
   const explicit = (node as NexusNode & { connectionStatus?: ConnectionStatus })
     .connectionStatus;
   if (explicit) return explicit;
@@ -26,7 +26,7 @@ export function deriveConnectionStatus(node: NexusNode): ConnectionStatus {
     return node.deployed ? "connected" : "partial";
   }
 
-  // Forks default to partial — cloned but rarely fully integrated.
+  // Forks default to partial, cloned but rarely fully integrated.
   if (node.kind === "fork") return "partial";
 
   // Ghost: priority high = needs-setup, anything else = not-installed.

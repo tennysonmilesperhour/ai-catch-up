@@ -1,6 +1,6 @@
 // n8n workflow JSON metadata extraction.
 //
-// Pure function — given the raw text of an exported n8n workflow JSON,
+// Pure function, given the raw text of an exported n8n workflow JSON,
 // returns a normalized metadata object. Used by:
 //   - /scripts/import-n8n.ts (bulk Path B import)
 //   - /app/api/admin/workflows/import/route.ts (paste-import Path A)
@@ -236,7 +236,7 @@ function uniqSort(values: string[]): string[] {
 
 function safeHost(url: string): string | null {
   try {
-    // Allow templated URLs like https://api.example.com/{{$json.x}} —
+    // Allow templated URLs like https://api.example.com/{{$json.x}},
     // the URL constructor handles braces fine in the path.
     return new URL(url).hostname;
   } catch {

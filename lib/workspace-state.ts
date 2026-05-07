@@ -1,4 +1,4 @@
-// Workspace state snapshot — all signals about the buyer's workspace
+// Workspace state snapshot, all signals about the buyer's workspace
 // rolled into one shape that heuristics + the /admin/pulse view can
 // consume. v1.2 reads from localStorage; v1.3+ will swap in server-side
 // reads keyed off the buyer's session cookie.

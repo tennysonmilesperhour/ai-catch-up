@@ -41,7 +41,7 @@ const DASH_TABS: DashTab[] = ["Overview", "Tools", "Prompts", "Decisions"];
 
 // Workspace rail-card hrefs. Clicking an artifact in the workspace rail
 // jumps to the corresponding admin tab. Non-authed visitors get bounced
-// to /login by middleware, which is fine — the click communicates "this
+// to /login by middleware, which is fine, the click communicates "this
 // is a real route, not chrome."
 const WORKSPACE_HREF: Record<string, string> = {
   WS1: "/admin/claude-md",
@@ -243,7 +243,7 @@ function NexusChart({ feed }: { feed: ProgressFeed }) {
   );
 }
 
-// Rail extracted as its own component so hover state stays local — the
+// Rail extracted as its own component so hover state stays local, the
 // previous design hoisted activeRail into NexusDashPreview, which meant
 // every hover re-rendered the chart, anomaly box, and activity feed too.
 // Now hovering a phase card only re-renders the rail subtree.
@@ -307,7 +307,7 @@ export function NexusDashPreview({
   const { railsPhases, patternSignals, activeAlerts, activity } = scenario;
 
   // Progress chart data source. Defaults to the curated aggregate
-  // (what the average member looks like over 12 months) — this is
+  // (what the average member looks like over 12 months), this is
   // what unauthenticated marketing visitors see. After mount, if any
   // workspace state exists in localStorage, swap to the personal feed
   // (this user's own setup progress + prompt usage + decisions).
@@ -378,7 +378,7 @@ export function NexusDashPreview({
       <Reveal delay={240}>
         <div className="glass-card-static dash">
           {/* Boot sequence: tabbar in first, then 3 columns cascade
-              left-to-right at 80ms intervals — reads as the workspace
+              left-to-right at 80ms intervals, reads as the workspace
               "coming online" rather than landing as a single block. */}
           <Reveal delay={0}>
             <div className="dash-tabbar">
@@ -408,7 +408,7 @@ export function NexusDashPreview({
                   body={
                     feed.source === "personal"
                       ? "The chart below is reading your localStorage workspace state. Setup % from completed phases, prompts from your invocation history, decisions from your log."
-                      : "The chart below shows the curated 12-month cohort trajectory — what an average member looks like. Sign in (or do anything in the workspace) and it switches to your data."
+                      : "The chart below shows the curated 12-month cohort trajectory, what an average member looks like. Sign in (or do anything in the workspace) and it switches to your data."
                   }
                   side="bottom-right"
                 >
@@ -437,7 +437,7 @@ export function NexusDashPreview({
           </Reveal>
 
           <div className="dash-grid">
-            {/* left rail — owns its own hover state internally so hovering
+            {/* left rail, owns its own hover state internally so hovering
                 doesn't re-render the chart / signals / activity */}
             <Reveal as="div" delay={80} className="dash-rail">
               <DashRail railsPhases={railsPhases} />

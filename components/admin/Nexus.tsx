@@ -240,7 +240,7 @@ type PlasmaSpot = {
   opacity: number;
 };
 
-// Convection-cell granulation across the star surface — small irregular
+// Convection-cell granulation across the star surface, small irregular
 // bright/dark blobs that suggest a plasma photosphere.
 function plasmaSpots(id: string, r: number): PlasmaSpot[] {
   const next = seededRand(`${id}-plasma`);
@@ -484,7 +484,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
   }, []);
 
   const onCanvasPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    // Don't start a pan if the pointer is on a node — that's a drag-the-node
+    // Don't start a pan if the pointer is on a node, that's a drag-the-node
     // gesture and the node's own handler will set draggingRef.
     const target = e.target as Element | null;
     if (target?.closest("[data-nexus-node]")) return;
@@ -621,7 +621,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
 
   // Per-node color lookup (by id), used to color links by source domain.
   // Categorization scheme: every link inherits the color of its
-  // SOURCE node's domain — so visually, a domain "broadcasts" outward
+  // SOURCE node's domain, so visually, a domain "broadcasts" outward
   // in its own color and you can tell at a glance which planet is
   // pulling the connection.
   const nodeColorById = useMemo(() => {
@@ -700,7 +700,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
             </radialGradient>
           ))}
 
-          {/* Star body gradient — complement-colored hot core fading through
+          {/* Star body gradient, complement-colored hot core fading through
               the body color into a slight limb-darkening at the edge. */}
           {layout.planets.map((p) => {
             const flare = complementFor(p.id, p.color);
@@ -720,7 +720,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
             );
           })}
 
-          {/* Corona gradient — outward soft halo around each star. */}
+          {/* Corona gradient, outward soft halo around each star. */}
           {layout.planets.map((p) => (
             <radialGradient
               key={`corona-${p.id}`}
@@ -743,7 +743,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
             </clipPath>
           ))}
 
-          {/* Sun gradient — bright core fading to the brand-warm. */}
+          {/* Sun gradient, bright core fading to the brand-warm. */}
           <radialGradient id="sun-core" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#fff8e1" stopOpacity="1" />
             <stop offset="35%" stopColor="#fbbf24" stopOpacity="0.95" />
@@ -851,7 +851,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
         {/* Visible "planets" rendered as photographic spheres. Each
             node maps deterministically to one of 12 hand-tuned
             radial-gradient textures (see NexusPlanetTextures.tsx).
-            No more corona/plasma/flare layers — replaced wholesale. */}
+            No more corona/plasma/flare layers, replaced wholesale. */}
         <g>
           {layout.planets.map((p) => {
             const r = 58;
@@ -898,7 +898,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
                     />
                   )}
                 </g>
-                {/* Atmospheric rim — thin dark stroke for the limb. */}
+                {/* Atmospheric rim, thin dark stroke for the limb. */}
                 {rim && (
                   <circle
                     cx={p.x}
@@ -1090,7 +1090,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
                     <circle r={Math.max(2, r * 0.25)} fill="#faf7f2" />
                   </>
                 )}
-                {/* Status pip — small filled dot at upper-right of every
+                {/* Status pip, small filled dot at upper-right of every
                     node that signals connection state at a glance. */}
                 {(() => {
                   const status = deriveConnectionStatus(n);

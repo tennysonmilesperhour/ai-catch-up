@@ -124,7 +124,7 @@ export const LAUNCH_CHECKLIST: ChecklistPhase[] = [
         title: "All MDX content reviewed for em dashes",
         description: "You've searched every .mdx file for the em dash character and replaced them all. Em dashes read as AI-generated.",
         actions: [
-          { kind: "copy-commands", label: "Copy grep search command", payload: "grep -rn '—' content/ components/ app/ && echo 'If this returned nothing, you are clean.'" }
+          { kind: "copy-commands", label: "Copy grep search command", payload: "grep -rn '-' content/ components/ app/ && echo 'If this returned nothing, you are clean.'" }
         ]
       },
       {

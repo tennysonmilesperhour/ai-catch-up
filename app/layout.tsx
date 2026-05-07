@@ -14,7 +14,7 @@ const outfit = Outfit({
   display: "swap",
 });
 
-// Body: Inter — gold standard for app readability on screen.
+// Body: Inter, gold standard for app readability on screen.
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],

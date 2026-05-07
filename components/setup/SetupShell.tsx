@@ -62,7 +62,12 @@ export function SetupShell({ children }: Props) {
 
       <div className="setup-grid">
         <aside className="setup-rail">
-          <div className="rail-h">Phases · {PHASES.length}</div>
+          <div className="rail-h">
+            Phases · {PHASES.length}
+            <span className="font-mono text-[9px] tracking-[0.16em] text-[var(--color-muted)] ml-2 normal-case">
+              60 min total · best in one sitting
+            </span>
+          </div>
           {PHASES.map((p, i) => {
             const status = state?.phases[p.id]?.status ?? "not-started";
             const isActive = pathname === p.href;

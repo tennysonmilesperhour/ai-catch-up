@@ -24,7 +24,7 @@ export function SiteHeader() {
   const lastY = useRef(0);
 
   // Tab anchors are absolute ("/#section") so they work as cross-page nav
-  // from /preview/dashboard, /thank-you, etc. — they navigate back to the
+  // from /preview/dashboard, /thank-you, etc., they navigate back to the
   // landing and jump to the section. On the landing itself the browser
   // smooth-scrolls within the page (default behavior).
   const tabHref = (id: string) => (isLanding ? `#${id}` : `/#${id}`);

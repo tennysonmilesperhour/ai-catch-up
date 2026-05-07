@@ -102,7 +102,7 @@ export default async function WorkflowDetailPage({ params }: Props) {
           </p>
           <p className="text-[var(--color-muted-dark)] leading-relaxed max-w-xl">
             {file.type === "application/pdf"
-              ? "This is a companion PDF — included in the section listing for context but not parsed."
+              ? "This is a companion PDF, included in the section listing for context but not parsed."
               : file.sourceUrl
                 ? "Download the JSON from the original source, drop it into ./skool-downloads/ and run npm run import-n8n. Or use the paste-import on the workflow library page."
                 : "The original source URL is missing. Flag this for a manual lookup, then import via the script or paste-UI."}
