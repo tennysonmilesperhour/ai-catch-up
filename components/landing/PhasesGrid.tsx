@@ -2,6 +2,8 @@ import { loadContent } from "@/lib/content";
 import { Reveal } from "@/components/shared/Reveal";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { AutoLearnText } from "@/components/shared/LearnMode";
+import { JsonLd } from "@/components/shared/JsonLd";
+import { howToJsonLd } from "@/lib/structured-data";
 
 type Phase = {
   number: string;
@@ -71,6 +73,22 @@ export function PhasesGrid() {
           </Reveal>
         ))}
       </div>
+
+      {phases.length > 0 && (
+        <JsonLd
+          data={howToJsonLd({
+            name: "AI Catch Up onboarding",
+            description:
+              frontmatter.intro ||
+              "A 60-minute guided AI onboarding in five phases.",
+            totalTimeIso: "PT60M",
+            steps: phases.map((p) => ({
+              name: `${p.number}. ${p.title}`,
+              text: `${p.description} (${p.time})`,
+            })),
+          })}
+        />
+      )}
     </section>
   );
 }

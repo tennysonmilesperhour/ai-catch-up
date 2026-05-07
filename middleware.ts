@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
+import { isPaidEmail, isPaidEnforcementEnabled } from "@/lib/paid";
 
 // Routes under /admin/* that buyers (non-admin authed users) can access.
 // Tennyson's vendor-side surfaces (Plan, Schedule, Decisions, Launch
@@ -44,6 +45,18 @@ export async function middleware(request: NextRequest) {
   }
 
   // Buyer role from here on.
+  // Paid-email enforcement: when PAID_EMAILS is set on Vercel, only listed
+  // addresses can access buyer surfaces. When it's unset (preview mode),
+  // every authed email passes — see lib/paid.ts. Non-paid users land on
+  // /#pricing so they can convert.
+  if (isPaidEnforcementEnabled() && !isPaidEmail(session.email)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    url.search = "";
+    url.hash = "pricing";
+    return NextResponse.redirect(url);
+  }
+
   // Root /admin → send them to their home (Pulse). Tennyson sees the
   // vendor Overview at the same path because his branch above passed.
   if (pathname === "/admin") {

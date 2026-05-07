@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 
-export const metadata = { title: "Setup · Welcome" };
+export const metadata = {
+  title: "Setup · Welcome",
+  description:
+    "The 60-minute AI Catch Up onboarding. Five phases: accounts, capture, configure, starter prompts, outputs. Start here.",
+  alternates: { canonical: "/setup" },
+};
 
 export default function SetupIntroPage() {
   return (

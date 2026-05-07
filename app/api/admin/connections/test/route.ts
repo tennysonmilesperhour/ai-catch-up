@@ -45,11 +45,7 @@ async function testAnthropic(key: string): Promise<TestResult> {
     return { ok: false, reason: "key rejected by Anthropic (401/403)" };
   }
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    return {
-      ok: false,
-      reason: `Anthropic returned ${res.status} ${txt.slice(0, 120)}`,
-    };
+    return { ok: false, reason: `Anthropic returned ${res.status}` };
   }
   const json = (await res.json().catch(() => null)) as
     | { data?: Array<{ id?: string }> }
@@ -87,11 +83,7 @@ async function testGithub(key: string): Promise<TestResult> {
     return { ok: false, reason: "GitHub rejected the token (401)" };
   }
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    return {
-      ok: false,
-      reason: `GitHub returned ${res.status} ${txt.slice(0, 120)}`,
-    };
+    return { ok: false, reason: `GitHub returned ${res.status}` };
   }
   const json = (await res.json().catch(() => null)) as
     | { login?: string }
@@ -124,11 +116,7 @@ async function testStripe(key: string): Promise<TestResult> {
     return { ok: false, reason: "Stripe rejected the key (401)" };
   }
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    return {
-      ok: false,
-      reason: `Stripe returned ${res.status} ${txt.slice(0, 120)}`,
-    };
+    return { ok: false, reason: `Stripe returned ${res.status}` };
   }
   const json = (await res.json().catch(() => null)) as
     | { livemode?: boolean }
@@ -183,6 +171,11 @@ export async function POST(req: NextRequest) {
         ? await testGithub(key)
         : await testStripe(key as string);
 
+  // Trim the response so a compromised admin can't exfiltrate other
+  // tenants' API context via verbose third-party error bodies. ok/false
+  // is sufficient signal; the friendly detail string passes through but
+  // is bounded to plain text from our own switch statement, never the
+  // upstream response body.
   if (result.ok) {
     return NextResponse.json({ ok: true, detail: result.detail });
   }

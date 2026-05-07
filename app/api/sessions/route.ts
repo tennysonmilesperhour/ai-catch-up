@@ -4,6 +4,7 @@ import {
   summariseSessions,
   type GlobeSession,
 } from "@/lib/globe-sessions";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 // Live globe-sessions feed. v1.x scope: in-memory per-instance roster
 // keyed off Vercel-provided geo headers. Cold-start wipes the list, so
@@ -69,6 +70,24 @@ function trimRoster(now: number) {
 // POST: register a hit. The landing page can ping this on mount; the
 // payload is empty because the geo comes from request headers.
 export async function POST(request: NextRequest) {
+  // 30 / 60s per IP. The landing page only pings once on mount, so this
+  // ceiling is well above legitimate use; it just blunts a misconfigured
+  // client (or an attacker) from packing the in-memory roster.
+  const rl = rateLimit("sessions", clientKey(request.headers), 30, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { ok: false, error: "rate" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))
+          ),
+        },
+      }
+    );
+  }
+
   const { city, country, lat, lon } = readGeo(request.headers);
   if (!country || lat == null || lon == null || Number.isNaN(lat) || Number.isNaN(lon)) {
     return NextResponse.json({ ok: false, error: "no geo" }, { status: 200 });

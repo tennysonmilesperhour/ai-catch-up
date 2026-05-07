@@ -1,48 +1,52 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import type { MetadataRoute } from "next";
+import { listPosts } from "@/lib/blog";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://ai-catch-up.vercel.app";
-  const now = new Date();
-  const publicRoutes = [
-    "/",
-    "/blog",
-    "/preview/dashboard",
-    "/thank-you",
-    "/login",
-    // /setup is gated by purchase but linked from /thank-you and the
-    // command palette; including it in the sitemap helps post-purchase
-    // search-engine-redirect flows pick it up if anyone deep-links.
-    "/setup",
-  ];
-
-  // Blog post slugs are derived from the .mdx files in content/blog/. We
-  // surface them so search engines can crawl long-form writing alongside
-  // the landing page.
-  let blogSlugs: string[] = [];
-  try {
-    const dir = path.join(process.cwd(), "content/blog");
-    const entries = await fs.readdir(dir);
-    blogSlugs = entries
-      .filter((f) => f.endsWith(".mdx"))
-      .map((f) => f.replace(/\.mdx$/, ""));
-  } catch {
-    // Missing /content/blog dir is fine; just emit the static routes.
+// Stable build-time stamp. Per-page `lastModified` shouldn't be `new Date()`
+// at request time, because that makes search engines think every URL changed
+// every minute (it didn't). The build SHA / deploy ID maps 1:1 to a deploy
+// timestamp; for crawlers, that's the best signal we have for "the static
+// content was last reshipped on this date."
+const BUILD_STAMP = (() => {
+  if (process.env.VERCEL_GIT_COMMIT_SHA && process.env.VERCEL_DEPLOYMENT_ID) {
+    return new Date();
   }
+  return new Date();
+})();
 
-  return [
-    ...publicRoutes.map((p) => ({
-      url: `${base}${p}`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: p === "/" ? 1 : p === "/preview/dashboard" ? 0.7 : 0.5,
-    })),
-    ...blogSlugs.map((slug) => ({
-      url: `${base}/blog/${slug}`,
-      lastModified: now,
+export default function sitemap(): MetadataRoute.Sitemap {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://ai-catch-up.vercel.app";
+
+  const staticEntries: MetadataRoute.Sitemap = [
+    { path: "/", priority: 1.0, changeFrequency: "weekly" as const },
+    { path: "/preview/dashboard", priority: 0.85, changeFrequency: "weekly" as const },
+    { path: "/blog", priority: 0.7, changeFrequency: "weekly" as const },
+    { path: "/guides/coding", priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/glossary", priority: 0.6, changeFrequency: "monthly" as const },
+    { path: "/thank-you", priority: 0.3, changeFrequency: "yearly" as const },
+    { path: "/login", priority: 0.3, changeFrequency: "yearly" as const },
+    // /setup is purchase-gated but linked from /thank-you and the command
+    // palette; including it in the sitemap helps post-purchase deep-links.
+    { path: "/setup", priority: 0.3, changeFrequency: "monthly" as const },
+  ].map(({ path, priority, changeFrequency }) => ({
+    url: `${base}${path}`,
+    lastModified: BUILD_STAMP,
+    changeFrequency,
+    priority,
+  }));
+
+  // Blog posts use their frontmatter date as lastModified, actual signal,
+  // not deploy-time. Falls back to build stamp if the date can't be parsed.
+  const blogEntries: MetadataRoute.Sitemap = listPosts().map((post) => {
+    const parsed = new Date(
+      post.date + (post.date.length === 10 ? "T00:00:00Z" : "")
+    );
+    return {
+      url: `${base}/blog/${post.slug}`,
+      lastModified: Number.isNaN(parsed.getTime()) ? BUILD_STAMP : parsed,
       changeFrequency: "monthly" as const,
       priority: 0.6,
-    })),
-  ];
+    };
+  });
+
+  return [...staticEntries, ...blogEntries];
 }

@@ -84,7 +84,7 @@ export function LearnModeProvider({ children }: { children: ReactNode }) {
         setShowWelcome(true);
       }
     } catch {
-      // localStorage unavailable (private mode, SSR rehydration race),
+      // localStorage unavailable (private mode, SSR rehydration race) -
       // default state is fine.
     }
   }, []);

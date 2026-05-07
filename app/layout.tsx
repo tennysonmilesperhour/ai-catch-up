@@ -4,7 +4,9 @@ import "./globals.css";
 import { RefreshBanner } from "@/components/shared/RefreshBanner";
 import { CommandPaletteClient } from "@/components/shared/CommandPaletteClient";
 import { LearnModeProvider } from "@/components/shared/LearnMode";
+import { JsonLd } from "@/components/shared/JsonLd";
 import { buildPaletteItems } from "@/lib/palette";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
 
 // Display: warm modern geometric sans for headings + UI labels.
 const outfit = Outfit({
@@ -47,6 +49,9 @@ export const metadata: Metadata = {
   },
   description:
     "A 60-minute AI onboarding system for the solo entrepreneur or small-team lead who became the de facto AI person by default.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "AI Catch Up",
     description:
@@ -80,6 +85,7 @@ export default function RootLayout({
       className={`${outfit.variable} ${inter.variable} ${spaceMono.variable}`}
     >
       <body>
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <LearnModeProvider>
           {children}
           <RefreshBanner />

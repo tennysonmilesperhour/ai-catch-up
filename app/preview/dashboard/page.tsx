@@ -11,7 +11,15 @@ import { resolveCheckout } from "@/lib/checkout";
 export const metadata = {
   title: "Workspace Pulse · Preview",
   description:
-    "An interactive preview of the Workspace Pulse dashboard. Sessions, commits, prompts, decisions, hours saved.",
+    "An interactive preview of the Workspace Pulse dashboard. Sessions, commits, prompts, decisions, hours saved, see exactly what you'd be using before you buy.",
+  alternates: { canonical: "/preview/dashboard" },
+  openGraph: {
+    title: "Workspace Pulse · Preview",
+    description:
+      "Interactive preview of the dashboard. Real signals, real scenarios.",
+    url: "/preview/dashboard",
+    type: "website",
+  },
 };
 
 const STREAM_NOTES = [

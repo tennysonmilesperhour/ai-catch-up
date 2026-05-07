@@ -4,7 +4,16 @@ import { formatDate, listPosts } from "@/lib/blog";
 
 export const metadata = {
   title: "Notebook",
-  description: "Weekly writing from AI Catch Up.",
+  description:
+    "Weekly writing from AI Catch Up, practical notes on AI workflows, prompt patterns, and the de facto AI lead's day.",
+  alternates: { canonical: "/blog" },
+  openGraph: {
+    title: "Notebook · AI Catch Up",
+    description:
+      "Weekly writing on AI workflows for solo entrepreneurs and small-team leads.",
+    url: "/blog",
+    type: "website",
+  },
 };
 
 export default function BlogIndex() {

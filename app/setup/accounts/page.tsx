@@ -91,43 +91,48 @@ export default function AccountsPhase() {
         </h1>
         <p className="setup-phase-lead">
           Each link opens the signup page in a new tab. Tick the box once
-          you've signed in. Required accounts are listed first; optional ones
-          can wait.
+          you've signed in. Three are required; two are optional and can be
+          added later.
         </p>
       </header>
 
       <article className="glass-card-static setup-card">
-        <h3>
-          Required{" "}
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)] ml-1">
-            · finish all three to continue
-          </span>
-        </h3>
+        <h3>Accounts</h3>
         <div className="setup-checklist">
-          {ACCOUNTS.filter((a) => a.required).map((a) => (
-            <AccountRow
+          {ACCOUNTS.map((a) => (
+            <div
               key={a.key}
-              account={a}
-              checked={Boolean(checked[a.key])}
-              onToggle={() => toggle(a.key)}
-            />
-          ))}
-        </div>
-
-        <h3 className="mt-8">
-          Optional{" "}
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)] ml-1">
-            · add later, no rush
-          </span>
-        </h3>
-        <div className="setup-checklist">
-          {ACCOUNTS.filter((a) => !a.required).map((a) => (
-            <AccountRow
-              key={a.key}
-              account={a}
-              checked={Boolean(checked[a.key])}
-              onToggle={() => toggle(a.key)}
-            />
+              className={`setup-checklist-item ${checked[a.key] ? "is-done" : ""}`}
+            >
+              <button
+                type="button"
+                onClick={() => toggle(a.key)}
+                className={`setup-checkbox ${checked[a.key] ? "is-done" : ""}`}
+                aria-pressed={Boolean(checked[a.key])}
+                aria-label={`Mark ${a.name} done`}
+              >
+                ✓
+              </button>
+              <div className="setup-checklist-body">
+                <span className="setup-checklist-name">
+                  {a.name}{" "}
+                  {!a.required && (
+                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
+                      · optional
+                    </span>
+                  )}
+                </span>
+                <span className="setup-checklist-detail">{a.detail}</span>
+              </div>
+              <a
+                href={a.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="setup-checklist-link"
+              >
+                Open →
+              </a>
+            </div>
           ))}
         </div>
       </article>
@@ -140,44 +145,6 @@ export default function AccountsPhase() {
           ← Back to Phase 01
         </Link>
       </div>
-    </div>
-  );
-}
-
-function AccountRow({
-  account,
-  checked,
-  onToggle,
-}: {
-  account: Account;
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div
-      className={`setup-checklist-item ${checked ? "is-done" : ""}`}
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`setup-checkbox ${checked ? "is-done" : ""}`}
-        aria-pressed={checked}
-        aria-label={`Mark ${account.name} done`}
-      >
-        ✓
-      </button>
-      <div className="setup-checklist-body">
-        <span className="setup-checklist-name">{account.name}</span>
-        <span className="setup-checklist-detail">{account.detail}</span>
-      </div>
-      <a
-        href={account.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="setup-checklist-link"
-      >
-        Open →
-      </a>
     </div>
   );
 }

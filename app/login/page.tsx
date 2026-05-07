@@ -1,6 +1,11 @@
 import { Starfield } from "@/components/landing/Starfield";
 
-export const metadata = { title: "Log in" };
+export const metadata = {
+  title: "Log in",
+  description: "Sign in to AI Catch Up.",
+  alternates: { canonical: "/login" },
+  robots: { index: false, follow: true },
+};
 
 type Props = {
   searchParams: Promise<{ error?: string; next?: string }>;
@@ -11,17 +16,21 @@ export default async function LoginPage({ searchParams }: Props) {
   const errorMessage =
     error === "email"
       ? "Please enter a valid email."
-      : error === "server"
-        ? "Something went wrong signing you in. Try again in a moment."
-        : error === "github_state"
-          ? "Your GitHub sign-in session expired. Please try again."
-          : error === "github_token" || error === "github_user"
-            ? "GitHub did not return your account. Please try again."
-            : error === "github_email"
-              ? "We could not read a verified email from your GitHub account."
-              : error === "github_not_configured"
-                ? "GitHub login is not available right now."
-                : null;
+      : error === "rate"
+        ? "Too many attempts. Wait a minute and try again."
+        : error === "origin"
+          ? "Sign-in must come from this site. Reload and try again."
+          : error === "server"
+            ? "Something went wrong signing you in. Try again in a moment."
+            : error === "github_state"
+              ? "Your GitHub sign-in session expired. Please try again."
+              : error === "github_token" || error === "github_user"
+                ? "GitHub did not return your account. Please try again."
+                : error === "github_email"
+                  ? "We could not read a verified email from your GitHub account."
+                  : error === "github_not_configured"
+                    ? "GitHub login is not available right now."
+                    : null;
   const githubHref = next
     ? `/api/auth/github?next=${encodeURIComponent(next)}`
     : "/api/auth/github";

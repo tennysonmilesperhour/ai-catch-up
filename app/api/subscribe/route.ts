@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 const DATA_FILE = join(process.cwd(), "data", "subscribers.json");
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,6 +27,23 @@ async function writeSubscribers(list: Subscriber[]) {
 }
 
 export async function POST(request: Request) {
+  // 10 / 60s per IP. Subscribe is a low-stakes endpoint but the file
+  // write makes it slightly more interesting to abuse, so cap it.
+  const rl = rateLimit("subscribe", clientKey(request.headers), 10, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests, try again shortly" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(
+            Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))
+          ),
+        },
+      }
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -56,7 +74,15 @@ export async function POST(request: Request) {
   // Always log so the email lands somewhere persistent (local stdout in dev,
   // Vercel logs in prod). Logs are recoverable but not exportable, so we
   // also try the optional outbound webhook below.
-  console.log("[subscribe]", JSON.stringify(entry));
+  //
+  // Mask the local-part in logs so PII doesn't sit in plaintext in Vercel
+  // logs. The webhook still receives the real address; only the log line
+  // is masked. Pattern: "f***@example.com".
+  const maskedEmail = email.replace(
+    /^([^@]{1,2})[^@]*(@.+)$/,
+    (_m, head: string, tail: string) => `${head}***${tail}`
+  );
+  console.log("[subscribe]", JSON.stringify({ ...entry, email: maskedEmail }));
 
   // Optional outbound webhook. If SUBSCRIBE_WEBHOOK_URL is set we POST the
   // entry there (Resend audience, ConvertKit, Zapier hook, Google Apps

@@ -95,7 +95,7 @@ export function Hero() {
                 </LearnHint>
                 <LearnHint
                   title="The price"
-                  body="$49 one-time. Includes lifetime updates as Claude gains capabilities. No subscription, no tiers, no upsells. 30-day refund."
+                  body="$49, paid once. Every future update is included as Claude gains capabilities. No subscription, no tiers, no upsells. 30-day refund, no questions."
                   side="top-left"
                 >
                   <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted-dark)]">
@@ -103,7 +103,7 @@ export function Hero() {
                       $49
                     </strong>{" "}
                     <span className="block sm:inline mt-1 sm:mt-0 sm:ml-2">
-                      one-time · lifetime access
+                      one-time · 30-day refund
                     </span>
                   </p>
                 </LearnHint>
