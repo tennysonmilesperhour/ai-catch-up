@@ -54,11 +54,46 @@ export async function POST(request: Request) {
   };
 
   // Always log so the email lands somewhere persistent (local stdout in dev,
-  // Vercel logs in prod). v1.0 only; v1.1 will route this to a real service.
+  // Vercel logs in prod). Logs are recoverable but not exportable, so we
+  // also try the optional outbound webhook below.
   console.log("[subscribe]", JSON.stringify(entry));
 
+  // Optional outbound webhook. If SUBSCRIBE_WEBHOOK_URL is set we POST the
+  // entry there (Resend audience, ConvertKit, Zapier hook, Google Apps
+  // Script, whatever). If SUBSCRIBE_WEBHOOK_TOKEN is set, it's sent as a
+  // Bearer token. This is the recommended persistence path for production.
+  const webhookUrl = process.env.SUBSCRIBE_WEBHOOK_URL;
+  if (webhookUrl) {
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      const token = process.env.SUBSCRIBE_WEBHOOK_TOKEN;
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(webhookUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(entry),
+      });
+      if (!res.ok) {
+        console.warn(
+          "[subscribe] webhook non-2xx:",
+          res.status,
+          res.statusText
+        );
+      }
+    } catch (err) {
+      console.warn(
+        "[subscribe] webhook fetch failed:",
+        (err as Error).message
+      );
+    }
+  }
+
   // Best-effort append to the local JSON file. Will fail silently on Vercel's
-  // read-only serverless filesystem, which is fine because we logged above.
+  // read-only serverless filesystem, which is fine because we logged above
+  // and (if configured) forwarded to the webhook. Kept for local dev so the
+  // admin can inspect the file during development.
   try {
     const list = await readSubscribers();
     if (!list.some((s) => s.email === email)) {

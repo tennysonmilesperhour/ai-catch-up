@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { loadJson } from "@/lib/content";
 import { listPosts } from "@/lib/blog";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
 import type { Prompt } from "@/components/admin/PromptsList";
+import { SuggestedMoves } from "@/components/admin/SuggestedMoves";
 
 export const metadata = { title: "Overview" };
 export const dynamic = "force-dynamic";
@@ -82,6 +84,17 @@ export default async function OverviewPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   const session = await verifySession(token);
+
+  // Buyers (non-admin authed users) get bounced to their own home
+  // (Pulse). The Overview below is Tennyson's vendor-side workspace
+  // dashboard; buyers shouldn't see project spec / connections / blog
+  // post status. Middleware also handles this redirect, but having it
+  // server-side here keeps the rule co-located with the page that
+  // owns the role-specific content.
+  if (session && session.role !== "admin") {
+    redirect("/admin/pulse");
+  }
+
   const handle = session?.email?.split("@")[0] ?? "admin";
 
   const prompts = loadJson<Prompt[] | { prompts: Prompt[] }>(
@@ -89,6 +102,13 @@ export default async function OverviewPage() {
   );
   const promptsArr = Array.isArray(prompts) ? prompts : prompts.prompts;
   const recent = promptsArr.slice(0, 4);
+
+  const decisions = loadJson<unknown[] | { decisions: unknown[] }>(
+    "admin/decisions.json"
+  );
+  const decisionsCount = Array.isArray(decisions)
+    ? decisions.length
+    : decisions.decisions?.length ?? 0;
 
   const connections = checkConnections();
   const posts = listPosts();
@@ -105,7 +125,7 @@ export default async function OverviewPage() {
         </p>
         <h1 className="font-display text-3xl md:text-5xl leading-[1.05] text-[var(--color-dark)]">
           Your workspace,{" "}
-          <span className="italic headline-gradient">still warm.</span>
+          <span className="headline-gradient">still warm.</span>
         </h1>
         <p className="text-[var(--color-muted-dark)] max-w-2xl mt-4 leading-relaxed">
           Where you left off, what is connected, and the prompts you are most
@@ -243,7 +263,7 @@ export default async function OverviewPage() {
             </ul>
           </section>
 
-          {/* Next three moves */}
+          {/* Next three moves — heuristic-driven via SuggestedMoves */}
           <section className="glass-card p-6">
             <header className="flex items-baseline gap-2 mb-5">
               <span
@@ -253,28 +273,14 @@ export default async function OverviewPage() {
               <h2 className="font-display text-base text-[var(--color-dark)]">
                 Next three moves
               </h2>
+              <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
+                heuristic
+              </span>
             </header>
-            <ul className="flex flex-col gap-4">
-              <MoveRow
-                eyebrow="Today"
-                body="Open the launch checklist and pick the next un-done item."
-                href="/admin/checklist"
-              />
-              <MoveRow
-                eyebrow="This week"
-                body="Read this week's schedule and confirm the focus is still right."
-                href="/admin/schedule"
-              />
-              <MoveRow
-                eyebrow="This month"
-                body={
-                  lastPost
-                    ? `Latest post: "${lastPost.title}" (${lastPost.date}). Plan the next one.`
-                    : "Publish the first blog post once the bot is wired up."
-                }
-                href="/blog"
-              />
-            </ul>
+            <SuggestedMoves
+              promptsCount={promptsArr.length}
+              decisionsCount={decisionsCount}
+            />
           </section>
 
           {/* This week stats */}

@@ -22,7 +22,7 @@ export default function PromptsPage() {
         </p>
         <h1 className="font-display text-3xl md:text-5xl text-[var(--color-dark)] mb-2 leading-[1.05]">
           Tuned to your{" "}
-          <span className="italic headline-gradient">tone, your tools.</span>
+          <span className="headline-gradient">tone, your tools.</span>
         </h1>
         <p className="text-[var(--color-muted-dark)] max-w-2xl mt-3 leading-relaxed">
           Each prompt loads your CLAUDE.md context automatically. Click any

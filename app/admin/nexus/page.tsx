@@ -1,6 +1,5 @@
 import { type NexusNode } from "@/components/admin/Nexus";
 import { NexusAdmin } from "@/components/admin/NexusAdmin";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
 import {
   DOMAINS,
   NEXUS_LINKS,
@@ -38,7 +37,6 @@ export default async function NexusPage() {
 
   return (
     <div>
-      <PageBackdrop variant="nexus" />
       <header className="admin-header">
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2">
           <h1 className="font-serif text-3xl md:text-4xl text-[var(--color-dark)]">
