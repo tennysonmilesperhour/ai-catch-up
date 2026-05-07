@@ -64,7 +64,7 @@ export function computeSignals(snap: WorkspaceSnapshot): PatternSignal[] {
   signals.push({
     id: "drift",
     label: "Drift detected",
-    value: drift ? `${driftDays}d` : setupDone ? "0%" : "—",
+    value: drift ? `${driftDays}d` : setupDone ? "0%" : "-",
     note: drift
       ? "no runs since CLAUDE.md was last touched"
       : setupDone
@@ -81,7 +81,7 @@ export function computeSignals(snap: WorkspaceSnapshot): PatternSignal[] {
     label: "Plateau risk",
     value:
       lastInv == null
-        ? "—"
+        ? "-"
         : plateauWeeks <= 1
           ? "low"
           : `${plateauWeeks} wk`,
@@ -125,7 +125,7 @@ export function computeSuggestions(snap: WorkspaceSnapshot): Suggestion[] {
       severity: "warn",
       title: `Continue Phase ${phaseLabel(phase)} of setup`,
       body:
-        "You're not at minute 60 yet. Pick up where you left off — your progress is saved.",
+        "You're not at minute 60 yet. Pick up where you left off, your progress is saved.",
       action: { label: "Open setup", href: `/setup/${phase}` },
     });
   }
@@ -137,7 +137,7 @@ export function computeSuggestions(snap: WorkspaceSnapshot): Suggestion[] {
       severity: "warn",
       title: "Run your first library prompt",
       body:
-        "Setup is complete but the prompt library hasn't been touched. Pick any one and click Run — it's the muscle that compounds.",
+        "Setup is complete but the prompt library hasn't been touched. Pick any one and click Run, it's the muscle that compounds.",
       action: { label: "Open prompt library", href: "/admin/prompts" },
     });
   }

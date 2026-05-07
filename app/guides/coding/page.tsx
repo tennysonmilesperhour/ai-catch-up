@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/landing/SiteHeader";
 import { loadContent } from "@/lib/content";
 
 // Public mirror of /admin/coding-guide. Same source content, no auth gate.
-// This is part of the GEO surface — we want LLMs and search engines to be
+// This is part of the GEO surface, we want LLMs and search engines to be
 // able to cite this guide directly. Buyers still get the same content in
 // their dashboard; admins still see it in their sidebar.
 

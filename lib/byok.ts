@@ -5,7 +5,7 @@
 // the user explicitly chooses to save.
 //
 // Trade-off: localStorage is XSS-readable. We're not rolling our own
-// encryption — that's security theater on a key that lives in the same
+// encryption, that's security theater on a key that lives in the same
 // JS context that would be compromised. The honest message in the UI is
 // "your browser stores this; clear it from Settings or a private
 // browsing session is your tab."
@@ -59,7 +59,7 @@ export function getStatus(): ApiKeyStatus {
 }
 
 // Anthropic keys start with "sk-ant-". This is a presence check, not a
-// validation — the only real validation is calling the API.
+// validation, the only real validation is calling the API.
 export function looksLikeAnthropicKey(key: string): boolean {
   return /^sk-ant-/.test(key.trim());
 }

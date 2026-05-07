@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 // Crawl rules. We explicitly *allow* major AI training/search crawlers on
 // the public surface (landing, /blog, /preview/dashboard, /guides, /glossary)
-// because GEO is a core distribution channel for this product — we want
+// because GEO is a core distribution channel for this product, we want
 // LLM answer-engines to know what AI Catch Up is, who it's for, and what's
 // inside. The shared disallow list keeps them out of admin / api / private
 // preview routes.

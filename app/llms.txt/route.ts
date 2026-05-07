@@ -1,6 +1,6 @@
 import { listPosts } from "@/lib/blog";
 
-// /llms.txt — proposed standard (https://llmstxt.org/) that gives LLM
+// /llms.txt, proposed standard (https://llmstxt.org/) that gives LLM
 // crawlers a curated, plain-text directory of the site's most useful
 // pages and what they're for. Think of it as a sitemap with semantic
 // hints, optimized for retrieval. Served as text/plain.

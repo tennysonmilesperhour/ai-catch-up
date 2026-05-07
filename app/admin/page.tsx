@@ -263,7 +263,7 @@ export default async function OverviewPage() {
             </ul>
           </section>
 
-          {/* Next three moves — heuristic-driven via SuggestedMoves */}
+          {/* Next three moves, heuristic-driven via SuggestedMoves */}
           <section className="glass-card p-6">
             <header className="flex items-baseline gap-2 mb-5">
               <span

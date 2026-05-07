@@ -46,7 +46,7 @@ export function OpsPanelGlobe() {
   }, [feed.sessions]);
 
   // Register this visit, then pull the live feed. Re-pulls every 3 min
-  // (was 60s — overkill for a low-traffic landing) and pauses entirely
+  // (was 60s, overkill for a low-traffic landing) and pauses entirely
   // when the tab is hidden so background tabs don't burn cycles.
   useEffect(() => {
     let cancelled = false;
@@ -70,7 +70,7 @@ export function OpsPanelGlobe() {
         const next = summariseSessions(json.sessions, json.source ?? "live");
         setFeed(next);
       } catch {
-        /* ignore — keep demo */
+        /* ignore, keep demo */
       }
     }
     function start() {

@@ -23,7 +23,7 @@ const BUILD_ID = (process.env.NEXT_PUBLIC_BUILD_ID as string | undefined) || "";
 const BUILD_TAG = BUILD_ID ? BUILD_ID.slice(0, 7) : "dev";
 
 // Clock isolated into its own component so the 1-second setInterval only
-// re-renders the clock span — not the LearnModeToggle, the build id chip,
+// re-renders the clock span, not the LearnModeToggle, the build id chip,
 // or the rest of the bar. Pauses when the tab is hidden via document
 // visibilitychange to save CPU on background tabs.
 function UtcClock() {

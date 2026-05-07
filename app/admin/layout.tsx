@@ -4,7 +4,7 @@ import { AdminMobileNav } from "@/components/admin/AdminMobileNav";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
 
 // Tabs the buyer (non-admin authed user) sees. Coding guide intentionally
-// excluded — it's a one-time read linked from /setup intro and outputs +
+// excluded, it's a one-time read linked from /setup intro and outputs +
 // available via ⌘K, doesn't need a sidebar slot.
 const BUYER_TAB_GROUPS = [
   {
@@ -59,7 +59,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   // Middleware guarantees a session exists by the time we reach here, so
-  // the role read can't be null in practice — but we treat absence as a
+  // the role read can't be null in practice, but we treat absence as a
   // buyer for safety.
   const c = await cookies();
   const session = await verifySession(c.get(SESSION_COOKIE)?.value);

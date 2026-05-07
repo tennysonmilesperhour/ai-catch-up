@@ -22,7 +22,7 @@ Generate a complete CLAUDE.md they can drop at the root of their starter repo. T
 5. Include a "What NOT to do" section with 3 anti-patterns specific to this project.
 6. End with a "Current focus" line.
 7. Use the requested tone throughout (warm/candid/sober/clinical, etc).
-8. Be concise — under 80 lines.
+8. Be concise, under 80 lines.
 
 Output as one fenced markdown block. No preamble, no closing remarks. Just the file.`;
 

@@ -1,4 +1,4 @@
-// In-memory token-bucket rate limiter. Per-instance state — Vercel serverless
+// In-memory token-bucket rate limiter. Per-instance state, Vercel serverless
 // cold-starts wipe the buckets, so this is a coarse guardrail rather than a
 // hardened defense. For real volume, swap to Vercel KV or upstream Vercel
 // firewall rules; the API surface stays the same.

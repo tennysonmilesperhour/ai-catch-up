@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import promptsData from "@/content/admin/prompts.json";
 
 export const runtime = "edge";
-export const alt = "AI Catch Up — a 60-minute onboarding for the de facto AI lead";
+export const alt = "AI Catch Up, a 60-minute onboarding for the de facto AI lead";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

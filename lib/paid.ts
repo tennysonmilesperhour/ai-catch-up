@@ -14,7 +14,7 @@
 //     login page advertises. Tennyson can flip on enforcement by setting the
 //     env var on Vercel; no code change required.
 //   - When PAID_EMAILS is set, isPaidEmail() returns true only for listed
-//     addresses. Admin emails are NOT auto-included — middleware checks role
+//     addresses. Admin emails are NOT auto-included, middleware checks role
 //     first, so admins bypass this gate without needing to be on the list.
 
 function parseList(): Set<string> | null {

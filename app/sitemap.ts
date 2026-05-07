@@ -34,7 +34,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   }));
 
-  // Blog posts use their frontmatter date as lastModified — actual signal,
+  // Blog posts use their frontmatter date as lastModified, actual signal,
   // not deploy-time. Falls back to build stamp if the date can't be parsed.
   const blogEntries: MetadataRoute.Sitemap = listPosts().map((post) => {
     const parsed = new Date(

@@ -37,7 +37,7 @@ function isSameOriginRequest(request: Request): boolean {
   const origin = request.headers.get("origin");
   if (!origin) {
     // No Origin header on the POST. Browsers send Origin on form POSTs,
-    // so missing usually means a non-browser client (curl) — let it
+    // so missing usually means a non-browser client (curl), let it
     // through; the cookie SameSite=Lax already blocks cross-site forms
     // hitting this from a real browser tab.
     return true;

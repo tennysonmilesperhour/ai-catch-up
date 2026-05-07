@@ -52,7 +52,7 @@ export type Scenario = {
   railsPhases: RailRow[];
 };
 
-// Standard wave physics — we vary amplitude + yBase between scenarios so
+// Standard wave physics, we vary amplitude + yBase between scenarios so
 // the chart shape changes visibly while frequencies stay readable. Colors
 // always match the stream identity (Sessions cyan, Commits green, etc.)
 // so the legend chips are stable across scenarios.
@@ -97,7 +97,7 @@ const FREQ2 = [0.0018, 0.0021, 0.0014, 0.0026, 0.0011];
 const PHASE = [0.6, 1.4, 2.1, 3.0, 4.5];
 const DRIFT = [0.00012, 0.00009, 0.00015, 0.00007, 0.00018];
 
-// "Solo founder · week 1" — early state. Low amplitudes (low traffic),
+// "Solo founder · week 1", early state. Low amplitudes (low traffic),
 // high yBases (curves sit low on the chart). Drift signal high since
 // the buyer is still configuring; plateau hasn't formed yet.
 export const SCENARIO_QUIET: Scenario = {
@@ -112,7 +112,7 @@ export const SCENARIO_QUIET: Scenario = {
   patternSignals: [
     { label: "Stuck patterns",  value: "0",   note: "library still loading" },
     { label: "Drift detected",  value: "34%", note: "sessions asked context" },
-    { label: "Plateau risk",    value: "—",   note: "not enough data yet" },
+    { label: "Plateau risk",    value: "-",   note: "not enough data yet" },
   ],
   activeAlerts: 6,
   activity: [
@@ -130,7 +130,7 @@ export const SCENARIO_QUIET: Scenario = {
   ],
 };
 
-// "Operator · month 3" — established baseline. Mid-tempo across all
+// "Operator · month 3", established baseline. Mid-tempo across all
 // streams, real signals starting to surface, activity feed shows the
 // kinds of edits a settled customer makes.
 export const SCENARIO_BASELINE: Scenario = {
@@ -163,7 +163,7 @@ export const SCENARIO_BASELINE: Scenario = {
   ],
 };
 
-// "Power user · year 1" — high tempo, mature library. Higher amplitudes
+// "Power user · year 1", high tempo, mature library. Higher amplitudes
 // (more action), lower yBases (curves run high). Stuck patterns appear
 // because the library is so big, plateau risk is real, hours saved peaks.
 export const SCENARIO_HEAVY: Scenario = {

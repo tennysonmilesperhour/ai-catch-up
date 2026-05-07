@@ -255,7 +255,7 @@ export function PulseDashboard({ decisionsCount, promptsCount }: Props) {
             />
             <CountCell
               label="API key"
-              value={snap.apiKey.hasKey ? "set" : "—"}
+              value={snap.apiKey.hasKey ? "set" : "-"}
               sub={snap.apiKey.fingerprint ?? "needed"}
             />
           </div>

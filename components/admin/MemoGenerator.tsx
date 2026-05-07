@@ -27,7 +27,7 @@ One or two sentences. Be honest. The point is to surface drift, not to flagellat
 ## Next three moves
 A bulleted list of exactly three concrete, scoped next moves for the coming month. Each move should be one sentence. Order them by leverage.
 
-End with a single closing line that is encouraging but not saccharine. No headers after the bullet list. Output as plain markdown — no fenced code block, no preamble.`;
+End with a single closing line that is encouraging but not saccharine. No headers after the bullet list. Output as plain markdown, no fenced code block, no preamble.`;
 
 const MEMO_KEY = "memo-history-v1";
 
@@ -73,7 +73,7 @@ export function MemoGenerator({ decisionsCount, promptsCount }: Props) {
     setMemos(readStoredMemos());
   }, [decisionsCount, promptsCount]);
 
-  // Build the {{context}} from the workspace snapshot — a compact bullet
+  // Build the {{context}} from the workspace snapshot, a compact bullet
   // list the model can read in one pass.
   const contextBlock = useMemo(() => {
     if (!snap) return "";
@@ -118,7 +118,7 @@ export function MemoGenerator({ decisionsCount, promptsCount }: Props) {
     const m: StoredMemo = {
       id: `memo-${Date.now()}`,
       ts: Date.now(),
-      tone: "—",
+      tone: "-",
       body: text,
     };
     appendStoredMemo(m);
@@ -183,7 +183,7 @@ export function MemoGenerator({ decisionsCount, promptsCount }: Props) {
               <LearnHint
                 title="Run memo"
                 body="Fires the memo prompt against Claude with your last-30-days workspace context auto-injected. Output is a 3-section markdown memo: what moved, what stalled, next three moves."
-                more="Run this once a month. Past memos persist below as downloadable .md files. The trick is comparing month over month — read last month's before writing this month's."
+                more="Run this once a month. Past memos persist below as downloadable .md files. The trick is comparing month over month, read last month's before writing this month's."
                 side="bottom-right"
               >
                 <button
