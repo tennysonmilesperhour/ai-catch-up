@@ -1,6 +1,8 @@
 import { loadContent } from "@/lib/content";
+import { resolveCheckout } from "@/lib/checkout";
 import { MagneticButton } from "@/components/shared/MagneticButton";
 import { Reveal } from "@/components/shared/Reveal";
+import { LearnHint } from "@/components/shared/LearnMode";
 
 type FinalCTAFrontmatter = {
   eyebrow?: string;
@@ -15,10 +17,10 @@ export function FinalCTA() {
   const { frontmatter } = loadContent<FinalCTAFrontmatter>(
     "landing/final-cta.mdx"
   );
-  const paymentLink = process.env.STRIPE_PAYMENT_LINK || "#";
+  const checkout = resolveCheckout();
 
   return (
-    <section className="px-6 md:px-12 py-20 md:py-28 max-w-3xl mx-auto text-center">
+    <section className="final px-6 md:px-12 py-20 md:py-28 max-w-3xl mx-auto text-center">
       {frontmatter.eyebrow && (
         <Reveal>
           <p className="label text-[var(--color-muted-dark)] mb-6">
@@ -33,7 +35,7 @@ export function FinalCTA() {
               <span className="block">{frontmatter.headline_line_1}</span>
             )}
             {frontmatter.headline_line_2 && (
-              <span className="block italic headline-gradient">
+              <span className="block headline-gradient">
                 {frontmatter.headline_line_2}
               </span>
             )}
@@ -48,11 +50,19 @@ export function FinalCTA() {
         </Reveal>
       )}
       <Reveal delay={240}>
-        <MagneticButton href={paymentLink}>
-          <span className="glass-button-primary inline-flex items-center justify-center px-8 py-4 font-mono text-sm uppercase tracking-[0.08em]">
-            {frontmatter.button_text || "Get the onboarding"}
-          </span>
-        </MagneticButton>
+        <LearnHint
+          title="Final CTA"
+          body="Same destination as the Begin onboarding button at the top of the page (Stripe checkout → /setup). The MagneticButton wrapper is the subtle pull-toward-cursor effect on hover."
+          side="bottom-right"
+        >
+          <MagneticButton href={checkout.href}>
+            <span className="glass-button-primary inline-flex items-center justify-center px-8 py-4 font-mono text-sm uppercase tracking-[0.08em]">
+              {checkout.ready
+                ? frontmatter.button_text || "Get the onboarding"
+                : checkout.fallbackLabel}
+            </span>
+          </MagneticButton>
+        </LearnHint>
       </Reveal>
       {frontmatter.footnote && (
         <Reveal delay={320}>

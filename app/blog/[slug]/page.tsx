@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { SiteHeader } from "@/components/landing/SiteHeader";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
 import { formatDate, getPost, listPosts } from "@/lib/blog";
 
 type Params = { slug: string };
@@ -28,8 +27,7 @@ export default async function BlogPost({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <main className="min-h-screen">
-      <PageBackdrop variant="stars" />
+    <main className="aurora-page min-h-screen">
       <SiteHeader />
       <article className="px-6 md:px-12 py-20 md:py-28 max-w-2xl mx-auto">
         <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted)] mb-6">
