@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { SiteHeader } from "@/components/landing/SiteHeader";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
+import { JsonLd } from "@/components/shared/JsonLd";
 import { formatDate, getPost, listPosts } from "@/lib/blog";
+import { articleJsonLd } from "@/lib/structured-data";
 
 type Params = { slug: string };
 type Props = { params: Promise<Params> };
@@ -16,9 +17,25 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return { title: "Not found" };
+  const canonical = `/blog/${post.slug}`;
+  const description = post.summary || undefined;
   return {
     title: post.title,
-    description: post.summary || undefined,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: post.title,
+      description,
+      url: canonical,
+      type: "article",
+      publishedTime: post.date,
+      authors: post.author ? [post.author] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+    },
   };
 }
 
@@ -28,8 +45,8 @@ export default async function BlogPost({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <main className="min-h-screen">
-      <PageBackdrop variant="stars" />
+    <main className="aurora-page min-h-screen">
+      <JsonLd data={articleJsonLd(post)} />
       <SiteHeader />
       <article className="px-6 md:px-12 py-20 md:py-28 max-w-2xl mx-auto">
         <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted)] mb-6">

@@ -1,0 +1,173 @@
+{
+  "$schema": "Each entry: { brief: 'one-line plain-language', more?: 'extended', kind?: 'tool|concept|process|acronym|tech' }. The LearnTerm component renders the brief on hover/tap and 'more' if expanded. Strategy Claude or future sessions can extend this without touching code.",
+  "terms": {
+    "CLAUDE.md": {
+      "brief": "A markdown file at the root of your project that Claude reads at the start of every session. It tells Claude what you're building, your conventions, and what to avoid.",
+      "more": "Most people skip this. The ones who use it get dramatically better Claude output because they stop re-explaining their project on every chat. Yours is generated as part of the 60-minute setup and updates as your project grows.",
+      "kind": "tool"
+    },
+    "Nexus map": {
+      "brief": "A live visual map of every tool, repo, and process in your AI workspace. Auto-syncs from GitHub so new repos appear automatically.",
+      "more": "It's the bird's-eye-view answer to 'what do I actually have set up, and what's missing?' The dashboard pulls real connection state from your accounts so it stays accurate without you maintaining it.",
+      "kind": "tool"
+    },
+    "prompt library": {
+      "brief": "A curated set of prompts tuned to your tone and your project, organized by job-to-be-done. You copy, edit, run.",
+      "more": "Each prompt has a 'why it works' note explaining the reasoning, so you can adapt them without copying blind. The library updates as Claude's capabilities change.",
+      "kind": "tool"
+    },
+    "Workspace Pulse": {
+      "brief": "The live dashboard you get after the 60-minute setup. Tracks Sessions, Commits, Prompts, Decisions, and Hours saved so you can see your AI workspace working.",
+      "more": "Same five streams every customer sees, fed by your own repos and tools. Pattern signals (stuck patterns, drift, plateau risk) tell you when something needs attention.",
+      "kind": "tool"
+    },
+    "decisions log": {
+      "brief": "A running file of locked choices with rationale, so you stop re-debating settled questions.",
+      "more": "Every entry is timestamped and short. Read it when you feel a debate coming on; if the answer is already there, move on.",
+      "kind": "tool"
+    },
+    "starter repo": {
+      "brief": "A pre-built code repository you fork to your GitHub account, with the Claude integration, env config, and deploy pipeline already wired up.",
+      "more": "Saves the 4-6 hours it normally takes to wire up the same pieces from scratch. You paste your API keys and it's running on Vercel in minutes.",
+      "kind": "tool"
+    },
+    "Claude": {
+      "brief": "Anthropic's AI assistant. The thing this onboarding configures for your specific work.",
+      "kind": "tool"
+    },
+    "Claude Code": {
+      "brief": "The terminal-based version of Claude that can read and write files in your project. Different from Claude.ai, the chat website.",
+      "more": "Claude Code understands the structure of your repo and can make multi-file changes in one session. Reads CLAUDE.md at startup so it knows your conventions.",
+      "kind": "tool"
+    },
+    "GitHub": {
+      "brief": "Where your code lives. Free for individuals; the starter repo gets pushed here when you fork it.",
+      "kind": "tool"
+    },
+    "Vercel": {
+      "brief": "The platform that hosts your live site. Free tier covers most solo projects; pushing to your repo's main branch deploys automatically.",
+      "kind": "tool"
+    },
+    "Stripe": {
+      "brief": "Payment processor. Used here just for the $49 checkout link.",
+      "kind": "tool"
+    },
+    "1Password": {
+      "brief": "Password manager. The setup pipes API keys through it so they never live in plain text on your machine.",
+      "kind": "tool"
+    },
+    "Cursor": {
+      "brief": "An AI-first code editor. Optional but recommended; works alongside Claude Code.",
+      "kind": "tool"
+    },
+    "MCP server": {
+      "brief": "Model Context Protocol server. A small program that gives Claude access to one specific external thing (your calendar, your notes, a database).",
+      "more": "Think 'plugin' but standardized. The setup walks you through installing two or three that match your work; you can add more later.",
+      "kind": "tech"
+    },
+    "fork": {
+      "brief": "A copy of someone else's GitHub repo, owned by you, that you can change without affecting the original.",
+      "kind": "tech"
+    },
+    "repo": {
+      "brief": "Short for repository. A folder of code tracked by git, usually hosted on GitHub.",
+      "kind": "tech"
+    },
+    "API key": {
+      "brief": "A secret string that lets your app call a service (Claude, GitHub, Stripe). Treated like a password.",
+      "more": "The setup walks you through generating each key and storing it where it belongs (1Password + your project's environment variables, never in source code).",
+      "kind": "tech"
+    },
+    "env var": {
+      "brief": "Short for environment variable. A configuration value (like an API key) that lives outside your code so it can change per environment.",
+      "kind": "tech"
+    },
+    "webhook": {
+      "brief": "A URL another service POSTs to when something happens. Used here for the email subscribe and the newsletter publish flow.",
+      "kind": "tech"
+    },
+    "session": {
+      "brief": "One conversation with Claude, from open to close. Sessions per week is one of the five Workspace Pulse streams.",
+      "kind": "concept"
+    },
+    "commit": {
+      "brief": "A saved snapshot of your code in git, with a short message describing what changed. Commits per week is one of the Workspace Pulse streams.",
+      "kind": "concept"
+    },
+    "stuck pattern": {
+      "brief": "A prompt you used a lot last month and stopped using this month. Surfaces in the Pattern signals panel because it usually means the prompt needs an update.",
+      "kind": "concept"
+    },
+    "drift": {
+      "brief": "When sessions start asking Claude clarifying questions instead of moving the work forward, your CLAUDE.md is probably out of date.",
+      "more": "Drift detected: 12% means 12% of recent sessions had this pattern. The fix is usually a 5-minute CLAUDE.md update.",
+      "kind": "concept"
+    },
+    "plateau risk": {
+      "brief": "Weeks since you added a new prompt to your library. Most people who churn from AI tools were on a plateau for 3+ weeks first.",
+      "kind": "concept"
+    },
+    "active alerts": {
+      "brief": "Items the dashboard flagged that need attention. The number on the dashboard tells you how many 5-minute fixes are queued up.",
+      "kind": "concept"
+    },
+    "tone": {
+      "brief": "How your prompts read. The setup interviews you to capture your voice so the library doesn't sound like generic ChatGPT output.",
+      "more": "Candid, warm, brisk, sober, pick the closest match or describe your own. The same prompt template comes out differently in different tones.",
+      "kind": "concept"
+    },
+    "onboarding": {
+      "brief": "The 60-minute guided setup that turns this product into your working AI workspace.",
+      "kind": "process"
+    },
+    "the five phases": {
+      "brief": "Capture your idea (5 min), set up accounts (15 min), install the starter (10 min), configure Claude (20 min), receive your outputs (10 min).",
+      "kind": "process"
+    },
+    "lifetime access": {
+      "brief": "One $49 payment, no subscription. You keep the repo, the spec, the prompts, and every future update.",
+      "more": "Updates ship to your repo and library when Claude releases new capabilities. You don't have to track the news; the system does.",
+      "kind": "process"
+    },
+    "command palette": {
+      "brief": "A search bar that appears when you press ⌘K (or Ctrl+K on Windows). Jumps you to any section, prompt, or FAQ on the site.",
+      "kind": "concept"
+    },
+    "Learn mode": {
+      "brief": "These dotted-underline tooltips. On by default; toggle off in Settings or via the chip in the utility bar once you don't need them anymore.",
+      "kind": "concept"
+    },
+    "AI workspace": {
+      "brief": "The collection of tools, files, and conventions Claude reads at the start of every session. Built once during onboarding, refined continuously after.",
+      "kind": "concept"
+    },
+    "the de facto AI lead": {
+      "brief": "The person on your team who became the AI person by default, usually because nobody else volunteered. This product is for them.",
+      "kind": "concept"
+    },
+    "JSON": {
+      "brief": "A simple text format for structured data. Used here for the prompt library, decisions, and workflow scaffolds.",
+      "kind": "acronym"
+    },
+    "MDX": {
+      "brief": "Markdown with embedded React components. The landing-page copy and blog posts are written in MDX.",
+      "kind": "acronym"
+    },
+    "OAuth": {
+      "brief": "How you log into a service via another (e.g., 'Sign in with Google'). The setup uses it to connect GitHub.",
+      "kind": "acronym"
+    },
+    "OG image": {
+      "brief": "Open Graph image. The thumbnail that shows up when someone shares the URL on Twitter, LinkedIn, or in iMessage.",
+      "kind": "acronym"
+    },
+    "RAG": {
+      "brief": "Retrieval-Augmented Generation. Letting Claude search your own files before answering. Skipped in v1.0, CLAUDE.md does the same job for most projects.",
+      "kind": "acronym"
+    },
+    "build id": {
+      "brief": "A short hash that identifies the version of the site your browser is showing. The chip in the utility bar updates when a new deploy lands; the toast offers a refresh.",
+      "kind": "concept"
+    }
+  }
+}

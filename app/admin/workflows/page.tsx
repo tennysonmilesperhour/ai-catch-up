@@ -75,7 +75,7 @@ export default function WorkflowsPage() {
         </p>
         <h1 className="font-display text-3xl md:text-5xl text-[var(--color-dark)] mb-2 leading-[1.05]">
           Your n8n{" "}
-          <span className="italic headline-gradient">workflow shelf.</span>
+          <span className="headline-gradient">workflow shelf.</span>
         </h1>
         <p className="text-[var(--color-muted-dark)] max-w-2xl mt-3 leading-relaxed">
           Every workflow you have downloaded, parsed and tagged. Click any row
@@ -169,7 +169,7 @@ export default function WorkflowsPage() {
                             {isJson
                               ? f.sourceUrl
                                 ? "Not yet imported. Use the script or paste-import."
-                                : "Source URL missing — flag for manual download."
+                                : "Source URL missing, flag for manual download."
                               : "Companion document, not parsed."}
                           </p>
                         )}

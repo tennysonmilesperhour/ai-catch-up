@@ -1,19 +1,26 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/landing/SiteHeader";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
 import { formatDate, listPosts } from "@/lib/blog";
 
 export const metadata = {
   title: "Notebook",
-  description: "Weekly writing from AI Catch Up.",
+  description:
+    "Weekly writing from AI Catch Up, practical notes on AI workflows, prompt patterns, and the de facto AI lead's day.",
+  alternates: { canonical: "/blog" },
+  openGraph: {
+    title: "Notebook · AI Catch Up",
+    description:
+      "Weekly writing on AI workflows for solo entrepreneurs and small-team leads.",
+    url: "/blog",
+    type: "website",
+  },
 };
 
 export default function BlogIndex() {
   const posts = listPosts();
 
   return (
-    <main className="min-h-screen">
-      <PageBackdrop variant="stars" />
+    <main className="aurora-page min-h-screen">
       <SiteHeader />
       <div className="px-6 md:px-12 py-20 md:py-28 max-w-3xl mx-auto">
         <p className="label text-[var(--color-terracotta)] mb-6">

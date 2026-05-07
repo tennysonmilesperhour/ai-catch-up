@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/landing/SiteHeader";
-import { PageBackdrop } from "@/components/shared/PageBackdrop";
 
 export const metadata = { title: "Not found" };
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen">
-      <PageBackdrop variant="stars" />
+    <main className="aurora-page min-h-screen">
       <SiteHeader />
       <div className="px-6 md:px-12 py-20 md:py-32 max-w-3xl mx-auto">
         <p className="label text-[var(--color-terracotta)] mb-6">404</p>

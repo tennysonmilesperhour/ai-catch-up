@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function EmailCaptureForm({
-  placeholder = "you@example.com",
+  placeholder = "you@yourbusiness.com",
   buttonLabel = "Notify me",
   successMessage = "Thanks, you are on the list.",
   tone = "light",

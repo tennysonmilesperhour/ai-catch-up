@@ -16,6 +16,12 @@ export interface NodeAction {
   payload: string;
 }
 
+export type ConnectionStatus =
+  | "connected"      // installed/deployed/wired up; nothing to do
+  | "partial"        // partially set up, half-installed, or known-broken
+  | "needs-setup"    // marked priority and ready to install; high-leverage
+  | "not-installed"; // nice-to-have gap
+
 export interface NexusNode {
   id: string;
   label: string;
@@ -28,6 +34,21 @@ export interface NexusNode {
   github?: string;
   homepage?: string;
   actions?: NodeAction[];
+  // Skill-specific fields (only used for nodes in the "skills" domain).
+  // When present, the tooltip renders a richer card with these sections.
+  howToUse?: string;
+  triggers?: string[];
+  useCases?: string[];
+  relatedRepos?: string[];
+  // Beginner-onboarding fields (any node can opt in).
+  // examples: 1-3 short, concrete things you can do with this node.
+  examples?: string[];
+  // gettingStarted: 1-2 sentence "first 30 seconds" instructions.
+  gettingStarted?: string;
+  // connectionChecks: bulleted "you'll know it's working when..." list.
+  connectionChecks?: string[];
+  // Override the derived status when the heuristic is wrong.
+  connectionStatus?: ConnectionStatus;
 }
 
 export interface NexusLink {
@@ -56,7 +77,19 @@ export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
   { id: "geck-inspect", label: "geck-inspect", domain: "apps", kind: "real", weight: 5,
     desc: "Crested gecko breeding and collection management. Your flagship. Also the demo example for the new product.",
-    deployed: true, github: "geck-inspect", homepage: "https://geck-inspect.vercel.app" },
+    deployed: true, github: "geck-inspect", homepage: "https://geck-inspect.vercel.app",
+    connectionStatus: "connected",
+    examples: [
+      "Track which gecko pairings produced the strongest clutches",
+      "Show a buyer the lineage of any animal in 30 seconds",
+      "Generate a weekly snapshot of available animals",
+    ],
+    gettingStarted: "Already deployed. Open the homepage and add an animal record - the rest of the app builds out from there.",
+    connectionChecks: [
+      "Production URL loads without auth issues",
+      "Adding a new animal persists in Supabase",
+      "Geck Data layer (geck-data) responds when you open the dashboard",
+    ] },
   { id: "geck-data", label: "geck-data", domain: "apps", kind: "real", weight: 3,
     desc: "Geck Inspect data layer. No README yet - that's a gap.",
     deployed: true, github: "geck-data", homepage: "https://geck-data.vercel.app" },
@@ -74,6 +107,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "this-product", label: "The Onboarding Product", domain: "apps", kind: "ghost", weight: 5,
     desc: "The v1.0 you're building right now. Sits at the center of everything else.",
     priority: "high",
+    connectionStatus: "partial",
+    examples: [
+      "Buyer lands on /, pays $49, lands on thank-you",
+      "Admin reviews progress on /admin/plan",
+      "Hermes pulls Nexus state via /api/nexus to give buyers personalized advice",
+    ],
+    gettingStarted: "Run `npm run dev`, fill in `.env.local` from `.env.example`, hit http://localhost:3000.",
+    connectionChecks: [
+      "Landing page renders without console errors",
+      "Stripe payment link redirects to /thank-you",
+      "Admin login works against ADMIN_PASSWORD",
+    ],
     actions: [
       { kind: "view-steps", label: "See v1.0 build plan", payload: "# Building v1.0 of the onboarding product\n\nThis node represents the product you're currently building. The full build plan lives in:\n\n- Admin → The Plan tab (strategic overview)\n- Admin → Content Schedule tab (week-by-week tasks)\n- Admin → Locked Decisions tab (decisions that are final)\n\n## Current status\n\nCheck the Content Schedule tab for what's in progress, what's blocked, and what's next.\n\n## If you're losing steam\n\nRead the Locked Decisions tab. The decisions are made. You are not re-deciding whether to build this. You are executing the build." },
     ] },
@@ -92,7 +137,19 @@ export const NEXUS_NODES: NexusNode[] = [
   // ===========================================================
   { id: "memory-palace", label: "memory-palace", domain: "ai-infra", kind: "fork", weight: 3,
     desc: "Best-benchmarked open-source AI memory system.",
-    github: "memory-palace", homepage: "http://mempalaceofficial.com/" },
+    github: "memory-palace", homepage: "http://mempalaceofficial.com/",
+    connectionStatus: "partial",
+    examples: [
+      "Persist conversation context across sessions",
+      "Power a 'remember what I told you' feature in any web app",
+      "Share memory between Geck Inspect, the onboarding product, and Hermes",
+    ],
+    gettingStarted: "Clone the fork, follow its README to spin up the local server, then point one app's memory client at it.",
+    connectionChecks: [
+      "Local server boots without errors",
+      "A test write+read round-trips through the API",
+      "At least one of your apps is configured to use it",
+    ] },
   { id: "GeckNexus", label: "GeckNexus", domain: "ai-infra", kind: "fork", weight: 3,
     desc: "GitNexus fork - browser-based code knowledge graph with built-in Graph RAG agent.",
     github: "GeckNexus", homepage: "https://gitnexus.vercel.app" },
@@ -158,6 +215,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "claude-sync", label: ".claude sync", domain: "sync", kind: "ghost", weight: 4,
     desc: "Sync ~/.claude folder between Mac mini and laptop via private GitHub repo. Highest-leverage 30 minutes you could spend.",
     priority: "high",
+    connectionStatus: "needs-setup",
+    examples: [
+      "Configure a hook on the Mac mini, get it on the laptop next session",
+      "Add a custom slash command once and have both machines use it",
+      "Recover your CLAUDE.md if a machine dies",
+    ],
+    gettingStarted: "Init `~/.claude` as a git repo on your primary Mac, push it to a private GitHub repo, then clone it as `~/.claude` on the second Mac.",
+    connectionChecks: [
+      "Both Macs run `git pull` in `~/.claude` cleanly",
+      "A custom slash command added on one Mac shows up on the other after pull",
+      "You have an alias for the pull/push pair",
+    ],
     actions: [
       { kind: "copy-prompt", label: "Copy Claude Code setup prompt", payload: "I want to sync my ~/.claude folder between my Mac mini and my laptop so my CLAUDE.md, skills, and custom commands are the same on both machines. Walk me through: 1) creating a private GitHub repo called 'claude-config', 2) moving ~/.claude into that repo, 3) setting up the sync so that 'claude pull' before work and 'claude push' after work becomes my habit, 4) handling the case where both machines made changes. Also suggest a shell alias to make this frictionless." },
       { kind: "view-steps", label: "See manual walkthrough", payload: "# Syncing .claude across Macs\n\n## What you're solving\n\nRight now, if you configure Claude Code on your Mac mini, your laptop doesn't benefit. This fixes that permanently.\n\n## Steps\n\n1. On your primary Mac (the one with the most up-to-date .claude folder), open Terminal\n2. `cd ~/.claude && git init`\n3. Create a new private repo on GitHub called 'claude-config'\n4. `git remote add origin [YOUR_REPO_URL]`\n5. `git add . && git commit -m 'initial'`\n6. `git push -u origin main`\n7. On your other Mac: `cd ~ && mv .claude .claude-backup` (just in case)\n8. `git clone [YOUR_REPO_URL] .claude`\n9. Test by opening Claude Code on the second Mac and confirming your CLAUDE.md is there\n\n## Daily habit\n\nAt session start on either machine: `cd ~/.claude && git pull`\nAt session end: `cd ~/.claude && git add . && git commit -m 'updates' && git push`\n\nA shell alias makes this one command. Ask Claude Code to help you set one up." },
@@ -178,6 +247,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "cursor", label: "Cursor", domain: "must-have", kind: "ghost", weight: 5,
     desc: "AI-first visual code editor. The missing piece for 'seeing what's happening' you mentioned. Complements Claude Code, doesn't replace it.",
     priority: "high",
+    connectionStatus: "needs-setup",
+    examples: [
+      "See the diff Claude is about to apply before accepting it",
+      "Highlight a chunk of code and ask 'why does this exist?'",
+      "Run a quick refactor across an open project visually",
+    ],
+    gettingStarted: "Download from cursor.sh, sign in with your Anthropic account, open one of your existing repos, run your first AI-assisted edit.",
+    connectionChecks: [
+      "Cursor opens your project without missing dependencies",
+      "AI panel responds to a 'what does this file do?' question",
+      "You can apply an edit and see the diff before saving",
+    ],
     actions: [
       { kind: "open-url", label: "Open Cursor download", payload: "https://cursor.sh" },
       { kind: "copy-prompt", label: "Copy post-install prompt", payload: "I just installed Cursor. Walk me through: 1) signing in with my Claude/Anthropic account, 2) opening my existing project at [PATH], 3) enabling the AI features, and 4) running my first AI-assisted edit. Assume I've never used Cursor before." },
@@ -185,6 +266,18 @@ export const NEXUS_NODES: NexusNode[] = [
   { id: "1password", label: "1Password", domain: "must-have", kind: "ghost", weight: 4,
     desc: "Secrets manager for all your API keys. Supabase, Vercel, Stripe, Mapbox, Auth0, Anthropic, Base44. Highest-leverage tool on this list.",
     priority: "high",
+    connectionStatus: "needs-setup",
+    examples: [
+      "Look up a project's .env contents in seconds on either Mac",
+      "Share an API key with a contractor without emailing it",
+      "Auto-fill SSH passphrases and 2FA codes",
+    ],
+    gettingStarted: "Sign up, install the Mac app + browser extension, create a 'Dev Secrets' vault, paste each project's .env into a Secure Note named 'projectname.env'.",
+    connectionChecks: [
+      "Mac app and browser extension both signed in",
+      "'Dev Secrets' vault contains at least your top 2-3 projects",
+      "You can paste a key from 1Password directly into a terminal",
+    ],
     actions: [
       { kind: "open-url", label: "Open 1Password signup", payload: "https://1password.com/sign-up" },
       { kind: "view-steps", label: "See setup walkthrough", payload: "# Setting up 1Password for your dev secrets\n\n1. Sign up for a personal account ($2.99/month as of last check)\n2. Install the Mac app and browser extension\n3. Create a new vault called 'Dev Secrets'\n4. For each project, create a Secure Note titled 'projectname.env'\n5. Paste the contents of that project's .env file into the note\n6. When setting up a repo on your other machine, open the note and copy the contents into a new .env file\n\n## Why this matters\n\nAPI keys and secrets should never go into GitHub. 1Password gives you a sync mechanism between your Mac mini and laptop that's secure and effortless." },
@@ -236,6 +329,171 @@ export const NEXUS_NODES: NexusNode[] = [
     actions: [
       { kind: "copy-prompt", label: "Copy DECISIONS.md starter prompt", payload: "Create a DECISIONS.md for this project. Format: each entry has a date, a decision, alternatives considered, and the reason chosen. Make the first entry about the Base44-to-Supabase migration (I made that decision because of X, alternatives were Y and Z). Then make a second entry about the current tech stack choice. Going forward, I'll append to this file whenever I make a significant technical decision so I don't relitigate them." },
     ] },
+
+  // ===========================================================
+  // SKILLS (Claude Code Agent Skills - SKILL.md playbooks)
+  //
+  // "real" = installed and available in the current harness
+  // "ghost" = popular community/Anthropic skill that would round
+  //           out a complete setup but is not installed yet
+  // ===========================================================
+
+  // Installed skills (real)
+  { id: "skill-session-start-hook", label: "session-start-hook", domain: "skills", kind: "real", weight: 3,
+    desc: "Creates SessionStart hooks so projects can run tests and linters during web sessions.",
+    howToUse: "Ask Claude to set up a SessionStart hook for this repo. The skill walks through configuring tests, linters, and any setup the harness should run when a web session begins.",
+    triggers: ["Setting up a repo for Claude Code on the web", "Adding a SessionStart hook", "Wiring tests or linters into web sessions"],
+    useCases: ["Auto-run tests when a web session starts", "Ensure linters are present before edits", "Surface project-specific setup commands to Claude"],
+    relatedRepos: ["ai-catch-up", "geck-inspect", "utah-forage-map"] },
+  { id: "skill-update-config", label: "update-config", domain: "skills", kind: "real", weight: 4,
+    desc: "Configure the Claude Code harness via settings.json: hooks, permissions, env vars, automated behaviors.",
+    howToUse: "Phrase requests as automation rules: 'whenever X, do Y' or 'allow npm commands'. The skill writes the right hook, permission, or env entry into settings.json.",
+    triggers: ["from now on when X", "each time X", "whenever X", "before/after X", "allow X / add permission", "set X=Y env var", "hook troubleshooting"],
+    useCases: ["Add automated hooks for repeated workflows", "Reduce permission prompts by allowlisting", "Move permissions between user and project scope", "Set env vars without leaving the conversation"],
+    relatedRepos: ["all projects"] },
+  { id: "skill-keybindings-help", label: "keybindings-help", domain: "skills", kind: "real", weight: 2,
+    desc: "Customize keyboard shortcuts in ~/.claude/keybindings.json including chord bindings and remaps.",
+    howToUse: "Tell Claude what behavior you want bound. Example: 'rebind ctrl+s to submit' or 'add a chord shortcut for /review'.",
+    triggers: ["rebind ctrl+s", "add a chord shortcut", "change the submit key", "customize keybindings"],
+    useCases: ["Match muscle memory from other tools", "Bind a slash command to a chord", "Adjust submit / cancel keys"] },
+  { id: "skill-simplify", label: "simplify", domain: "skills", kind: "real", weight: 4,
+    desc: "Reviews changed code for reuse, quality, and efficiency, then fixes any issues found.",
+    howToUse: "Run after a feature is working but before commit. The skill looks for duplication, unnecessary abstraction, dead branches, and applies fixes.",
+    triggers: ["After a feature is working", "Before opening a PR", "Cleaning up a draft branch"],
+    useCases: ["Remove duplicate logic", "Collapse premature abstractions", "Catch dead code before review"],
+    relatedRepos: ["geck-inspect", "ai-catch-up", "this-product"] },
+  { id: "skill-fewer-permission-prompts", label: "fewer-permission-prompts", domain: "skills", kind: "real", weight: 3,
+    desc: "Scans transcripts for repeated read-only Bash and MCP calls, then proposes a prioritized allowlist for .claude/settings.json.",
+    howToUse: "Run after a long session where you noticed repeated permission prompts. The skill produces a settings.json patch you can accept.",
+    triggers: ["Too many permission prompts", "Pre-approving safe read-only tools", "Smoothing the local dev loop"],
+    useCases: ["Allowlist git status, ls, ripgrep, etc.", "Speed up agent sessions", "Project-scoped permission tuning"] },
+  { id: "skill-loop", label: "loop", domain: "skills", kind: "real", weight: 3,
+    desc: "Run a prompt or slash command on a recurring interval (e.g. /loop 5m /babysit-prs).",
+    howToUse: "Use /loop <interval> <command>. Defaults to 10m. Best for poll-style tasks like checking deploys, watching PRs, or running nightly checks.",
+    triggers: ["check the deploy every 5 minutes", "keep running /babysit-prs", "poll for status", "recurring task"],
+    useCases: ["Watch a deploy until green", "Periodically check PR review state", "Recurring summary of inbox or calendar"] },
+  { id: "skill-claude-api", label: "claude-api", domain: "skills", kind: "real", weight: 5,
+    desc: "Build, debug, and optimize Claude API / Anthropic SDK apps. Handles prompt caching and Claude version migrations.",
+    howToUse: "Activates when code imports anthropic / @anthropic-ai/sdk, or when you ask about prompt caching, thinking, batch, files, citations, memory, or model selection.",
+    triggers: ["importing anthropic / @anthropic-ai/sdk", "tuning prompt caching", "migrating Opus 4.6 -> 4.7", "tool use, batch, files, citations"],
+    useCases: ["Add prompt caching to an existing app", "Migrate to the latest Claude model IDs", "Wire up tool use / batch / citations correctly"],
+    relatedRepos: ["ai-boardroom", "memory-palace", "this-product"],
+    connectionStatus: "connected",
+    examples: [
+      "Add prompt caching to a chat endpoint and watch cost drop",
+      "Migrate ai-boardroom from Opus 4.6 to 4.7",
+      "Wire tool-use with citations into a research agent",
+    ],
+    gettingStarted: "Already installed. Just write code that imports `@anthropic-ai/sdk` and the skill activates.",
+    connectionChecks: [
+      "/help shows `claude-api` in the available skills list",
+      "Editing a file with `import Anthropic from \"@anthropic-ai/sdk\"` triggers the skill",
+    ] },
+  { id: "skill-init", label: "init", domain: "skills", kind: "real", weight: 3,
+    desc: "Initialize a new CLAUDE.md with codebase documentation tailored to the current repo.",
+    howToUse: "Run at the start of a fresh project. The skill explores the repo and proposes a CLAUDE.md scaffolded with tech stack, conventions, and current focus.",
+    triggers: ["Bootstrapping a new repo", "Adding CLAUDE.md to an existing project", "Onboarding a teammate's codebase"],
+    useCases: ["Bootstrap CLAUDE.md from scratch", "Capture project conventions for future sessions", "Make a repo Claude-ready in one pass"],
+    relatedRepos: ["geck-data", "eyeinthesky", "i-ching-app"] },
+  { id: "skill-review", label: "review", domain: "skills", kind: "real", weight: 4,
+    desc: "Review a pull request - structured pass for correctness, design, and risk.",
+    howToUse: "Run /review on the current branch or pass a PR number. The skill inspects diffs, surfaces concerns, and posts grouped feedback.",
+    triggers: ["PR ready for review", "Self-review before merge", "Catching regressions in a long branch"],
+    useCases: ["Pre-merge sanity pass", "Surface architectural concerns", "Group feedback by severity"],
+    relatedRepos: ["this-product", "geck-inspect"] },
+  { id: "skill-security-review", label: "security-review", domain: "skills", kind: "real", weight: 3,
+    desc: "Complete a security review of pending changes on the current branch.",
+    howToUse: "Run before merging anything that touches auth, secrets, or user input. The skill checks for OWASP-class issues, leaked secrets, and injection risks.",
+    triggers: ["Branch touches auth or secrets", "Before deploying a sensitive change", "Pre-release security gate"],
+    useCases: ["Catch leaked .env or API keys", "Spot SQL/XSS injection risks", "Review middleware permission boundaries"],
+    relatedRepos: ["this-product", "safe-chain", "creditrepair"] },
+
+  // Greyed-out essential skills (ghost), popular community / Anthropic
+  // skills you would want for a complete setup but haven't installed.
+  { id: "skill-frontend-design", label: "frontend-design", domain: "skills", kind: "ghost", weight: 5,
+    desc: "Anthropic's official frontend-design skill (#1 most-installed in 2026). Gives Claude a design system before it touches code.",
+    priority: "high",
+    howToUse: "Install from Anthropic's skills repo. Activates whenever Claude is generating React/Tailwind UI - it consults the design system instead of inventing styles.",
+    triggers: ["Generating React or Tailwind UI", "Building a new screen or component", "Polishing visual hierarchy"],
+    useCases: ["Consistent typography, spacing, color across an app", "Bold, opinionated layouts instead of generic", "Replaces ad-hoc style decisions with a single source of truth"],
+    relatedRepos: ["this-product", "geck-inspect", "creditrepair"],
+    connectionStatus: "needs-setup",
+    examples: [
+      "New landing-page section that matches the editorial brand without prompting",
+      "Add a polished settings panel to admin without re-inventing the type scale",
+      "Refresh creditrepair.works with consistent visual hierarchy",
+    ],
+    gettingStarted: "`npx skills add anthropics/skills/frontend-design` (or clone the official skills repo into `~/.claude/skills`).",
+    connectionChecks: [
+      "/help shows `frontend-design` in the available skills list",
+      "Asking 'build me a hero section' produces output that matches the design tokens",
+    ] },
+  { id: "skill-webapp-testing", label: "webapp-testing", domain: "skills", kind: "ghost", weight: 4,
+    desc: "Tests local web apps with Playwright automation. Lets Claude verify features end-to-end instead of guessing.",
+    priority: "high",
+    howToUse: "Install the skill plus Playwright. Claude can then drive the browser, check state, and confirm features work before claiming done.",
+    triggers: ["UI or frontend changes", "Verifying a feature end-to-end", "Reproducing a bug from a screenshot"],
+    useCases: ["Run the golden path before saying 'done'", "Reproduce a bug deterministically", "Catch regressions from Claude's own changes"],
+    relatedRepos: ["geck-inspect", "utah-forage-map", "this-product"] },
+  { id: "skill-mcp-builder", label: "mcp-builder", domain: "skills", kind: "ghost", weight: 3,
+    desc: "Scaffolds MCP servers for API integration. Useful for wiring Claude into your own services.",
+    priority: "medium",
+    howToUse: "Ask Claude to build an MCP server for a given API. The skill generates server boilerplate, tool definitions, and auth wiring.",
+    triggers: ["Need to expose an internal API to Claude", "Wrapping a third-party service as MCP", "Standing up a new MCP for a repo"],
+    useCases: ["Expose Geck Inspect data as MCP tools", "Wrap Stripe or Supabase as MCP", "Bridge custom services to the harness"],
+    relatedRepos: ["geck-data", "memory-palace", "GeckNexus"] },
+  { id: "skill-pdf", label: "pdf", domain: "skills", kind: "ghost", weight: 3,
+    desc: "Anthropic skill for PDF extraction, creation, merging, and form management.",
+    priority: "medium",
+    howToUse: "Drop PDFs into a conversation or ask Claude to assemble one. The skill handles parsing, layout, and form fields.",
+    triggers: ["Extracting text or tables from a PDF", "Generating a PDF report", "Filling a PDF form"],
+    useCases: ["Pull data out of vendor PDFs", "Generate buyer receipts", "Build PDF reports from app data"] },
+  { id: "skill-docx", label: "docx", domain: "skills", kind: "ghost", weight: 2,
+    desc: "Anthropic skill for Word documents - tracked changes, formatting, templates.",
+    priority: "low",
+    howToUse: "Ask Claude to draft, edit, or compare Word documents. Preserves change tracking and formatting.",
+    triggers: ["Drafting a Word doc with formatting", "Reviewing tracked changes", "Filling a .docx template"],
+    useCases: ["Vendor-friendly contract drafts", "Onboarding doc generation", "Marked-up edits without losing formatting"] },
+  { id: "skill-xlsx", label: "xlsx", domain: "skills", kind: "ghost", weight: 3,
+    desc: "Anthropic skill for Excel - formulas, charts, multi-sheet analysis.",
+    priority: "medium",
+    howToUse: "Hand Claude a spreadsheet or ask for analysis. The skill reads formulas, generates new ones, and produces charts.",
+    triggers: ["Analyzing a spreadsheet", "Generating a financial model", "Building a reporting workbook"],
+    useCases: ["Analyze gecko sales data", "Build a forecast model", "Generate weekly metric workbooks"],
+    relatedRepos: ["geck-inspect", "creditrepair"] },
+  { id: "skill-brand-guidelines", label: "brand-guidelines", domain: "skills", kind: "ghost", weight: 2,
+    desc: "Applies Anthropic's official branding standards. Useful as a template for creating your own brand skill.",
+    priority: "medium",
+    howToUse: "Install as-is for Anthropic-styled output, or fork and replace with your own brand voice / colors / typography.",
+    triggers: ["Producing branded marketing copy", "Generating slides or social assets", "Aligning visual output with a style guide"],
+    useCases: ["Lock your brand voice into every Claude output", "Keep colors and type consistent across surfaces", "Onboard a new collaborator to your style"],
+    relatedRepos: ["this-product", "creditrepair"] },
+  { id: "skill-superpowers", label: "obra/superpowers", domain: "skills", kind: "ghost", weight: 4,
+    desc: "Community skill collection by obra: /brainstorm, /write-plan, structured debugging patterns.",
+    priority: "high",
+    howToUse: "Clone obra/superpowers into your skills folder. Adds slash commands like /brainstorm and /write-plan plus debugging playbooks.",
+    triggers: ["Stuck on a hard problem", "Starting a new feature plan", "Systematic debugging session"],
+    useCases: ["Brainstorm before building", "Produce a written plan instead of jumping to code", "Apply structured debugging when stuck"],
+    relatedRepos: ["all projects"] },
+  { id: "skill-playwright", label: "playwright", domain: "skills", kind: "ghost", weight: 3,
+    desc: "General browser automation - sibling of webapp-testing, useful for scraping and end-to-end flows.",
+    priority: "medium",
+    howToUse: "Install Playwright + the skill. Claude can then drive any site for testing, scraping, or smoke-checking deploys.",
+    triggers: ["Smoke-checking a production deploy", "Scraping a site for one-off data", "Reproducing a multi-step user flow"],
+    useCases: ["Post-deploy production smoke test", "One-off scrape of vendor data", "Multi-step user flow reproduction"],
+    relatedRepos: ["utah-forage-map", "geckcrawl"] },
+  { id: "skill-algorithmic-art", label: "algorithmic-art", domain: "skills", kind: "ghost", weight: 2,
+    desc: "Generates algorithmic art using p5.js with particle systems. Pure delight skill.",
+    priority: "low",
+    howToUse: "Ask Claude for a generative sketch and the skill produces a runnable p5.js piece you can iterate on.",
+    triggers: ["Want a generative visual", "Hero animation for a landing page", "Just-for-fun art piece"],
+    useCases: ["Hero animation for the onboarding product", "Decorative loading visuals", "Personal generative art"] },
+  { id: "skill-ios-simulator", label: "ios-simulator-skill", domain: "skills", kind: "ghost", weight: 2,
+    desc: "Drives the iOS Simulator for app testing automation. Aspirational if iOS work is on the horizon.",
+    priority: "low",
+    howToUse: "Install the skill and Xcode. Claude can boot the simulator, install builds, and exercise flows.",
+    triggers: ["Building a SwiftUI or React Native app", "iOS smoke test before TestFlight", "Reproducing an iOS-only bug"],
+    useCases: ["Future Geck Inspect mobile companion", "Catch iOS-only regressions", "TestFlight pre-flight check"] },
 ];
 
 export const NEXUS_LINKS: NexusLink[] = [
@@ -318,6 +576,43 @@ export const NEXUS_LINKS: NexusLink[] = [
   { source: "context-md", target: "creditrepair", strength: 0.5 },
   { source: "decisions-md", target: "geck-inspect", strength: 0.7 },
   { source: "decisions-md", target: "this-product", strength: 0.5 },
+
+  // Skills reach toward the projects and tools they most often help with.
+  // Strengths are intentionally low so the skills layer feels like a
+  // shimmering overlay, not a structural part of the gravity well.
+  { source: "skill-session-start-hook", target: "this-product", strength: 0.3 },
+  { source: "skill-session-start-hook", target: "geck-inspect", strength: 0.25 },
+  { source: "skill-update-config", target: "global-memory", strength: 0.25 },
+  { source: "skill-update-config", target: "claude-sync", strength: 0.35 },
+  { source: "skill-simplify", target: "this-product", strength: 0.3 },
+  { source: "skill-simplify", target: "geck-inspect", strength: 0.25 },
+  { source: "skill-fewer-permission-prompts", target: "claude-sync", strength: 0.25 },
+  { source: "skill-claude-api", target: "ai-boardroom", strength: 0.4 },
+  { source: "skill-claude-api", target: "memory-palace", strength: 0.3 },
+  { source: "skill-claude-api", target: "this-product", strength: 0.3 },
+  { source: "skill-init", target: "geck-data", strength: 0.4 },
+  { source: "skill-init", target: "eyeinthesky", strength: 0.3 },
+  { source: "skill-init", target: "claude-md-per", strength: 0.5 },
+  { source: "skill-review", target: "this-product", strength: 0.3 },
+  { source: "skill-review", target: "geck-inspect", strength: 0.25 },
+  { source: "skill-security-review", target: "this-product", strength: 0.3 },
+  { source: "skill-security-review", target: "safe-chain", strength: 0.4 },
+  { source: "skill-security-review", target: "creditrepair", strength: 0.3 },
+
+  // Ghost skill reaches (greyed targets pulling on real projects)
+  { source: "skill-frontend-design", target: "this-product", strength: 0.3 },
+  { source: "skill-frontend-design", target: "geck-inspect", strength: 0.3 },
+  { source: "skill-frontend-design", target: "creditrepair", strength: 0.3 },
+  { source: "skill-webapp-testing", target: "geck-inspect", strength: 0.3 },
+  { source: "skill-webapp-testing", target: "utah-forage-map", strength: 0.3 },
+  { source: "skill-webapp-testing", target: "this-product", strength: 0.3 },
+  { source: "skill-mcp-builder", target: "memory-palace", strength: 0.3 },
+  { source: "skill-mcp-builder", target: "GeckNexus", strength: 0.3 },
+  { source: "skill-superpowers", target: "this-product", strength: 0.25 },
+  { source: "skill-playwright", target: "geckcrawl", strength: 0.3 },
+  { source: "skill-playwright", target: "utah-forage-map", strength: 0.3 },
+  { source: "skill-xlsx", target: "geck-inspect", strength: 0.25 },
+  { source: "skill-brand-guidelines", target: "this-product", strength: 0.25 },
 ];
 
 export const DOMAINS: Record<string, Domain> = {
@@ -382,5 +677,14 @@ export const DOMAINS: Record<string, Domain> = {
     color: "#10b981",
     anchor: { x: 0, y: 380 },
     note: "Per-project markdown files that unlock better AI assistance"
+  },
+  "skills": {
+    // Skills are an overlay layer - rendered semi-transparent until the
+    // viewer toggles them in. Cool aurora-violet so they read as
+    // "ambient capability" rather than "another planet".
+    label: "Skills",
+    color: "#c4b5fd",
+    anchor: { x: 0, y: -400 },
+    note: "Claude Code Agent Skills (SKILL.md playbooks) the harness can call on. Toggle to bring them forward."
   },
 };

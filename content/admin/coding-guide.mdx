@@ -1,0 +1,65 @@
+---
+title: "Coding guide"
+subtitle: "A practical workflow for shipping projects with Claude Code as a beginner."
+---
+
+A practical workflow for shipping projects with Claude Code as a beginner. The core idea is **Plan First, Act Second**. Spend the first part of a session in Plan Mode, where Claude researches and reasons without touching files. Spend the rest executing against an approved plan. This separation prevents the most common failure mode: Claude wandering into files that didn't need to change.
+
+## The core planning workflow
+
+### 1. Initialize with `/init`
+
+Run `/init` in your project folder. Claude scans your files and generates a baseline `CLAUDE.md` with your build and test commands, tech stack, and project structure. This file becomes your project's permanent memory. Claude reads it at the start of every session.
+
+### 2. Enter Plan Mode
+
+Toggle by pressing **Shift + Tab twice**. In Plan Mode, Claude can research and analyze your codebase without making any file changes. Use it to think before you cut.
+
+### 3. Define the "doughnut" (MVP)
+
+Use Plan Mode to define your Minimum Viable Product. The core functionality that must work before you add "sprinkles" (extra features). Be ruthless: if it isn't on the doughnut, it doesn't ship in this iteration.
+
+### 4. Draft and refine
+
+Describe your goal. Let Claude propose a detailed plan including file paths and code references. Review and refine this plan before accepting it. Never just take the first version.
+
+### 5. Exit and execute
+
+Once you approve, exit Plan Mode to begin the implementation phase. Now Claude executes against the approved plan, not against your original prompt.
+
+## Beginner's planning checklist
+
+Follow this list to ensure your project is properly scoped and documented before writing a single line of code.
+
+- **Clear purpose statement.** Can you explain what the project does in one simple sentence?
+- **Tech stack identified.** Are your languages, frameworks, and databases chosen?
+- **Verification criteria.** Do you have specific test cases or expected outputs (e.g., "input X should return Y") so Claude can verify its own work?
+- **CLAUDE.md configured.** Does it include specific build and test commands (e.g., `npm test`) and styling rules (e.g., "use 2-space indentation")?
+- **Task breakdown.** Is the project divided into small, manageable chunks?
+- **Modular rules.** For complex projects, have you split specific instructions into separate files in a `.claude/rules/` folder?
+
+## Essential markdown files
+
+Building these files first creates a "contract" for Claude to follow, reducing assumptions and errors.
+
+| File | Purpose | Key content |
+| --- | --- | --- |
+| `CLAUDE.md` | Project memory | Build/test commands, naming conventions, architectural decisions |
+| `SPEC.md` | Blueprint | Detailed functional requirements and technical constraints |
+| `TODO.md` | Roadmap | A checklist of pending tasks, categorized into phases |
+| `TESTS.md` | Validation | A list of edge cases and success criteria for testing |
+
+## Pro tip: rolling back
+
+If Claude goes off-track during implementation, don't try to fix it in the current chat. Use **Esc + Esc** or `/rewind` to roll back to your last successful checkpoint and re-adjust your plan.
+
+## How this shows up in your workspace
+
+Your AI Catch Up workspace already wires the patterns above into the artifacts you receive in Phase 05:
+
+- The `CLAUDE.md` you generate in Phase 04 IS your project memory file. Drop it at the root of your starter repo so every Claude Code session reads it on startup.
+- The decisions log in your admin tab is the running record of "architectural decisions" the table above describes. Add to it as you lock choices.
+- The prompt library has Run buttons that fire against Claude using your stored API key. Use the planning prompts (Project Setup category) before the building prompts.
+- The Workspace Pulse on `/admin/pulse` watches the cadence and surfaces drift, plateau, and stuck-pattern signals when your sessions stop matching your spec.
+
+Read this guide once before Phase 01. Re-read it once a month. The discipline compounds.

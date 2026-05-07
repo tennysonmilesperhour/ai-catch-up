@@ -14,7 +14,7 @@
  *   <circle fill={`url(#${id})`} />
  *
  * planetTextureHasBands() always returns false now (band overlays
- * aren't needed — the photo has bands baked in). planetTextureRim()
+ * aren't needed, the photo has bands baked in). planetTextureRim()
  * always returns null (limb darkening is in the rendered disc).
  */
 

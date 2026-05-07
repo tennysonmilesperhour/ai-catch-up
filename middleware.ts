@@ -1,5 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
+import { isPaidEmail, isPaidEnforcementEnabled } from "@/lib/paid";
+
+// Routes under /admin/* that buyers (non-admin authed users) can access.
+// Tennyson's vendor-side surfaces (Plan, Schedule, Decisions, Launch
+// checklist, Workflows, Nexus map) stay admin-only because they're about
+// AI Catch Up the product, not the buyer's own workspace.
+const BUYER_ALLOWED = new Set<string>([
+  "/admin/pulse",
+  "/admin/prompts",
+  "/admin/claude-md",
+  "/admin/coding-guide",
+  "/admin/invocations",
+  "/admin/memo",
+  "/admin/settings",
+]);
+
+function isBuyerAllowed(pathname: string): boolean {
+  for (const allowed of BUYER_ALLOWED) {
+    if (pathname === allowed || pathname.startsWith(allowed + "/")) return true;
+  }
+  return false;
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,14 +40,41 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (session.role !== "admin") {
+  if (session.role === "admin") {
+    return NextResponse.next();
+  }
+
+  // Buyer role from here on.
+  // Paid-email enforcement: when PAID_EMAILS is set on Vercel, only listed
+  // addresses can access buyer surfaces. When it's unset (preview mode),
+  // every authed email passes — see lib/paid.ts. Non-paid users land on
+  // /#pricing so they can convert.
+  if (isPaidEnforcementEnabled() && !isPaidEmail(session.email)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/preview";
+    url.pathname = "/";
+    url.search = "";
+    url.hash = "pricing";
+    return NextResponse.redirect(url);
+  }
+
+  // Root /admin → send them to their home (Pulse). Tennyson sees the
+  // vendor Overview at the same path because his branch above passed.
+  if (pathname === "/admin") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/pulse";
     url.search = "";
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  if (isBuyerAllowed(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Buyer tried to hit a vendor-only route — send them home.
+  const url = request.nextUrl.clone();
+  url.pathname = "/admin/pulse";
+  url.search = "";
+  return NextResponse.redirect(url);
 }
 
 export const config = {
