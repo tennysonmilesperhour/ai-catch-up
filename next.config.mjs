@@ -4,6 +4,24 @@ const withMDX = createMDX({
   extension: /\.mdx?$/,
 });
 
+// CSP allows Anthropic (BYOK browser fetch), GitHub (blog publish + connections
+// test), Stripe (payment link redirect target), Google fonts (next/font).
+// 'unsafe-inline' on script-src is required for Next.js hydration scripts;
+// nonce-based CSP is a v1.2+ tightening. The other restrictions still cut
+// the attack surface meaningfully (frame-ancestors, form-action, connect-src).
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "connect-src 'self' https://api.anthropic.com https://api.github.com",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://buy.stripe.com",
+  "object-src 'none'",
+].join("; ");
+
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -13,6 +31,14 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
   },
   { key: "X-DNS-Prefetch-Control", value: "on" },
+  // Vercel sets HSTS at the edge for *.vercel.app; setting it here is
+  // belt-and-suspenders that also covers custom domains. 1 year + preload
+  // is the standard "stay HTTPS forever" stance.
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains; preload",
+  },
+  { key: "Content-Security-Policy", value: CSP },
 ];
 
 // Build identifier baked into the client bundle. RefreshBanner compares
