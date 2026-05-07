@@ -46,14 +46,14 @@
     "category": "Prompting Claude",
     "title": "Making Claude ask better questions instead of assuming",
     "prompt": "Before you answer my next request, I want you to operate under this rule for our entire conversation:\n\nWhen I give you a task, if there's any ambiguity, ask me up to 3 clarifying questions before you start. Use the ask_user_input tool if it's available so I can click answers instead of typing.\n\nDon't ask permission to ask. Just ask.",
-    "whyItWorks": "This single instruction transforms the quality of every subsequent interaction. Claude's default is to guess and proceed. Flipping that default to 'ask first' catches scope mistakes before you've wasted time."
+    "whyItWorks": "This single instruction raises the quality of every subsequent interaction. Claude's default is to guess and proceed. Flipping that default to 'ask first' catches scope mistakes before you've wasted time."
   },
   {
     "id": 8,
     "category": "Prompting Claude",
     "title": "Getting Claude to disagree with you when you're wrong",
     "prompt": "For the rest of this conversation, I want you to push back on my ideas when you see problems with them, rather than defaulting to encouragement.\n\nIf I'm about to make a scope mistake, tell me. If I'm underestimating complexity, say so. If my plan has a hole, name it.\n\nStay kind but direct. Treat me like a peer who can handle honest feedback, not a customer you're trying to please.",
-    "whyItWorks": "Claude's defaults lean toward agreeable and helpful. This is fine for most things, but terrible when you need a real sounding board. This instruction unlocks the useful-critic mode."
+    "whyItWorks": "Claude's defaults lean toward agreeable and helpful. This is fine for most things, but terrible when you need a real sounding board. This instruction switches Claude into useful-critic mode."
   },
   {
     "id": 9,
