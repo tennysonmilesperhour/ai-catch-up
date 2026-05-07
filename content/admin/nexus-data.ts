@@ -408,7 +408,7 @@ export const NEXUS_NODES: NexusNode[] = [
     useCases: ["Catch leaked .env or API keys", "Spot SQL/XSS injection risks", "Review middleware permission boundaries"],
     relatedRepos: ["this-product", "safe-chain", "creditrepair"] },
 
-  // Greyed-out essential skills (ghost) — popular community / Anthropic
+  // Greyed-out essential skills (ghost), popular community / Anthropic
   // skills you would want for a complete setup but haven't installed.
   { id: "skill-frontend-design", label: "frontend-design", domain: "skills", kind: "ghost", weight: 5,
     desc: "Anthropic's official frontend-design skill (#1 most-installed in 2026). Gives Claude a design system before it touches code.",

@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: Props) {
             already works.&rdquo;
           </p>
           <footer className="mt-6 font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted)]">
-            &mdash; the working theory
+            / the working theory
           </footer>
         </blockquote>
         <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted)]">
@@ -65,7 +65,7 @@ export default async function LoginPage({ searchParams }: Props) {
           </h1>
           <p className="text-[var(--color-muted-dark)] mb-8 leading-relaxed">
             New here? Use any email to preview the product. Already bought? Use
-            the email you bought with. Admins: use your admin email.
+            the email you bought with.
           </p>
           <a
             href={githubHref}

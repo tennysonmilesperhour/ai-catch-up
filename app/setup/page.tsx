@@ -16,7 +16,7 @@ export default function SetupIntroPage() {
           Five phases, top to bottom. Each phase ends with a working artifact
           in your workspace: a project spec, account wiring, a deployed
           starter, your tuned CLAUDE.md, and the four outputs you keep
-          forever. You can pause and pick up later — your progress is saved
+          forever. You can pause and pick up later, your progress is saved
           locally to this browser.
         </p>
       </header>

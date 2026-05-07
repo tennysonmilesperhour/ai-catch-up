@@ -3,10 +3,10 @@
 // monotonically.
 //
 // Two sources:
-//   - getAggregateProgressData() — curated cohort trajectory over 12 months
+//   - getAggregateProgressData(), curated cohort trajectory over 12 months
 //     (what an "average member" looks like). Shown when no local workspace
 //     state exists (unauthenticated marketing visitors).
-//   - getPersonalProgressData(snap) — derived from the buyer's localStorage
+//   - getPersonalProgressData(snap), derived from the buyer's localStorage
 //     workspace state. Shown when there's any signal that this browser has
 //     been used as a workspace (setup state present, prompts run, etc.).
 
@@ -48,7 +48,7 @@ const C = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// Aggregate (cohort demo) — what a typical member looks like over 12 months.
+// Aggregate (cohort demo), what a typical member looks like over 12 months.
 // Curves are hand-tuned to read as believable buyer progress; values y are
 // already normalized 0..1 so the chart layer doesn't need to scale.
 // ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ const AGGREGATE: ProgressSeries[] = [
     unit: "/ mo",
     color: C.violet,
     desc: "New entries logged in the decisions log per month. Bumps when projects make architectural choices.",
-    // Stepped — bumpy not smooth.
+    // Stepped, bumpy not smooth.
     points: curve([0.08, 0.18, 0.20, 0.32, 0.35, 0.42, 0.44, 0.50, 0.58, 0.60, 0.66, 0.70]),
     currentLabel: "5 / mo",
   },
@@ -113,9 +113,9 @@ export function getAggregateProgressData(): ProgressFeed {
 }
 
 // ---------------------------------------------------------------------------
-// Personal — derived from the user's workspace state. Each series builds a
+// Personal, derived from the user's workspace state. Each series builds a
 // 12-point sparkline anchored to "now" at the rightmost point. We don't have
-// real timestamped history (yet — that's a v1.3 storage move); so we fake
+// real timestamped history (yet, that's a v1.3 storage move); so we fake
 // the trajectory by placing the current value at x=1 and tapering to 0 at
 // x=0 with a curve shape appropriate to the metric.
 // ---------------------------------------------------------------------------

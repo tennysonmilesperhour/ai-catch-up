@@ -1,5 +1,5 @@
 // Browser-side Anthropic Messages API client. The user's key (BYOK)
-// goes from their localStorage to api.anthropic.com directly — our
+// goes from their localStorage to api.anthropic.com directly, our
 // server never sees it. Anthropic supports CORS for browser callers
 // when the `anthropic-dangerous-direct-browser-access` header is set;
 // the "dangerous" naming is about exposing keys in app-bundled code,
@@ -8,7 +8,7 @@
 const API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 
-// Default to Claude Sonnet 4.6 — the right balance of speed + quality
+// Default to Claude Sonnet 4.6, the right balance of speed + quality
 // for prompt-running. Phase 4 (CLAUDE.md generation) might want Opus 4.7
 // for the heavier reasoning task; bumpable via the `model` arg.
 export const DEFAULT_MODEL = "claude-sonnet-4-6";

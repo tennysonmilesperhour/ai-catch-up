@@ -60,7 +60,7 @@ export function ThisIsForYou() {
                 className="flex gap-3 text-sm text-[var(--color-muted-dark)] leading-relaxed"
               >
                 <span className="text-[var(--color-muted)] mt-1 shrink-0">
-                  &ndash;
+                  -
                 </span>
                 <span>{item}</span>
               </li>

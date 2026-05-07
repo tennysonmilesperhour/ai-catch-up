@@ -68,7 +68,7 @@ export default function CapturePhase() {
           Five questions, one sitting. The output is a clean project spec
           ready for the rest of the setup. The interviewer prompt is below;
           click Run, fill the rough idea + current state slots, and Claude
-          will walk you through the rest. Save the result — Phase 04 turns
+          will walk you through the rest. Save the result, Phase 04 turns
           it into your CLAUDE.md.
         </p>
       </header>

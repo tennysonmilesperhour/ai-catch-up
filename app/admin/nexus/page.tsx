@@ -10,7 +10,7 @@ import { mergeNexus } from "@/lib/nexus-merge";
 import { readHermesStoreFromDisk } from "@/lib/hermes-store";
 
 export const metadata = { title: "Nexus" };
-export const revalidate = 900; // 15 min — matches the GitHub fetch cache
+export const revalidate = 900; // 15 min, matches the GitHub fetch cache
 
 export default async function NexusPage() {
   const [outcome, hermes] = await Promise.all([

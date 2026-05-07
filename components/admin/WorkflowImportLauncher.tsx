@@ -250,7 +250,7 @@ export function WorkflowImportLauncher({ sections }: Props) {
               <div className="rounded-[8px] border border-[var(--color-cyan)] bg-[rgba(95,255,215,0.04)] px-3 py-3 flex flex-col gap-2 text-xs text-[var(--color-muted-dark)]">
                 <p className="text-[var(--color-cyan)]">
                   <span className="font-semibold">{preview.metadata.name}</span>{" "}
-                  — slug: <span className="font-mono">{preview.slug}</span>
+                 , slug: <span className="font-mono">{preview.slug}</span>
                 </p>
                 <p>
                   {preview.metadata.complexity} ({preview.metadata.nodeCount}{" "}

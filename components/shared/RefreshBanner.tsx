@@ -10,7 +10,7 @@ const FOCUS_THROTTLE_MS = 5 * 1000;
 // to VERCEL_GIT_COMMIT_SHA. The poll compares this CONSTANT (frozen at
 // build) against /api/version (live at request time). The instant the
 // server's id differs from the bundle's id, the user is on a stale
-// page and the banner fires — even if they just opened the tab.
+// page and the banner fires, even if they just opened the tab.
 const BUILD_ID = (process.env.NEXT_PUBLIC_BUILD_ID as string | undefined) || "";
 
 export function RefreshBanner() {
