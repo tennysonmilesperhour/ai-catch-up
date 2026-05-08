@@ -52,6 +52,12 @@ export default async function BlogPost({ params }: Props) {
         <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--color-muted)] mb-6">
           {formatDate(post.date)}
           {post.author ? ` / ${post.author}` : ""}
+          {post.mode ? (
+            <span className="text-[var(--color-terracotta)]">
+              {" / "}
+              {post.mode.replace("-", " ")}
+            </span>
+          ) : null}
         </p>
         <h1 className="font-serif text-3xl md:text-5xl leading-[1.1] text-[var(--color-dark)] mb-8">
           {post.title}

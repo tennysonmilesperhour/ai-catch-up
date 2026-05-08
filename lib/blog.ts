@@ -2,14 +2,24 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 
+export type BlogMode = "heretic" | "forager" | "ghost-pirate";
+
 export type BlogPost = {
   slug: string;
   title: string;
   date: string;
   summary: string;
   author?: string;
+  mode?: BlogMode;
   body: string;
 };
+
+const VALID_MODES: BlogMode[] = ["heretic", "forager", "ghost-pirate"];
+
+function parseMode(v: unknown): BlogMode | undefined {
+  if (typeof v !== "string") return undefined;
+  return (VALID_MODES as string[]).includes(v) ? (v as BlogMode) : undefined;
+}
 
 const BLOG_DIR = join(process.cwd(), "content", "blog");
 
@@ -25,7 +35,7 @@ function parsePost(filename: string): BlogPost | null {
   const fullPath = join(BLOG_DIR, filename);
   const raw = readFileSync(fullPath, "utf8");
   const { data, content } = matter(raw);
-  const fm = data as Partial<BlogPost>;
+  const fm = data as Partial<BlogPost> & { mode?: unknown };
   if (!fm.title || !fm.date) return null;
   return {
     slug: fm.slug || slug,
@@ -33,6 +43,7 @@ function parsePost(filename: string): BlogPost | null {
     date: String(fm.date),
     summary: String(fm.summary ?? ""),
     author: fm.author ? String(fm.author) : undefined,
+    mode: parseMode(fm.mode),
     body: content.trim(),
   };
 }

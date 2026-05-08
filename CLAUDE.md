@@ -80,6 +80,14 @@ Rules:
     └── subscribers.json
 ```
 
+## Voice reference
+
+The Anti-Engineer brand brief (`docs/brand/anti-engineer-brief.md`) is the source of truth for voice, persona, and worldview. Read it before writing any new copy or briefing Strategy Claude. Hooks are mirrored at `docs/brand/hooks.md`.
+
+The brief is a voice-and-worldview layer only. As of the 2026-05-08 decision, **the price stays $49 and the aesthetic stays Aurora Command**. Do not adopt the brief's $97 / "The Anti-Engineer's Stack" / print-zine aesthetic without an explicit new instruction.
+
+Run `npm run voice-check` to scan `/content/**/*.{md,mdx}` for em-dashes, corporate softeners, and italics. The script reports only; pass `--strict` to make it fail.
+
 ## Design rules
 
 - **No em dashes anywhere** in code or content. Use regular dashes, commas, or parentheses. Hard rule, no exceptions.
