@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "voice-check": "node scripts/voice-check.mjs",
     "import-n8n": "tsx scripts/import-n8n.ts"
   },
   "dependencies": {
