@@ -29,7 +29,7 @@ type RunPromptProps = {
   promptId?: number | string;
   /** Optional system prompt (e.g., the buyer's CLAUDE.md). */
   system?: string;
-  /** Optional model override; defaults to claude-sonnet-4-6. */
+  /** Optional model override; defaults to DEFAULT_MODEL (claude-sonnet-5). */
   model?: string;
   /** Trigger element. Clicking it opens the modal. */
   children: (open: () => void) => React.ReactNode;
