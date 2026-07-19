@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Voice check (strict)
+        run: npm run voice-check -- --strict
+
+      - name: Build
+        run: npm run build
+        env:
+          # Build must succeed without real secrets. Runtime env vars
+          # (SESSION_SECRET, STRIPE_PAYMENT_LINK, etc.) are only needed at
+          # request time, not during next build.
+          NEXT_PUBLIC_SITE_URL: https://ai-catch-up.vercel.app
