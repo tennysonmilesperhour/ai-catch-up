@@ -6,7 +6,7 @@ import { CommunityCTA } from "@/components/shared/CommunityCTA";
 export const metadata = {
   title: "Thank you",
   description:
-    "Thanks for buying AI Catch Up. The video is in production; in the meantime, here's what to expect next.",
+    "Thanks for buying AI Catch Up. Here's what happens next and how to start your onboarding.",
   alternates: { canonical: "/thank-you" },
   robots: { index: false, follow: false },
 };

@@ -9,6 +9,7 @@ import { isPaidEmail, isPaidEnforcementEnabled } from "@/lib/paid";
 const BUYER_ALLOWED = new Set<string>([
   "/admin/pulse",
   "/admin/prompts",
+  "/admin/roster",
   "/admin/claude-md",
   "/admin/coding-guide",
   "/admin/invocations",

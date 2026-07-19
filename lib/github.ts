@@ -39,6 +39,8 @@ export async function fetchUserRepos(): Promise<FetchOutcome> {
       {
         headers,
         next: { revalidate: CACHE_REVALIDATE_SECONDS },
+        // Don't let a slow GitHub hang the Nexus page / API render.
+        signal: AbortSignal.timeout(8000),
       }
     );
     if (!res.ok) {
