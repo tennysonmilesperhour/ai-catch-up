@@ -16,6 +16,7 @@ import {
   upsertLink,
   serializeStore,
 } from "@/lib/hermes-store";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -167,7 +168,8 @@ async function githubGetFileSha(token: string): Promise<{ sha: string | null; co
   if (res.status === 404) return { sha: null, content: null };
   if (!res.ok) {
     const detail = await res.text();
-    throw new Error(`GitHub GET failed: ${res.status} ${detail.slice(0, 200)}`);
+    console.error("[nexus/nodes] GitHub GET failed", res.status, detail.slice(0, 300));
+    throw new Error(`GitHub GET failed: ${res.status}`);
   }
   const json = (await res.json()) as { sha?: string; content?: string; encoding?: string };
   let decoded: string | null = null;
@@ -202,7 +204,8 @@ async function githubPutFile(
   });
   if (!res.ok) {
     const detail = await res.text();
-    throw new Error(`GitHub PUT failed: ${res.status} ${detail.slice(0, 300)}`);
+    console.error("[nexus/nodes] GitHub PUT failed", res.status, detail.slice(0, 300));
+    throw new Error(`GitHub PUT failed: ${res.status}`);
   }
   const json = (await res.json()) as {
     commit?: { sha?: string; html_url?: string };
@@ -215,6 +218,22 @@ async function githubPutFile(
 }
 
 export async function POST(req: NextRequest) {
+  // Coarse abuse guard on top of the bearer check: a leaked token can't
+  // hammer the GitHub Contents API without limit. Per-instance (see
+  // lib/rate-limit), so it's a guardrail, not a hard cap.
+  const rl = rateLimit("nexus-nodes", clientKey(req.headers), 20, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests, try again shortly" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))),
+        },
+      }
+    );
+  }
+
   const auth = authorize(req);
   if (!auth.ok) return NextResponse.json({ error: auth.reason }, { status: 401 });
 
