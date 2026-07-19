@@ -1,17 +1,12 @@
 import type { MetadataRoute } from "next";
 import { listPosts } from "@/lib/blog";
 
-// Stable build-time stamp. Per-page `lastModified` shouldn't be `new Date()`
-// at request time, because that makes search engines think every URL changed
-// every minute (it didn't). The build SHA / deploy ID maps 1:1 to a deploy
-// timestamp; for crawlers, that's the best signal we have for "the static
-// content was last reshipped on this date."
-const BUILD_STAMP = (() => {
-  if (process.env.VERCEL_GIT_COMMIT_SHA && process.env.VERCEL_DEPLOYMENT_ID) {
-    return new Date();
-  }
-  return new Date();
-})();
+// Stable content stamp. Per-page `lastModified` shouldn't be `new Date()`
+// at request/build time, because that makes search engines think every URL
+// changed on every deploy (it didn't). Bump this constant when the static
+// marketing content materially changes; blog posts use their own frontmatter
+// date below.
+const CONTENT_STAMP = new Date("2026-07-19T00:00:00Z");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://ai-catch-up.vercel.app";
@@ -24,12 +19,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/glossary", priority: 0.6, changeFrequency: "monthly" as const },
     { path: "/thank-you", priority: 0.3, changeFrequency: "yearly" as const },
     { path: "/login", priority: 0.3, changeFrequency: "yearly" as const },
-    // /setup is purchase-gated but linked from /thank-you and the command
-    // palette; including it in the sitemap helps post-purchase deep-links.
-    { path: "/setup", priority: 0.3, changeFrequency: "monthly" as const },
+    // /setup is now auth- and purchase-gated (middleware), so it is
+    // intentionally excluded from the sitemap; crawlers would only hit a
+    // redirect to /login.
   ].map(({ path, priority, changeFrequency }) => ({
     url: `${base}${path}`,
-    lastModified: BUILD_STAMP,
+    lastModified: CONTENT_STAMP,
     changeFrequency,
     priority,
   }));
@@ -42,7 +37,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     );
     return {
       url: `${base}/blog/${post.slug}`,
-      lastModified: Number.isNaN(parsed.getTime()) ? BUILD_STAMP : parsed,
+      lastModified: Number.isNaN(parsed.getTime()) ? CONTENT_STAMP : parsed,
       changeFrequency: "monthly" as const,
       priority: 0.6,
     };

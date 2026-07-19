@@ -84,6 +84,11 @@ export async function POST(request: Request) {
   );
   console.log("[subscribe]", JSON.stringify({ ...entry, email: maskedEmail }));
 
+  // Track whether the email reached a durable destination. The masked log
+  // line above is recoverable but not exportable, so it does NOT count as
+  // durable, we must not tell the visitor "Sent" if nothing kept the address.
+  let persisted = false;
+
   // Optional outbound webhook. If SUBSCRIBE_WEBHOOK_URL is set we POST the
   // entry there (Resend audience, ConvertKit, Zapier hook, Google Apps
   // Script, whatever). If SUBSCRIBE_WEBHOOK_TOKEN is set, it's sent as a
@@ -101,7 +106,9 @@ export async function POST(request: Request) {
         headers,
         body: JSON.stringify(entry),
       });
-      if (!res.ok) {
+      if (res.ok) {
+        persisted = true;
+      } else {
         console.warn(
           "[subscribe] webhook non-2xx:",
           res.status,
@@ -116,18 +123,33 @@ export async function POST(request: Request) {
     }
   }
 
-  // Best-effort append to the local JSON file. Will fail silently on Vercel's
-  // read-only serverless filesystem, which is fine because we logged above
-  // and (if configured) forwarded to the webhook. Kept for local dev so the
-  // admin can inspect the file during development.
-  try {
-    const list = await readSubscribers();
-    if (!list.some((s) => s.email === email)) {
-      list.push(entry);
-      await writeSubscribers(list);
+  // Local JSON file, for development only. Vercel's serverless filesystem is
+  // read-only, so we skip it there entirely rather than swallow a guaranteed
+  // failure. Locally it doubles as durable storage the admin can inspect.
+  if (!process.env.VERCEL) {
+    try {
+      const list = await readSubscribers();
+      if (!list.some((s) => s.email === email)) {
+        list.push(entry);
+        await writeSubscribers(list);
+      }
+      persisted = true;
+    } catch (err) {
+      console.warn("[subscribe] file write failed:", (err as Error).message);
     }
-  } catch (err) {
-    console.warn("[subscribe] file write skipped:", (err as Error).message);
+  }
+
+  // If nothing durable accepted the email, tell the visitor honestly instead
+  // of showing a false "Sent". In production this means SUBSCRIBE_WEBHOOK_URL
+  // must be configured (see docs/ship-plan.md 0.4).
+  if (!persisted) {
+    console.error(
+      "[subscribe] no durable destination accepted the email. Set SUBSCRIBE_WEBHOOK_URL."
+    );
+    return NextResponse.json(
+      { error: "We couldn't save your email right now. Please try again soon." },
+      { status: 503 }
+    );
   }
 
   return NextResponse.json({ ok: true });

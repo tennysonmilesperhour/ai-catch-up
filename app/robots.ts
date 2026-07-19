@@ -13,6 +13,9 @@ const SHARED_DISALLOW = [
   "/admin/",
   "/api",
   "/api/",
+  // /setup is auth- and purchase-gated; crawlers would only hit a redirect.
+  "/setup",
+  "/setup/",
   // /preview is the post-login locked-tabs page; /preview/dashboard
   // is the public Workspace Pulse playground (still under /).
   "/preview$",
