@@ -30,7 +30,9 @@ export default async function LoginPage({ searchParams }: Props) {
                   ? "We could not read a verified email from your GitHub account."
                   : error === "github_not_configured"
                     ? "GitHub login is not available right now."
-                    : null;
+                    : error === "admin_password"
+                      ? "Incorrect admin password."
+                      : null;
   const githubHref = next
     ? `/api/auth/github?next=${encodeURIComponent(next)}`
     : "/api/auth/github";
@@ -110,6 +112,21 @@ export default async function LoginPage({ searchParams }: Props) {
                 autoFocus
                 required
                 placeholder="you@example.com"
+                className="px-4 py-3 bg-[rgba(13,28,52,0.55)] border border-[var(--color-border-dark)] rounded-[10px] text-[var(--color-dark)] placeholder:text-[var(--color-muted)] focus:outline-none focus:border-[var(--color-terracotta)] focus:bg-[rgba(13,28,52,0.85)] transition-colors font-serif text-base"
+              />
+            </label>
+            <label className="flex flex-col gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
+                Password{" "}
+                <span className="normal-case tracking-normal text-[var(--color-muted)]">
+                  (admins only, leave blank to preview)
+                </span>
+              </span>
+              <input
+                type="password"
+                name="password"
+                autoComplete="current-password"
+                placeholder="Leave blank unless you're the admin"
                 className="px-4 py-3 bg-[rgba(13,28,52,0.55)] border border-[var(--color-border-dark)] rounded-[10px] text-[var(--color-dark)] placeholder:text-[var(--color-muted)] focus:outline-none focus:border-[var(--color-terracotta)] focus:bg-[rgba(13,28,52,0.85)] transition-colors font-serif text-base"
               />
             </label>

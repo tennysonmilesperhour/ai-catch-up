@@ -33,6 +33,17 @@ function isSameOriginRequest(request: Request): boolean {
   }
 }
 
+// Constant-time string comparison so the admin-password check doesn't leak
+// via timing. Length still differs early, which is acceptable here.
+function constantTimeEqualStr(a: string, b: string): boolean {
+  const ea = new TextEncoder().encode(a);
+  const eb = new TextEncoder().encode(b);
+  if (ea.length !== eb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < ea.length; i++) diff |= ea[i] ^ eb[i];
+  return diff === 0;
+}
+
 export async function POST(request: Request) {
   try {
     if (!isSameOriginRequest(request)) {
@@ -58,6 +69,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const rawEmail = String(formData.get("email") || "");
     const email = rawEmail.trim().toLowerCase();
+    const password = String(formData.get("password") || "");
     const next = String(formData.get("next") || "");
 
     if (!isValidEmail(email)) {
@@ -67,21 +79,34 @@ export async function POST(request: Request) {
       return NextResponse.redirect(url, { status: 303 });
     }
 
-    // SECURITY: the email form cannot mint an admin session. Anyone can type
-    // any email here with no verification, so this path only ever issues a
-    // buyer ("user") session. Admin access requires a verified identity via
-    // GitHub OAuth (app/api/auth/github/callback), which checks the
-    // authenticated email against ADMIN_EMAIL. See docs/ship-plan.md 0.1.
-    const role: Role = "user";
+    // Admin via the email form is gated by a shared secret. Typing the admin
+    // email alone can never grant admin (that was the impersonation hole);
+    // it also requires ADMIN_PASSWORD. When ADMIN_PASSWORD is unset, the
+    // email form only mints buyer sessions and admin comes via GitHub OAuth.
+    const adminEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+    const adminPassword = process.env.ADMIN_PASSWORD || "";
+    let role: Role = "user";
+    if (adminEmail && email === adminEmail && adminPassword) {
+      if (password && constantTimeEqualStr(password, adminPassword)) {
+        role = "admin";
+      } else {
+        // Admin email + configured password, but wrong/absent password.
+        // Fail with clear feedback instead of silently downgrading.
+        const url = new URL("/login", request.url);
+        url.searchParams.set("error", "admin_password");
+        if (next) url.searchParams.set("next", next);
+        return NextResponse.redirect(url, { status: 303 });
+      }
+    }
+
     const token = await signSession({
       email,
       role,
       iat: Math.floor(Date.now() / 1000),
     });
 
-    // Buyers land on their workspace home (Pulse). Middleware re-routes from
-    // there based on paid-enforcement, so we don't honor an admin ?next=.
-    const destination = "/admin/pulse";
+    // Admins land on the vendor Overview; buyers on their workspace home.
+    const destination = role === "admin" ? "/admin" : "/admin/pulse";
 
     const res = NextResponse.redirect(new URL(destination, request.url), {
       status: 303,

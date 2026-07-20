@@ -23,8 +23,8 @@ A short map of how this app is wired, focused on the parts that surprise people:
 
 - Sessions are HMAC-signed cookies (`ac_session`), signed with `SESSION_SECRET`. In production a missing/short secret fails loudly rather than signing with an unstable per-process key. Tokens carry `iat` and are rejected server-side past `SESSION_MAX_AGE` (30 days).
 - Two login paths:
-  - **Email form** (`POST /api/login`): mints **buyer-only** sessions. No password/verification, so it can never grant admin.
-  - **GitHub OAuth** (`/api/auth/github`): verifies a real email; grants **admin** only when that email matches `ADMIN_EMAIL`.
+  - **Email form** (`POST /api/login`): grants **admin** only when the email matches `ADMIN_EMAIL` **and** the submitted password matches `ADMIN_PASSWORD` (constant-time compare); any other email mints a **buyer** session. Typing the admin email alone can never grant admin, and when `ADMIN_PASSWORD` is unset the form only mints buyer sessions.
+  - **GitHub OAuth** (`/api/auth/github`): optional alternative admin path; verifies a real email and grants **admin** only when it matches `ADMIN_EMAIL`.
 - `middleware.ts` gates `/admin/*` and `/setup/*`. Buyers reach the workspace surfaces in `BUYER_ALLOWED` and the setup flow; vendor surfaces are admin-only. When `PAID_EMAILS` is set, buyers must be on the list; unset means "preview mode" (any authed email passes).
 
 ## Anthropic (BYOK)

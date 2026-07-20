@@ -29,7 +29,7 @@ Rules:
 - **Deployment:** Vercel
 - **Payment:** Stripe payment link (URL pasted into env var)
 - **Email capture:** POST to `/api/subscribe`. In production it forwards to `SUBSCRIBE_WEBHOOK_URL` (returns 503 if nothing durable accepts the email); the local `/data/subscribers.json` write is dev-only.
-- **Auth:** signed-cookie sessions (`middleware.ts` + `lib/session.ts`). The email form at `/login` mints buyer-only sessions; admin is granted only through GitHub OAuth when the verified email matches `ADMIN_EMAIL`. Requires `SESSION_SECRET`; `PAID_EMAILS` gates the paywall. (`ADMIN_PASSWORD` is no longer used.)
+- **Auth:** signed-cookie sessions (`middleware.ts` + `lib/session.ts`). At `/login`, admin is granted when the email matches `ADMIN_EMAIL` **and** `ADMIN_PASSWORD` is provided (typing the admin email alone can never grant admin); any other email mints a buyer session. GitHub OAuth is an optional alternative admin path (matches the verified email to `ADMIN_EMAIL`). Requires `SESSION_SECRET`; `PAID_EMAILS` gates the paywall.
 - **Database:** none. State is repo files, GitHub-Contents-API commits, per-instance memory, or browser `localStorage`. See `docs/architecture.md`.
 
 For how state persists, how auth works, and the full env-var list, read `docs/architecture.md`. For the ship-readiness plan, see `docs/ship-plan.md`.
