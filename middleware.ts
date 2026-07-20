@@ -9,6 +9,7 @@ import { isPaidEmail, isPaidEnforcementEnabled } from "@/lib/paid";
 const BUYER_ALLOWED = new Set<string>([
   "/admin/pulse",
   "/admin/prompts",
+  "/admin/roster",
   "/admin/claude-md",
   "/admin/coding-guide",
   "/admin/invocations",
@@ -26,7 +27,9 @@ function isBuyerAllowed(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (!pathname.startsWith("/admin")) {
+  const isAdmin = pathname.startsWith("/admin");
+  const isSetup = pathname.startsWith("/setup");
+  if (!isAdmin && !isSetup) {
     return NextResponse.next();
   }
 
@@ -38,6 +41,21 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
+  }
+
+  // /setup/* is the paid product deliverable. Admins always pass; buyers
+  // must clear paid-email enforcement when it's enabled. This was previously
+  // ungated, so anyone could complete the onboarding without buying.
+  if (isSetup) {
+    if (session.role === "admin") return NextResponse.next();
+    if (isPaidEnforcementEnabled() && !isPaidEmail(session.email)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
+      url.hash = "pricing";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
   }
 
   if (session.role === "admin") {
@@ -78,5 +96,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/setup/:path*"],
 };

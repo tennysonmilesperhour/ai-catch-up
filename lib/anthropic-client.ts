@@ -8,11 +8,11 @@
 const API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 
-// Default to Claude Sonnet 4.6, the right balance of speed + quality
-// for prompt-running. Phase 4 (CLAUDE.md generation) might want Opus 4.7
-// for the heavier reasoning task; bumpable via the `model` arg.
-export const DEFAULT_MODEL = "claude-sonnet-4-6";
-export const HEAVY_MODEL = "claude-opus-4-7";
+// Default to Claude Sonnet 5, the right balance of speed + quality for
+// prompt-running on the buyer's own key. Heavier reasoning tasks (e.g.
+// CLAUDE.md generation) can pass HEAVY_MODEL via the `model` arg.
+export const DEFAULT_MODEL = "claude-sonnet-5";
+export const HEAVY_MODEL = "claude-opus-4-8";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -53,6 +53,11 @@ export async function runMessage(
   const body: Record<string, unknown> = {
     model: opts.model ?? DEFAULT_MODEL,
     max_tokens: opts.maxTokens ?? 2048,
+    // Keep this a fast, predictable prompt-runner: with thinking disabled the
+    // full max_tokens budget goes to the answer. On Sonnet 5 / Opus 4.8,
+    // omitting `thinking` would run adaptive thinking and could truncate a
+    // short-budget response mid-thought.
+    thinking: { type: "disabled" },
     messages: [{ role: "user", content: prompt }],
   };
   if (opts.system) body.system = opts.system;
@@ -93,7 +98,9 @@ export async function runMessage(
       error:
         res.status === 401
           ? "API key rejected. Check it in Settings (must start with sk-ant-)."
-          : detail,
+          : res.status === 404
+            ? "That model isn't available on your account. Try again or pick a different model in Settings."
+            : detail,
     };
   }
 

@@ -26,13 +26,13 @@ function b64urlDecode(s: string): Uint8Array {
 
 let warnedMissingSecret = false;
 
-// If SESSION_SECRET is not set, we still want the site to serve without
-// crashing. We fall back to a random secret generated at module load. This
-// keeps the site up in "misconfigured" state, but sessions will not persist
-// across serverless invocations and will not survive a redeploy, which is a
-// useful pressure signal to set the real env var. Crucially the fallback
-// is NOT a hardcoded string, so nobody can forge a cookie by reading this
-// source file.
+// In local dev only, if SESSION_SECRET is not set we fall back to a random
+// secret generated at module load so `npm run dev` works without ceremony.
+// The fallback is NOT a hardcoded string, so nobody can forge a cookie by
+// reading this source file. In production we refuse to use it (see
+// getSecret): a per-process random key cannot verify across serverless
+// instances, which shows up as users being "randomly logged out" and is far
+// more confusing than a loud failure.
 const FALLBACK_SECRET = (() => {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
@@ -45,16 +45,29 @@ const FALLBACK_SECRET = (() => {
 
 function getSecret(): string {
   const secret = process.env.SESSION_SECRET;
-  if (!secret || secret.length < 16) {
+  if (secret && secret.length >= 16) return secret;
+
+  // Missing or too-short secret. In production, fail loudly instead of
+  // silently signing with an unstable per-process key. Only /admin, /setup,
+  // and the auth routes import this module, so the public marketing site
+  // stays up; the auth paths surface a clear error and log the reason.
+  if (process.env.NODE_ENV === "production") {
     if (!warnedMissingSecret) {
-      console.warn(
-        "[session] SESSION_SECRET env var is missing or too short. Sessions are signed with a per-process random fallback and will not persist reliably. Set SESSION_SECRET on Vercel (32+ random chars) to fix."
+      console.error(
+        "[session] SESSION_SECRET is missing or shorter than 16 chars. Authentication is disabled until it is set on Vercel (32+ random chars)."
       );
       warnedMissingSecret = true;
     }
-    return FALLBACK_SECRET;
+    throw new Error("SESSION_SECRET is not configured");
   }
-  return secret;
+
+  if (!warnedMissingSecret) {
+    console.warn(
+      "[session] SESSION_SECRET env var is missing or too short. Using a per-process random fallback for local dev only. Set SESSION_SECRET (32+ random chars) before deploying."
+    );
+    warnedMissingSecret = true;
+  }
+  return FALLBACK_SECRET;
 }
 
 async function importKey(): Promise<CryptoKey> {
@@ -101,6 +114,13 @@ export async function verifySession(
     const bodyStr = new TextDecoder().decode(b64urlDecode(body));
     const payload = JSON.parse(bodyStr) as SessionPayload;
     if (!payload.email || !payload.role) return null;
+    // Server-side expiry. The browser cookie has its own maxAge, but a
+    // captured token must not verify forever, so we reject anything older
+    // than SESSION_MAX_AGE (iat is in seconds). The small negative window
+    // tolerates minor clock skew between instances.
+    if (typeof payload.iat !== "number") return null;
+    const ageSeconds = Math.floor(Date.now() / 1000) - payload.iat;
+    if (ageSeconds > SESSION_MAX_AGE || ageSeconds < -300) return null;
     return payload;
   } catch {
     return null;

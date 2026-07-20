@@ -28,9 +28,11 @@ Rules:
 - **Content:** MDX for copy, JSON for structured data
 - **Deployment:** Vercel
 - **Payment:** Stripe payment link (URL pasted into env var)
-- **Email capture:** POST to `/api/subscribe`, which appends to `/data/subscribers.json` (v1.0 only; upgrades to a real email service in v1.1)
-- **Admin auth:** password-only via `middleware.ts`, password in `ADMIN_PASSWORD` env var
-- **Database:** none in v1.0. Everything static or file-based.
+- **Email capture:** POST to `/api/subscribe`. In production it forwards to `SUBSCRIBE_WEBHOOK_URL` (returns 503 if nothing durable accepts the email); the local `/data/subscribers.json` write is dev-only.
+- **Auth:** signed-cookie sessions (`middleware.ts` + `lib/session.ts`). At `/login`, admin is granted when the email matches `ADMIN_EMAIL` **and** `ADMIN_PASSWORD` is provided (typing the admin email alone can never grant admin); any other email mints a buyer session. GitHub OAuth is an optional alternative admin path (matches the verified email to `ADMIN_EMAIL`). Requires `SESSION_SECRET`; `PAID_EMAILS` gates the paywall.
+- **Database:** none. State is repo files, GitHub-Contents-API commits, per-instance memory, or browser `localStorage`. See `docs/architecture.md`.
+
+For how state persists, how auth works, and the full env-var list, read `docs/architecture.md`. For the ship-readiness plan, see `docs/ship-plan.md`.
 
 ## File structure
 
@@ -48,18 +50,17 @@ Rules:
 │   ├── layout.tsx
 │   ├── page.tsx                   public landing page
 │   ├── thank-you/page.tsx         post-payment landing
-│   ├── /admin
-│   │   ├── layout.tsx             admin shell with tab nav
-│   │   ├── page.tsx               redirects to /admin/plan
-│   │   ├── login/page.tsx         password entry
-│   │   ├── plan/page.tsx
-│   │   ├── schedule/page.tsx
-│   │   ├── nexus/page.tsx
-│   │   ├── prompts/page.tsx
-│   │   └── decisions/page.tsx
+│   ├── login/page.tsx             email + GitHub OAuth sign-in
+│   ├── /setup                     paid onboarding flow (gated)
+│   ├── /admin                     ~14 surfaces: pulse, plan, schedule,
+│   │                             nexus, prompts, roster, workflows,
+│   │                             decisions, checklist, claude-md,
+│   │                             coding-guide, invocations, memo, settings
 │   └── /api
-│       ├── subscribe/route.ts     email capture endpoint
-│       └── admin/login/route.ts   password check, sets cookie
+│       ├── subscribe/route.ts     email capture (webhook in prod)
+│       ├── login, logout, auth/github  session auth
+│       ├── nexus, nexus/nodes     read + Hermes writes
+│       └── blog/publish, admin/*, sessions, version
 ├── /content
 │   ├── /landing
 │   │   ├── hero.mdx
@@ -94,7 +95,7 @@ Run `npm run voice-check` to scan `/content/**/*.{md,mdx}` for em-dashes, corpor
 - **Tone:** warm, refined, editorial. Not tech-startup-generic.
 - **Primary font:** Georgia serif (body and headers).
 - **Secondary font:** `ui-monospace`, Menlo (labels, nav, technical elements).
-- **Color palette:**
+- **Color palette:** The site now ships the **Aurora Command** palette (midnight navy background `#06101e`, amber and cyan accents). The CSS tokens in `app/globals.css` are the source of truth. Note: the token *names* are historical (`--color-cream` is now navy, `--color-terracotta` is amber, `--color-rust` is a warmer amber) and are due for a rename; do not trust a token name over its value. The warm-cream values below are the retired original palette, kept for reference only.
   - Background: `#faf7f2` (warm cream)
   - Dark sections: `#2a2520`, `#1a1612`
   - Primary accent: `#d97757` (terracotta)
@@ -112,22 +113,25 @@ npm run dev                   # http://localhost:3000
 ```
 
 Public site: `/`
-Admin: `/admin` (redirects to `/admin/login` if not authenticated)
+Admin: `/admin` (redirects to `/login` if not authenticated). Admin access requires signing in with GitHub as `ADMIN_EMAIL`.
 
 ## Deploying
 
-Vercel is connected to the GitHub repo. Pushing to `main` triggers a production deploy. Env vars must be set in the Vercel dashboard:
+Vercel is connected to the GitHub repo. Pushing to `main` triggers a production deploy. CI (`.github/workflows/ci.yml`) runs typecheck, voice-check, and build on every PR. Env vars must be set in the Vercel dashboard, see `.env.example` and `docs/architecture.md` for the full list. The load-bearing ones:
 
-- `STRIPE_PAYMENT_LINK`
-- `ADMIN_PASSWORD`
+- `SESSION_SECRET` (required, 32+ random chars, or auth breaks)
+- `ADMIN_EMAIL` (who gets admin via GitHub OAuth)
+- `STRIPE_PAYMENT_LINK` (unset means every buy button becomes email capture)
+- `SUBSCRIBE_WEBHOOK_URL` (unset means signups are dropped in prod)
+- `PAID_EMAILS` (set to enforce the paywall on `/setup` and buyer surfaces)
 - `NEXT_PUBLIC_SITE_URL`
 
 ## Development branch
 
-Active work happens on `claude/ai-onboarding-v1-RTsDk`. Merge to `main` for production deploys.
+Work happens on a `claude/*` branch and merges to `main` for production deploys.
 
 ## Current focus
 
 _(Update as work progresses.)_
 
-- Scaffolding v1.0 marketing site and admin dashboard.
+- v1.0 marketing site and admin dashboard shipped; hardening for launch (see `docs/ship-plan.md`).

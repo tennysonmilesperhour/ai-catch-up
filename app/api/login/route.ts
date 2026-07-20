@@ -3,26 +3,10 @@ import {
   SESSION_COOKIE,
   SESSION_MAX_AGE,
   isValidEmail,
-  roleForEmail,
   signSession,
+  type Role,
 } from "@/lib/session";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
-
-// Resolve an internal redirect safely. Rejects external origins and
-// protocol-relative URLs ("//evil.com"). Only returns a same-origin path
-// under /admin when valid.
-function safeAdminNext(nextValue: string, baseUrl: string): string | null {
-  if (!nextValue) return null;
-  try {
-    const resolved = new URL(nextValue, baseUrl);
-    const expectedOrigin = new URL(baseUrl).origin;
-    if (resolved.origin !== expectedOrigin) return null;
-    if (!resolved.pathname.startsWith("/admin")) return null;
-    return resolved.pathname + resolved.search;
-  } catch {
-    return null;
-  }
-}
 
 // CSRF defense: reject form posts that came from a foreign origin. We
 // accept Sec-Fetch-Site values of `same-origin`, `same-site`, or `none`
@@ -47,6 +31,17 @@ function isSameOriginRequest(request: Request): boolean {
   } catch {
     return false;
   }
+}
+
+// Constant-time string comparison so the admin-password check doesn't leak
+// via timing. Length still differs early, which is acceptable here.
+function constantTimeEqualStr(a: string, b: string): boolean {
+  const ea = new TextEncoder().encode(a);
+  const eb = new TextEncoder().encode(b);
+  if (ea.length !== eb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < ea.length; i++) diff |= ea[i] ^ eb[i];
+  return diff === 0;
 }
 
 export async function POST(request: Request) {
@@ -74,6 +69,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const rawEmail = String(formData.get("email") || "");
     const email = rawEmail.trim().toLowerCase();
+    const password = String(formData.get("password") || "");
     const next = String(formData.get("next") || "");
 
     if (!isValidEmail(email)) {
@@ -83,19 +79,34 @@ export async function POST(request: Request) {
       return NextResponse.redirect(url, { status: 303 });
     }
 
-    const role = roleForEmail(email);
+    // Admin via the email form is gated by a shared secret. Typing the admin
+    // email alone can never grant admin (that was the impersonation hole);
+    // it also requires ADMIN_PASSWORD. When ADMIN_PASSWORD is unset, the
+    // email form only mints buyer sessions and admin comes via GitHub OAuth.
+    const adminEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+    const adminPassword = process.env.ADMIN_PASSWORD || "";
+    let role: Role = "user";
+    if (adminEmail && email === adminEmail && adminPassword) {
+      if (password && constantTimeEqualStr(password, adminPassword)) {
+        role = "admin";
+      } else {
+        // Admin email + configured password, but wrong/absent password.
+        // Fail with clear feedback instead of silently downgrading.
+        const url = new URL("/login", request.url);
+        url.searchParams.set("error", "admin_password");
+        if (next) url.searchParams.set("next", next);
+        return NextResponse.redirect(url, { status: 303 });
+      }
+    }
+
     const token = await signSession({
       email,
       role,
       iat: Math.floor(Date.now() / 1000),
     });
 
-    const adminNext = safeAdminNext(next, request.url);
-    // Buyers (non-admin authed users) land on their workspace home
-    // (Pulse). Admins go to either ?next= (if it's a safe /admin path)
-    // or the Overview dashboard.
-    const destination =
-      role === "admin" ? (adminNext ?? "/admin") : "/admin/pulse";
+    // Admins land on the vendor Overview; buyers on their workspace home.
+    const destination = role === "admin" ? "/admin" : "/admin/pulse";
 
     const res = NextResponse.redirect(new URL(destination, request.url), {
       status: 303,
