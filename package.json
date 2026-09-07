@@ -31,9 +31,13 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.184.0",
-    "postcss": "^8.5.0",
+    "postcss": "8.5.28",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.7.0"
+  },
+  "overrides": {
+    "postcss": "8.5.28",
+    "esbuild": "0.28.2"
   }
 }

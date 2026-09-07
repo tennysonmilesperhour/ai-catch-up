@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { storeSubscriber } from "@/lib/subscriber-store";
 
 const DATA_FILE = join(process.cwd(), "data", "subscribers.json");
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       ? String((body as { email: unknown }).email || "").trim().toLowerCase()
       : "";
 
-  if (!email || !EMAIL_RE.test(email)) {
+  if (!email || email.length > 320 || !EMAIL_RE.test(email)) {
     return NextResponse.json(
       { error: "Please enter a valid email" },
       { status: 400 }
@@ -88,6 +89,11 @@ export async function POST(request: Request) {
   // line above is recoverable but not exportable, so it does NOT count as
   // durable, we must not tell the visitor "Sent" if nothing kept the address.
   let persisted = false;
+  try {
+    persisted = await storeSubscriber(email);
+  } catch (error) {
+    console.error("[subscribe]", (error as Error).message);
+  }
 
   // Optional outbound webhook. If SUBSCRIBE_WEBHOOK_URL is set we POST the
   // entry there (Resend audience, ConvertKit, Zapier hook, Google Apps
@@ -126,7 +132,7 @@ export async function POST(request: Request) {
   // Local JSON file, for development only. Vercel's serverless filesystem is
   // read-only, so we skip it there entirely rather than swallow a guaranteed
   // failure. Locally it doubles as durable storage the admin can inspect.
-  if (!process.env.VERCEL) {
+  if (!process.env.VERCEL && !process.env.SUPABASE_URL) {
     try {
       const list = await readSubscribers();
       if (!list.some((s) => s.email === email)) {
@@ -144,7 +150,7 @@ export async function POST(request: Request) {
   // must be configured (see docs/ship-plan.md 0.4).
   if (!persisted) {
     console.error(
-      "[subscribe] no durable destination accepted the email. Set SUBSCRIBE_WEBHOOK_URL."
+      "[subscribe] no durable destination accepted the email. Configure Supabase storage."
     );
     return NextResponse.json(
       { error: "We couldn't save your email right now. Please try again soon." },

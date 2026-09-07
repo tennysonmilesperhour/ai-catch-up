@@ -5,7 +5,7 @@ A short map of how this app is wired, focused on the parts that surprise people:
 ## Runtime shape
 
 - Next.js 15 App Router on Vercel. The public marketing site is mostly static; `/admin/*` and `/setup/*` are dynamic and gated by `middleware.ts`.
-- No database. Every piece of "state" is one of: a file committed to the repo, a file committed through the GitHub Contents API at runtime, an in-memory value on a single serverless instance, or something in the visitor's browser `localStorage`.
+- Supabase stores newsletter subscriptions. Other state lives in: a file committed to the repo, a file committed through the GitHub Contents API at runtime, an in-memory value on a single serverless instance, or something in the visitor's browser `localStorage`.
 
 ## Where state lives (the important part)
 
@@ -14,7 +14,7 @@ A short map of how this app is wired, focused on the parts that surprise people:
 | Marketing / admin copy | `/content/**` (repo) | Yes | MDX + JSON, bundled into the function via `outputFileTracingIncludes`. |
 | Blog posts | GitHub Contents API → `content/blog/*.mdx` | Yes | Written by `POST /api/blog/publish`; rendered with react-markdown (no raw HTML). |
 | Hermes Nexus additions | GitHub Contents API → `content/admin/hermes-nexus.json` | Yes (eventually) | `POST /api/nexus/nodes` commits; `GET /api/nexus` reads the deployed file, so new nodes appear on the next deploy, not instantly. |
-| Newsletter subscribers | `SUBSCRIBE_WEBHOOK_URL` (prod) / `data/subscribers.json` (dev) | Only via webhook | On Vercel the file write is skipped; `/api/subscribe` returns 503 if no durable destination accepts the email. |
+| Newsletter subscribers | `aicu_subscribers` in shared Supabase; optional webhook / local dev file | Yes | Supabase uses INSERT-only public credentials. On Vercel the file write is skipped; `/api/subscribe` returns 503 if no durable destination accepts the email. |
 | Globe session pins | in-memory `Map` | No | Per-instance, resets on cold start; falls back to a demo dataset at low traffic. |
 | Rate-limit buckets | in-memory `Map` | No | Per-instance, so limits are a guardrail, not a hard cap. |
 | Buyer workspace (setup progress, checklists, roster, run history, usage, BYOK key) | browser `localStorage` | Per-browser only | Clearing the cache or switching devices resets it. Server persistence is a planned upgrade (see ship-plan Phase 2). |
@@ -39,3 +39,5 @@ Required for a working production deploy: `SESSION_SECRET`, `ADMIN_EMAIL`, `STRI
 ## Stripe flow
 
 CTAs point at `STRIPE_PAYMENT_LINK`. The success/return URL (`/thank-you`) is configured in the Stripe dashboard, not in code. If `STRIPE_PAYMENT_LINK` is unset, every buy button silently becomes an email-capture "Notify me" (`lib/checkout.ts`).
+
+Shared backend: `xyhbuqsxglfjbounogdz`. Set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Existing login and browser-local workspace storage remain unchanged.
