@@ -24,7 +24,7 @@ export function EmailCapture() {
           </p>
           <LearnHint
             title="Newsletter signup"
-            body="One email a week with new prompts, new tools, and what changed in Claude. POSTs to /api/subscribe; in production it forwards to whatever ESP you wired up via SUBSCRIBE_WEBHOOK_URL."
+            body="One email a week with new prompts, new tools, and what changed in Claude. Your address is saved privately to the subscriber list."
             more="No tracking pixels. Unsubscribe link in every email. Email is stored only in your subscriber list, never sold or shared."
             side="bottom-right"
           >

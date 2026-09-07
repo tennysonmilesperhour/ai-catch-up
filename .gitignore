@@ -41,3 +41,6 @@ next-env.d.ts
 
 # Local data (writeable JSON, not committed)
 /data/subscribers.json
+
+# Supabase CLI local metadata
+supabase/.temp/

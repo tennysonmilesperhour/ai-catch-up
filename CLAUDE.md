@@ -28,9 +28,9 @@ Rules:
 - **Content:** MDX for copy, JSON for structured data
 - **Deployment:** Vercel
 - **Payment:** Stripe payment link (URL pasted into env var)
-- **Email capture:** POST to `/api/subscribe`. In production it forwards to `SUBSCRIBE_WEBHOOK_URL` (returns 503 if nothing durable accepts the email); the local `/data/subscribers.json` write is dev-only.
+- **Email capture:** POST to `/api/subscribe`. In production it stores addresses in Supabase and optionally forwards to `SUBSCRIBE_WEBHOOK_URL` (returns 503 if nothing durable accepts the email); the local `/data/subscribers.json` write is dev-only.
 - **Auth:** signed-cookie sessions (`middleware.ts` + `lib/session.ts`). At `/login`, admin is granted when the email matches `ADMIN_EMAIL` **and** `ADMIN_PASSWORD` is provided (typing the admin email alone can never grant admin); any other email mints a buyer session. GitHub OAuth is an optional alternative admin path (matches the verified email to `ADMIN_EMAIL`). Requires `SESSION_SECRET`; `PAID_EMAILS` gates the paywall.
-- **Database:** none. State is repo files, GitHub-Contents-API commits, per-instance memory, or browser `localStorage`. See `docs/architecture.md`.
+- **Database:** shared Vibe Check Supabase stores newsletter subscriptions in `aicu_subscribers`. Other State is repo files, GitHub-Contents-API commits, per-instance memory, or browser `localStorage`. See `docs/architecture.md`.
 
 For how state persists, how auth works, and the full env-var list, read `docs/architecture.md`. For the ship-readiness plan, see `docs/ship-plan.md`.
 
