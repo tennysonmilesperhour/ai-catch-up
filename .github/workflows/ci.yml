@@ -28,6 +28,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Tests
+        run: npm test
+
       - name: Voice check (strict)
         run: npm run voice-check -- --strict
 

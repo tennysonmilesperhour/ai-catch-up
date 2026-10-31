@@ -10,6 +10,7 @@ import {
 import { Nexus3D } from "@/components/admin/Nexus3D";
 import { NexusNextMoves } from "@/components/admin/NexusNextMoves";
 import { StepsModal } from "@/components/shared/StepsModal";
+import { linksFor, syncAddition, type PostResult } from "@/lib/nexus-sync";
 import {
   EMPTY_PROGRESS,
   integrationScore,
@@ -54,44 +55,30 @@ type Props = {
   serverWrites?: boolean;
 };
 
-function linksFor(id: string, connectsTo: string[] | undefined): NexusLink[] {
-  return (connectsTo ?? []).map((target) => ({
-    source: id,
-    target,
-    strength: 0.3,
-  }));
-}
-
-type SaveResult = { ok: true } | { ok: false; error: string };
-
-async function saveToServer(
-  c: CustomAddition
-): Promise<SaveResult & { node?: NexusNode; links?: NexusLink[] }> {
+async function postNode(body: unknown): Promise<PostResult> {
   try {
     const res = await fetch("/api/nexus/nodes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        node: {
-          id: c.id,
-          label: c.label,
-          domain: c.domain,
-          kind: c.kind,
-          weight: c.weight,
-          desc: c.desc,
-        },
-        links: linksFor(c.id, c.connectsTo),
-      }),
+      body: JSON.stringify(body),
     });
     const json = (await res.json().catch(() => ({}))) as {
       error?: string;
+      conflict?: boolean;
       node?: NexusNode;
       links?: NexusLink[];
     };
-    if (!res.ok) return { ok: false, error: json.error || `HTTP ${res.status}` };
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error: json.error || `HTTP ${res.status}`,
+        conflict: res.status === 409 && json.conflict === true,
+      };
+    }
     return { ok: true, node: json.node, links: json.links };
   } catch {
-    return { ok: false, error: "network error" };
+    return { ok: false, status: 0, error: "network error" };
   }
 }
 
@@ -309,6 +296,12 @@ export function NexusAdmin({
       .slice(0, 8);
   }, [merged.nodes, connectsTo, connectQuery]);
 
+  // Ids the server store is known to hold (page data plus saves this visit).
+  const serverIds = useMemo(
+    () => [...nodes, ...serverAdded.nodes].map((n) => n.id),
+    [nodes, serverAdded.nodes]
+  );
+
   const adminServerNodes = useMemo(
     () =>
       [...nodes, ...serverAdded.nodes].filter(
@@ -379,15 +372,12 @@ export function NexusAdmin({
 
     if (serverWrites) {
       setBusy(true);
-      const result = await saveToServer(addition);
+      const result = await syncAddition(addition, serverIds, postNode);
       setBusy(false);
       if (result.ok) {
         setServerAdded((prev) => ({
-          nodes: [
-            ...prev.nodes,
-            result.node ?? { ...addition, source: "admin" as const },
-          ],
-          links: [...prev.links, ...(result.links ?? linksFor(id, connectsTo))],
+          nodes: [...prev.nodes, result.node],
+          links: [...prev.links, ...result.links],
         }));
         setNotice(`Saved "${trimmedLabel}" to the server. It shows on every device.`);
         resetForm();
@@ -437,20 +427,47 @@ export function NexusAdmin({
 
   const handleMoveToServer = async (c: CustomAddition) => {
     setBusy(true);
-    const result = await saveToServer(c);
+    // serverIds never includes this browser's local additions, so a local
+    // node is only renamed when the server really has that id already.
+    const result = await syncAddition(c, serverIds, postNode);
     setBusy(false);
     if (!result.ok) {
       setNotice(`Could not move "${c.label}" to the server (${result.error}).`);
       return;
     }
     setServerAdded((prev) => ({
-      nodes: [...prev.nodes, result.node ?? { ...c, source: "admin" as const }],
-      links: [...prev.links, ...(result.links ?? linksFor(c.id, c.connectsTo))],
+      nodes: [...prev.nodes, result.node],
+      links: [...prev.links, ...result.links],
     }));
-    const next = custom.filter((x) => x.id !== c.id);
+    const next = custom
+      .filter((x) => x.id !== c.id)
+      .map((x) =>
+        result.renamedFrom && x.connectsTo?.includes(result.renamedFrom)
+          ? {
+              ...x,
+              connectsTo: x.connectsTo.map((t) =>
+                t === result.renamedFrom ? result.id : t
+              ),
+            }
+          : x
+      );
     setCustom(next);
     saveCustom(next);
-    setNotice(`Moved "${c.label}" to the server.`);
+    if (result.renamedFrom) {
+      // Carry this browser's ticks over to the new id.
+      const from = result.renamedFrom;
+      updateProgress((p) => {
+        if (!p.checks[from]) return p;
+        const checks = { ...p.checks, [result.id]: p.checks[from] };
+        delete checks[from];
+        return { ...p, checks };
+      });
+      setNotice(
+        `Moved "${c.label}" to the server as "${result.id}" because "${from}" was already taken there.`
+      );
+    } else {
+      setNotice(`Moved "${c.label}" to the server.`);
+    }
   };
 
   return (

@@ -60,11 +60,25 @@ export function observedStatus(
   progress: NexusProgress
 ): ObservedStatus {
   const total = checksFor(node).length;
-  const ticks = progress.checks[node.id] ?? [];
+  const saved = progress.checks[node.id];
+  const ticks = saved ?? [];
   let done = 0;
   for (let i = 0; i < total; i++) if (ticks[i]) done++;
-  if (done === 0) {
+  if (!saved) {
+    // Never touched: fall back to the guess from the data file.
     return { status: deriveConnectionStatus(node), verified: false, done, total };
+  }
+  if (done === 0) {
+    // Touched and every box is clear: the admin is saying none of these
+    // are true, which beats any guess (including a guessed "connected").
+    const important =
+      node.kind !== "ghost" || node.priority === "high";
+    return {
+      status: important ? "needs-setup" : "not-installed",
+      verified: true,
+      done,
+      total,
+    };
   }
   return {
     status: done >= total ? "connected" : "partial",
@@ -157,7 +171,8 @@ export function rankNextMoves(
   for (const node of nodes) {
     const observed = observedStatus(node, progress);
     if (observed.status === "connected") continue;
-    const startedNotFinished = observed.verified && observed.status === "partial";
+    // Gaps, plus anything the admin has checked and found not fully working.
+    const startedNotFinished = observed.verified;
     if (node.kind !== "ghost" && !startedNotFinished) continue;
 
     const reachIds = [...(neighbors.get(node.id) ?? [])].filter((id) => {
@@ -170,8 +185,10 @@ export function rankNextMoves(
     const score = weight * (1 + reachIds.length);
 
     const parts: string[] = [];
-    if (startedNotFinished) {
+    if (startedNotFinished && observed.done > 0) {
       parts.push(`Started: ${observed.done} of ${observed.total} checks done`);
+    } else if (startedNotFinished) {
+      parts.push(`Checked: 0 of ${observed.total} checks true`);
     } else if (node.priority === "high") {
       parts.push("High-priority gap");
     } else {

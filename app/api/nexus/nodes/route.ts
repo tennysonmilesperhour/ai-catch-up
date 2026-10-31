@@ -109,6 +109,12 @@ type Payload = {
   node?: unknown;
   links?: unknown;
   hermesNote?: unknown;
+  /**
+   * When true, refuse (409) instead of replacing a node that already has
+   * this id. The Nexus page always sends it, so two browsers that picked
+   * the same slug cannot overwrite each other.
+   */
+  createOnly?: unknown;
 };
 
 type IncomingNode = {
@@ -332,15 +338,27 @@ export async function POST(req: NextRequest) {
     ...(hermesNote ? { hermesNote } : {}),
   };
 
+  const createOnly = payload.createOnly === true;
+  let idTaken = false;
   const outcome = await commitStore(
     githubToken,
     (store) => {
+      if (createOnly && store.nodes.some((n) => n.id === node.id)) {
+        idTaken = true;
+        return null;
+      }
       let next = upsertNode(store, node);
       for (const l of incomingLinks) next = upsertLink(next, l);
       return next;
     },
     (existed) => `nexus: ${auth.actor} ${existed ? "update" : "add"} ${node.id}`
   );
+  if (idTaken) {
+    return NextResponse.json(
+      { error: `a node with id "${node.id}" already exists`, conflict: true },
+      { status: 409 }
+    );
+  }
   if (!outcome.ok) {
     return NextResponse.json({ error: outcome.error }, { status: 502 });
   }

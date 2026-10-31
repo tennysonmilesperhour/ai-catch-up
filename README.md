@@ -47,11 +47,12 @@ Content is owned by Strategy Claude (claude.ai web) and Tennyson. Claude Code (t
 
 ```bash
 npm run typecheck
+npm test
 npm run voice-check -- --strict
 npm run build
 ```
 
-CI (`.github/workflows/ci.yml`) runs the same three on every PR and push to `main`.
+CI (`.github/workflows/ci.yml`) runs the same four on every PR and push to `main`.
 
 ## Deploying
 

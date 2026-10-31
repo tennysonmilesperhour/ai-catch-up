@@ -111,11 +111,11 @@ npm run dev                   # http://localhost:3000
 Public site: `/`
 Admin: `/admin` (redirects to `/login` if not authenticated). Sign in with `ADMIN_EMAIL` plus `ADMIN_PASSWORD` on the email form, or with GitHub OAuth if it is configured and your verified GitHub email is `ADMIN_EMAIL`. Any other email signs in as a buyer.
 
-Checks before pushing: `npm run typecheck`, `npm run voice-check -- --strict`, `npm run build`.
+Checks before pushing: `npm run typecheck`, `npm test` (Node test runner, files in `tests/`), `npm run voice-check -- --strict`, `npm run build`.
 
 ## Deploying
 
-Vercel is connected to the GitHub repo. Pushing to `main` triggers a production deploy. CI (`.github/workflows/ci.yml`) runs typecheck, strict voice-check, and build on every PR to `main` and every push to `main`. Env vars must be set in the Vercel dashboard, see `.env.example` and `docs/architecture.md` for the full list. The load-bearing ones:
+Vercel is connected to the GitHub repo. Pushing to `main` triggers a production deploy. CI (`.github/workflows/ci.yml`) runs typecheck, tests, strict voice-check, and build on every PR to `main` and every push to `main`. Env vars must be set in the Vercel dashboard, see `.env.example` and `docs/architecture.md` for the full list. The load-bearing ones:
 
 - `SESSION_SECRET` (required, 32+ random chars, or auth breaks)
 - `ADMIN_EMAIL` (the one address that can be admin)
