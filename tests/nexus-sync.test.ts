@@ -157,3 +157,25 @@ test("renameIds retargets selected ids (open form picks, connects-to lists)", as
   // A pick of both the old and already-renamed id collapses to one.
   assert.deepEqual(renameIds(["cursor", "cursor-2"], idMap), ["cursor-2"]);
 });
+
+test("a local removal made during a sync is not undone", async () => {
+  const { reconcileLocals } = await import("@/lib/nexus-sync");
+  // Sync started with [a, b, c]; b was removed while it ran; a was saved as a-2.
+  const latest = [
+    { id: "a", connectsTo: [] },
+    { id: "c", connectsTo: ["a", "geck-inspect"] },
+  ];
+  const next = reconcileLocals(latest, new Map([["a", "a-2"]]));
+  assert.deepEqual(next, [{ id: "c", connectsTo: ["a-2", "geck-inspect"] }]);
+});
+
+test("a brand-new addition whose save failed stays on this device", async () => {
+  const { reconcileLocals } = await import("@/lib/nexus-sync");
+  const fresh = { id: "new", connectsTo: ["dep"] };
+  // Its dependency was saved (renamed) before the failure.
+  const next = reconcileLocals<{ id: string; connectsTo?: string[] }>([{ id: "dep" }], new Map([["dep", "dep-2"]]), fresh);
+  assert.deepEqual(next, [{ id: "new", connectsTo: ["dep-2"] }]);
+  // Not duplicated if already present, and dropped if it was saved.
+  assert.equal(reconcileLocals([fresh], new Map(), fresh).length, 1);
+  assert.equal(reconcileLocals([], new Map([["new", "new"]]), fresh).length, 0);
+});

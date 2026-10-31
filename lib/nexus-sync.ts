@@ -183,3 +183,31 @@ export function renameIds(ids: string[], idMap: Map<string, string>): string[] {
   }
   return out;
 }
+
+/**
+ * The device's local additions after a sync, built from the list as it is
+ * NOW (not the snapshot the sync started from), so a Remove clicked while
+ * the request was in flight stays removed. Drops what was saved, retargets
+ * connects-to through renames, and keeps `unsaved` (a brand-new addition
+ * whose save failed) on this device unless the latest list already has it.
+ */
+export function reconcileLocals<T extends { id: string; connectsTo?: string[] }>(
+  latest: T[],
+  idMap: Map<string, string>,
+  unsaved?: T
+): T[] {
+  const next = latest
+    .filter((x) => !idMap.has(x.id))
+    .map((x) =>
+      x.connectsTo?.some((t) => idMap.has(t))
+        ? { ...x, connectsTo: renameIds(x.connectsTo, idMap) }
+        : x
+    );
+  if (unsaved && !idMap.has(unsaved.id) && !next.some((x) => x.id === unsaved.id)) {
+    next.push({
+      ...unsaved,
+      connectsTo: unsaved.connectsTo ? renameIds(unsaved.connectsTo, idMap) : unsaved.connectsTo,
+    });
+  }
+  return next;
+}

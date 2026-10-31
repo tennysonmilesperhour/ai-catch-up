@@ -12,6 +12,7 @@ import { NexusNextMoves } from "@/components/admin/NexusNextMoves";
 import { StepsModal } from "@/components/shared/StepsModal";
 import {
   linksFor,
+  reconcileLocals,
   renameIds,
   syncWithDependencies,
   type PostResult,
@@ -447,15 +448,15 @@ export function NexusAdmin({
       nodes: [...prev.nodes, ...synced.map((s) => s.result.node)],
       links: [...prev.links, ...synced.flatMap((s) => s.result.links)],
     }));
-    const next = locals
-      .filter((x) => !idMap.has(x.id))
-      .map((x) =>
-        x.connectsTo?.some((t) => idMap.has(t))
-          ? { ...x, connectsTo: renameIds(x.connectsTo, idMap) }
-          : x
-      );
-    setCustom(next);
-    saveCustom(next);
+    // Rebuild from the list as it is now, so a Remove made while the
+    // request was in flight is not undone. A brand-new addition (not in
+    // the stored list yet) is kept on this device if it failed to save.
+    const isNew = !custom.some((x) => x.id === c.id);
+    setCustom((latest) => {
+      const next = reconcileLocals(latest, idMap, isNew ? c : undefined);
+      saveCustom(next);
+      return next;
+    });
     // Everything this page keys by node id follows a rename: ticked
     // checks, link overrides at either end (renameInProgress), other local
     // additions' connects-to (above), the open add form's connects-to
@@ -780,6 +781,7 @@ export function NexusAdmin({
                   )}
                   <button
                     onClick={() => handleRemove(c.id)}
+                    disabled={busy}
                     className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--color-muted-dark)] hover:text-[var(--color-rust)] py-2"
                   >
                     Remove
