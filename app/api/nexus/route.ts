@@ -33,7 +33,8 @@ export async function GET(req: Request) {
 
   const [outcome, hermesRead] = await Promise.all([
     fetchUserRepos(),
-    readHermesStoreLive(),
+    // Public and unauthenticated: one shared GitHub read per minute at most.
+    readHermesStoreLive({ cacheSeconds: 60 }),
   ]);
   const hermes = hermesRead.store;
 
@@ -56,8 +57,9 @@ export async function GET(req: Request) {
         hermes: hermes.nodes.length,
         githubSyncOk: outcome.ok,
         // With GITHUB_BLOG_TOKEN set, Hermes nodes are read from GitHub at
-        // request time, so a node added via POST /api/nexus/nodes shows up
-        // within the 60s CDN cache. Without the token (or if GitHub is
+        // request time (cached for 60s so anonymous traffic cannot spend
+        // the token's rate budget), so a node added via POST
+        // /api/nexus/nodes shows up within a minute or two. Without the token (or if GitHub is
         // failing) this falls back to the deployed file, which only updates
         // on the next deploy; this flag says which one you got.
         hermesEventuallyConsistent: !hermesRead.live,

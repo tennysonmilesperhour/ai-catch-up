@@ -69,16 +69,51 @@ export const HERMES_REPO_OWNER =
 export const HERMES_REPO_NAME = process.env.GITHUB_BLOG_REPO || "ai-catch-up";
 export const HERMES_REPO_BRANCH = process.env.GITHUB_BLOG_BRANCH || "main";
 
+type LiveRead = { store: HermesStore; live: boolean };
+
+// Public reads share one cached copy per instance (plus Next's shared
+// fetch cache on Vercel), so anonymous traffic to GET /api/nexus cannot
+// spend the GITHUB_BLOG_TOKEN rate budget that publishing and Nexus
+// writes depend on.
+let publicCache: { value: LiveRead; expiresAt: number } | null = null;
+let publicInFlight: Promise<LiveRead> | null = null;
+
+/** Test hook: forget the cached public read. */
+export function resetHermesReadCache(): void {
+  publicCache = null;
+  publicInFlight = null;
+}
+
 /**
- * Read the store as it is on GitHub right now, so a node added a moment
- * ago shows up without waiting for the redeploy its commit triggers.
- * Falls back to the deployed file when no token is configured or GitHub
- * is slow or failing, so the Nexus page never breaks on this.
+ * Read the store as it is on GitHub, so a node added a moment ago shows
+ * up without waiting for the redeploy its commit triggers. Falls back to
+ * the deployed file when no token is configured or GitHub is slow or
+ * failing, so the Nexus page never breaks on this.
+ *
+ * `cacheSeconds` (for unauthenticated callers): reuse one result for that
+ * long, whatever the request looked like, and let concurrent callers share
+ * a single GitHub request. Omit it for the admin page, which reads fresh.
  */
-export async function readHermesStoreLive(): Promise<{
-  store: HermesStore;
-  live: boolean;
-}> {
+export async function readHermesStoreLive(
+  options: { cacheSeconds?: number } = {}
+): Promise<LiveRead> {
+  const { cacheSeconds } = options;
+  if (!cacheSeconds) return fetchHermesStore(undefined);
+  const now = Date.now();
+  if (publicCache && publicCache.expiresAt > now) return publicCache.value;
+  if (publicInFlight) return publicInFlight;
+  publicInFlight = fetchHermesStore(cacheSeconds)
+    .then((value) => {
+      publicCache = { value, expiresAt: Date.now() + cacheSeconds * 1000 };
+      return value;
+    })
+    .finally(() => {
+      publicInFlight = null;
+    });
+  return publicInFlight;
+}
+
+async function fetchHermesStore(revalidate: number | undefined): Promise<LiveRead> {
   const token = process.env.GITHUB_BLOG_TOKEN;
   if (token) {
     try {
@@ -89,7 +124,9 @@ export async function readHermesStoreLive(): Promise<{
           Accept: "application/vnd.github.raw+json",
           "X-GitHub-Api-Version": "2022-11-28",
         },
-        cache: "no-store",
+        ...(revalidate
+          ? { next: { revalidate, tags: ["hermes-store"] } }
+          : { cache: "no-store" as const }),
         signal: AbortSignal.timeout(4000),
       });
       if (res.status === 404) return { store: EMPTY_STORE, live: true };
