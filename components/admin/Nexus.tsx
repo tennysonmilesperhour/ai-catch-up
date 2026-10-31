@@ -25,6 +25,14 @@ import {
   deriveConnectionStatus,
   STATUS_PALETTE,
 } from "@/lib/nexus-status";
+import { SCROLL_CARD_ATTR, wheelBelongsToCard } from "@/lib/nexus-wheel";
+import {
+  checksFor,
+  linkKey,
+  wiringPrompt,
+  type LinkStatus,
+  type NexusProgress,
+} from "@/lib/nexus-progress";
 
 export type NexusKind = "real" | "ghost" | "fork";
 
@@ -53,6 +61,8 @@ export type NexusNode = {
   homepage?: string;
   actions?: NexusAction[];
   synced?: boolean;
+  /** Set on nodes from the Hermes store: who added it. */
+  source?: "hermes" | "admin";
   // Skill-only fields (rendered in the tooltip when present).
   howToUse?: string;
   triggers?: string[];
@@ -73,6 +83,12 @@ export type NexusLink = {
   source: string;
   target: string;
   strength: number;
+  /**
+   * "wired": the integration exists and works. "potential": the two
+   * things belong together but are not connected yet (drawn dashed).
+   * NexusAdmin fills this in from observed progress before rendering.
+   */
+  status?: "wired" | "potential";
 };
 
 export type DomainInfo = {
@@ -94,6 +110,13 @@ type Props = {
    * visible alongside everything else.
    */
   skillsActive?: boolean;
+  /** Highlight this node and its neighbors as if hovered (Next moves panel). */
+  focusId?: string | null;
+  /** Ticked connection checks; enables the checkboxes in the pinned card. */
+  progress?: NexusProgress;
+  onToggleCheck?: (nodeId: string, index: number) => void;
+  /** Enables clicking a link to open its card and change wired/potential. */
+  onSetLinkStatus?: (link: NexusLink, status: LinkStatus) => void;
 };
 
 const SKILLS_DOMAIN = "skills";
@@ -294,7 +317,16 @@ function darken(hex: string, amount = 0.5): string {
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
-export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
+export function Nexus({
+  domains,
+  nodes,
+  links,
+  skillsActive = false,
+  focusId = null,
+  progress,
+  onToggleCheck,
+  onSetLinkStatus,
+}: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const positionsRef = useRef<Map<string, OrbitState>>(new Map());
   const draggingRef = useRef<string | null>(null);
@@ -302,6 +334,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
   const [, setTick] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
+  const [selectedLinkKey, setSelectedLinkKey] = useState<string | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [didDrag, setDidDrag] = useState(false);
   const [stepsModalContent, setStepsModalContent] = useState<string | null>(
@@ -472,6 +505,8 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
     const el = containerRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
+      // A pinned card or link card that can still scroll gets the wheel.
+      if (wheelBelongsToCard(e.target, e.deltaY)) return;
       e.preventDefault();
       const delta = -e.deltaY;
       setZoom((z) => {
@@ -488,6 +523,7 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
     // gesture and the node's own handler will set draggingRef.
     const target = e.target as Element | null;
     if (target?.closest("[data-nexus-node]")) return;
+    if (target?.closest("[data-nexus-link]")) return;
     panStateRef.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -617,6 +653,15 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
   const activeNode = pinnedNode || hoveredNode;
   const isPinned = pinnedNode !== null;
 
+  // What drives the highlight/dim pass: a real hover wins, otherwise the
+  // node the Next moves panel is pointing at.
+  const highlightId =
+    hoveredId ?? (focusId && nodes.some((n) => n.id === focusId) ? focusId : null);
+
+  const selectedLink = selectedLinkKey
+    ? links.find((l) => linkKey(l) === selectedLinkKey) || null
+    : null;
+
   const visibleIds = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes]);
 
   // Per-node color lookup (by id), used to color links by source domain.
@@ -660,6 +705,15 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
       document.removeEventListener("keydown", onKey);
     };
   }, [isPinned]);
+
+  useEffect(() => {
+    if (!selectedLinkKey) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedLinkKey(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [selectedLinkKey]);
 
   return (
     <div
@@ -961,9 +1015,11 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
             const b = positionsRef.current.get(l.target);
             if (!a || !b) return null;
             const isHighlighted =
-              hoveredId &&
-              (l.source === hoveredId || l.target === hoveredId);
-            const dimmed = hoveredId && !isHighlighted;
+              (highlightId &&
+                (l.source === highlightId || l.target === highlightId)) ||
+              selectedLinkKey === linkKey(l);
+            const dimmed = highlightId && !isHighlighted;
+            const isPotential = l.status === "potential";
             // Categorization: link inherits the source node's domain
             // color. On hover the highlighted link uses its own color
             // at full strength so it doesn't blend into the neighbors.
@@ -978,18 +1034,51 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
               : isHighlighted
                 ? 0.95
                 : 0.30;
+            const key = linkKey(l);
             return (
-              <line
-                key={i}
-                x1={a.x}
-                y1={a.y}
-                x2={b.x}
-                y2={b.y}
-                stroke={sourceColor}
-                strokeOpacity={skillDimmed ? 0.05 : baseOpacity}
-                strokeWidth={isHighlighted ? 1.8 : 1}
-                strokeDasharray={touchesSkill ? "2 4" : undefined}
-              />
+              <g key={`${key}-${i}`}>
+                <line
+                  x1={a.x}
+                  y1={a.y}
+                  x2={b.x}
+                  y2={b.y}
+                  stroke={sourceColor}
+                  strokeOpacity={
+                    skillDimmed
+                      ? 0.05
+                      : isPotential && !isHighlighted
+                        ? baseOpacity * 0.8
+                        : baseOpacity
+                  }
+                  strokeWidth={isHighlighted ? 1.8 : 1}
+                  strokeDasharray={
+                    touchesSkill ? "2 4" : isPotential ? "6 5" : undefined
+                  }
+                  style={{ pointerEvents: "none" }}
+                />
+                {onSetLinkStatus && !skillDimmed && (
+                  <line
+                    data-nexus-link={key}
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                    stroke="transparent"
+                    strokeWidth={10}
+                    style={{ cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPinnedId(null);
+                      setSelectedLinkKey(key);
+                    }}
+                  >
+                    <title>
+                      {isPotential ? "Potential link" : "Wired link"}: click
+                      for details
+                    </title>
+                  </line>
+                )}
+              </g>
             );
           })}
         </g>
@@ -1001,12 +1090,12 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
             if (!p) return null;
             const d = orbitalDomains[n.domain];
             const color = d?.color ?? "#d97757";
-            const isHovered = hoveredId === n.id;
+            const isHovered = highlightId === n.id;
             const isNeighbor =
-              hoveredId !== null &&
-              neighborsOf.get(hoveredId)?.has(n.id);
+              highlightId !== null &&
+              neighborsOf.get(highlightId)?.has(n.id);
             const dimmed =
-              hoveredId !== null && !isHovered && !isNeighbor;
+              highlightId !== null && !isHovered && !isNeighbor;
             const r = nodeRadius(n);
             const isSkillNode = n.domain === SKILLS_DOMAIN;
             const skillDimmed =
@@ -1179,6 +1268,21 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
           <span>Fork</span>
         </div>
         <div className="mt-2 pt-2 border-t border-[var(--color-border-dark)] flex flex-col gap-1">
+          <div className="opacity-70">Links</div>
+          <div className="flex items-center gap-2">
+            <svg width="18" height="4" aria-hidden>
+              <line x1="0" y1="2" x2="18" y2="2" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+            <span>Wired</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg width="18" height="4" aria-hidden>
+              <line x1="0" y1="2" x2="18" y2="2" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3" />
+            </svg>
+            <span>Potential</span>
+          </div>
+        </div>
+        <div className="mt-2 pt-2 border-t border-[var(--color-border-dark)] flex flex-col gap-1">
           <div className="opacity-70">Status pip</div>
           {(
             ["connected", "partial", "needs-setup", "not-installed"] as const
@@ -1203,12 +1307,25 @@ export function Nexus({ domains, nodes, links, skillsActive = false }: Props) {
           node={activeNode}
           domain={domains[activeNode.domain]}
           pinned={isPinned}
+          progress={progress}
+          onToggleCheck={onToggleCheck}
           onClose={() => setPinnedId(null)}
           onViewSteps={(payload) => {
             setStepsModalContent(payload);
             setHoveredId(null);
             setPinnedId(null);
           }}
+        />
+      )}
+
+      {selectedLink && onSetLinkStatus && !activeNode && (
+        <LinkCard
+          link={selectedLink}
+          a={nodes.find((n) => n.id === selectedLink.source)}
+          b={nodes.find((n) => n.id === selectedLink.target)}
+          color={nodeColorById.get(selectedLink.source) ?? "#7d8aad"}
+          onSetStatus={(st) => onSetLinkStatus(selectedLink, st)}
+          onClose={() => setSelectedLinkKey(null)}
         />
       )}
 
@@ -1228,11 +1345,13 @@ const HoverTooltip = forwardRef<
     node: NexusNode;
     domain: DomainInfo | undefined;
     pinned: boolean;
+    progress?: NexusProgress;
+    onToggleCheck?: (nodeId: string, index: number) => void;
     onClose: () => void;
     onViewSteps: (payload: string) => void;
   }
 >(function HoverTooltip(
-  { node, domain, pinned, onClose, onViewSteps },
+  { node, domain, pinned, progress, onToggleCheck, onClose, onViewSteps },
   ref
 ) {
   const domainColor = domain?.color ?? "#d97757";
@@ -1250,11 +1369,14 @@ const HoverTooltip = forwardRef<
   return (
     <div
       ref={ref}
+      {...{ [SCROLL_CARD_ATTR]: "" }}
       style={{
         position: "absolute",
         top: 16,
         right: 16,
         maxWidth: 320,
+        maxHeight: "calc(100% - 32px)",
+        overflowY: "auto",
         background: "rgba(26, 22, 18, 0.95)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
@@ -1334,7 +1456,13 @@ const HoverTooltip = forwardRef<
       >
         {node.desc}
       </div>
-      <BeginnerSections node={node} accent={domainColor} />
+      <BeginnerSections
+        node={node}
+        accent={domainColor}
+        pinned={pinned}
+        progress={progress}
+        onToggleCheck={onToggleCheck}
+      />
       <SkillSections node={node} accent={domainColor} />
       {hasActions && node.actions && (
         <div
@@ -1411,14 +1539,23 @@ function StatusBadge({ node }: { node: NexusNode }) {
 function BeginnerSections({
   node,
   accent,
+  pinned,
+  progress,
+  onToggleCheck,
 }: {
   node: NexusNode;
   accent: string;
+  pinned: boolean;
+  progress?: NexusProgress;
+  onToggleCheck?: (nodeId: string, index: number) => void;
 }) {
+  const interactive = !!(progress && onToggleCheck);
+  const checks = interactive ? checksFor(node) : node.connectionChecks ?? [];
+  const ticks = progress?.checks[node.id] ?? [];
   const hasAny =
     !!node.gettingStarted ||
     (node.examples && node.examples.length > 0) ||
-    (node.connectionChecks && node.connectionChecks.length > 0);
+    checks.length > 0;
   if (!hasAny) return null;
 
   const sectionLabel: React.CSSProperties = {
@@ -1463,14 +1600,58 @@ function BeginnerSections({
           <div style={body}>{node.gettingStarted}</div>
         </div>
       )}
-      {node.connectionChecks && node.connectionChecks.length > 0 && (
+      {checks.length > 0 && !interactive && (
         <div>
           <div style={sectionLabel}>You'll know it's connected when</div>
           <ul style={{ ...body, margin: 0, paddingLeft: 14 }}>
-            {node.connectionChecks.map((c, i) => (
+            {checks.map((c, i) => (
               <li key={i}>{c}</li>
             ))}
           </ul>
+        </div>
+      )}
+      {checks.length > 0 && interactive && (
+        <div>
+          <div style={sectionLabel}>
+            Connection checks ({checks.filter((_, i) => ticks[i]).length}/
+            {checks.length})
+          </div>
+          <ul style={{ ...body, margin: 0, padding: 0, listStyle: "none" }}>
+            {checks.map((c, i) => (
+              <li key={i} style={{ marginBottom: 4 }}>
+                <label
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "flex-start",
+                    cursor: pinned ? "pointer" : "default",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!!ticks[i]}
+                    disabled={!pinned}
+                    onChange={() => onToggleCheck?.(node.id, i)}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ marginTop: 3, accentColor: accent }}
+                  />
+                  <span
+                    style={{
+                      textDecoration: ticks[i] ? "line-through" : "none",
+                      opacity: ticks[i] ? 0.7 : 1,
+                    }}
+                  >
+                    {c}
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          {!pinned && (
+            <div style={{ ...body, fontSize: 11, opacity: 0.7 }}>
+              Click the node to pin this card, then tick what is true.
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1573,6 +1754,130 @@ function SkillSections({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function LinkCard({
+  link,
+  a,
+  b,
+  color,
+  onSetStatus,
+  onClose,
+}: {
+  link: NexusLink;
+  a: NexusNode | undefined;
+  b: NexusNode | undefined;
+  color: string;
+  onSetStatus: (status: LinkStatus) => void;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  if (!a || !b) return null;
+  const status: LinkStatus = link.status ?? "wired";
+  const potential = status === "potential";
+  const btn: React.CSSProperties = {
+    fontFamily: "ui-monospace, Menlo, monospace",
+    fontSize: 11,
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+    padding: "6px 10px",
+    border: `1px solid ${color}80`,
+    background: "transparent",
+    color: "#f5efe0",
+    cursor: "pointer",
+    textAlign: "left",
+  };
+  return (
+    <div
+      role="dialog"
+      aria-label={`Link between ${a.label} and ${b.label}`}
+      {...{ [SCROLL_CARD_ATTR]: "" }}
+      style={{
+        position: "absolute",
+        top: 16,
+        right: 16,
+        maxWidth: 320,
+        maxHeight: "calc(100% - 32px)",
+        overflowY: "auto",
+        background: "rgba(26, 22, 18, 0.95)",
+        padding: "16px 18px",
+        border: `1px solid ${color}`,
+        borderLeft: `3px solid ${color}`,
+        zIndex: 10,
+        boxShadow: "0 8px 28px rgba(0, 0, 0, 0.55)",
+      }}
+    >
+      <button
+        onClick={onClose}
+        aria-label="Close"
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          background: "transparent",
+          border: 0,
+          color: "#8a7f6b",
+          fontSize: 16,
+          cursor: "pointer",
+          padding: 4,
+          lineHeight: 1,
+        }}
+      >
+        &times;
+      </button>
+      <div
+        style={{
+          fontSize: 10,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+          color,
+          fontFamily: "ui-monospace, Menlo, monospace",
+          marginBottom: 6,
+        }}
+      >
+        {potential ? "Potential link (not wired yet)" : "Wired link"}
+      </div>
+      <div
+        style={{
+          fontFamily: "ui-monospace, Menlo, monospace",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#f5efe0",
+          marginBottom: 8,
+          paddingRight: 16,
+        }}
+      >
+        {a.label} &harr; {b.label}
+      </div>
+      <div style={{ fontSize: 12, color: "#cbbfa9", lineHeight: 1.5 }}>
+        {potential
+          ? `These two belong together but are not connected yet. Wiring them means ${a.label} and ${b.label} share work instead of you copying things between them.`
+          : `${a.label} and ${b.label} are connected. If that stops being true, mark it as potential.`}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+        <button
+          style={btn}
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(wiringPrompt(a, b));
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            } catch (err) {
+              console.error("Clipboard write failed:", err);
+            }
+          }}
+        >
+          {copied ? "Copied" : "Copy a prompt to wire these"}
+        </button>
+        <button
+          style={btn}
+          onClick={() => onSetStatus(potential ? "wired" : "potential")}
+        >
+          {potential ? "Mark as wired" : "Mark as potential"}
+        </button>
+      </div>
     </div>
   );
 }

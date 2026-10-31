@@ -13,7 +13,8 @@ A short map of how this app is wired, focused on the parts that surprise people:
 | --- | --- | --- | --- |
 | Marketing / admin copy | `/content/**` (repo) | Yes | MDX + JSON, bundled into the function via `outputFileTracingIncludes`. |
 | Blog posts | GitHub Contents API → `content/blog/*.mdx` | Yes | Written by `POST /api/blog/publish`; rendered with react-markdown (no raw HTML). |
-| Hermes Nexus additions | GitHub Contents API → `content/admin/hermes-nexus.json` | Yes (eventually) | `POST /api/nexus/nodes` commits; `GET /api/nexus` reads the deployed file, so new nodes appear on the next deploy, not instantly. |
+| Nexus additions (Hermes and admin) | GitHub Contents API → `content/admin/hermes-nexus.json` | Yes | `POST` / `DELETE /api/nexus/nodes` commit (Hermes with the `HERMES_API_KEY` bearer token, the admin with a same-origin session). With `GITHUB_BLOG_TOKEN` set, `/admin/nexus` reads the file from GitHub live, so additions show at once, and the public `GET /api/nexus` reads it through a 60-second shared cache (so anonymous traffic cannot use up the token's GitHub rate limit); without it they fall back to the deployed copy. Each save is a commit to `main`, so it also triggers a deploy. |
+| Nexus progress (ticked connection checks, wired/potential link overrides) | browser `localStorage` (`nexus-progress-v1`) | Per-browser only | Same open decision as the buyer workspace (ship-plan Phase 2). Logic in `lib/nexus-progress.ts`. |
 | Newsletter subscribers | `aicu_subscribers` in shared Supabase; optional webhook / local dev file | Yes | Supabase uses INSERT-only public credentials. On Vercel the file write is skipped; `/api/subscribe` returns 503 if no durable destination accepts the email. |
 | Globe session pins | in-memory `Map` | No | Per-instance, resets on cold start; falls back to a demo dataset at low traffic. |
 | Rate-limit buckets | in-memory `Map` | No | Per-instance, so limits are a guardrail, not a hard cap. |

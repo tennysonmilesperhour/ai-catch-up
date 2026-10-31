@@ -1,13 +1,25 @@
-// POST /api/nexus/nodes
-// Hermes (or any agent with the bearer token) can add/update Nexus
-// nodes by posting a payload here. The endpoint validates, merges with
+// POST /api/nexus/nodes   add or update a node (plus optional links)
+// DELETE /api/nexus/nodes?id=<id>   remove a node this store added
+//
+// Two callers: Hermes (or any agent with the HERMES_API_KEY bearer token),
+// and the admin on the Nexus page (signed-in admin session cookie, same
+// origin only). The endpoint validates, merges with
+// the existing Hermes store, and commits the updated JSON file to GitHub
+// via the Contents API (same pattern as the blog publish endpoint, so it
+// works on Vercel's serverless runtime without a writable filesystem).
+// The endpoint validates, merges with
 // the existing Hermes store, and commits the updated JSON file to GitHub
 // via the Contents API (same pattern as the blog publish endpoint, so it
 // works on Vercel's serverless runtime without a writable filesystem).
 
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE, verifySession } from "@/lib/session";
 import {
   HERMES_FILE_PATH,
+  HERMES_REPO_BRANCH,
+  HERMES_REPO_NAME,
+  HERMES_REPO_OWNER,
+  removeNode,
   EMPTY_STORE,
   type HermesStore,
   type HermesNode,
@@ -21,9 +33,9 @@ import { clientKey, rateLimit } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const REPO_OWNER = process.env.GITHUB_BLOG_REPO_OWNER || "tennysonmilesperhour";
-const REPO_NAME = process.env.GITHUB_BLOG_REPO || "ai-catch-up";
-const REPO_BRANCH = process.env.GITHUB_BLOG_BRANCH || "main";
+const REPO_OWNER = HERMES_REPO_OWNER;
+const REPO_NAME = HERMES_REPO_NAME;
+const REPO_BRANCH = HERMES_REPO_BRANCH;
 
 const VALID_KINDS = new Set(["real", "ghost", "fork"]);
 const VALID_STATUS = new Set([
@@ -40,14 +52,40 @@ function constantTimeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-function authorize(req: NextRequest): { ok: true } | { ok: false; reason: string } {
-  const secret = process.env.HERMES_API_KEY;
-  if (!secret) return { ok: false, reason: "server not configured: HERMES_API_KEY missing" };
+type Actor = "hermes" | "admin";
+
+// Cookie-authenticated writes must come from our own pages. Stricter than
+// the login form: a request with neither Sec-Fetch-Site nor Origin is
+// rejected, because a cookie alone should never be enough.
+function isStrictSameOrigin(req: NextRequest): boolean {
+  const sfs = req.headers.get("sec-fetch-site");
+  if (sfs) return sfs === "same-origin";
+  const origin = req.headers.get("origin");
+  if (!origin) return false;
+  try {
+    return new URL(origin).origin === new URL(req.url).origin;
+  } catch {
+    return false;
+  }
+}
+
+async function authorize(
+  req: NextRequest
+): Promise<{ ok: true; actor: Actor } | { ok: false; reason: string }> {
   const header = req.headers.get("authorization") || "";
   const m = header.match(/^Bearer\s+(.+)$/i);
-  if (!m) return { ok: false, reason: "missing bearer token" };
-  if (!constantTimeEqual(m[1], secret)) return { ok: false, reason: "invalid token" };
-  return { ok: true };
+  if (m) {
+    const secret = process.env.HERMES_API_KEY;
+    if (!secret) return { ok: false, reason: "server not configured: HERMES_API_KEY missing" };
+    if (!constantTimeEqual(m[1], secret)) return { ok: false, reason: "invalid token" };
+    return { ok: true, actor: "hermes" };
+  }
+  const session = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
+  if (session?.role === "admin") {
+    if (!isStrictSameOrigin(req)) return { ok: false, reason: "cross-origin request refused" };
+    return { ok: true, actor: "admin" };
+  }
+  return { ok: false, reason: "missing bearer token or admin session" };
 }
 
 function isValidId(id: unknown): id is string {
@@ -71,6 +109,12 @@ type Payload = {
   node?: unknown;
   links?: unknown;
   hermesNote?: unknown;
+  /**
+   * When true, refuse (409) instead of replacing a node that already has
+   * this id. The Nexus page always sends it, so two browsers that picked
+   * the same slug cannot overwrite each other.
+   */
+  createOnly?: unknown;
 };
 
 type IncomingNode = {
@@ -179,6 +223,8 @@ async function githubGetFileSha(token: string): Promise<{ sha: string | null; co
   return { sha: json.sha ?? null, content: decoded };
 }
 
+class GitHubConflictError extends Error {}
+
 async function githubPutFile(
   contentBase64: string,
   message: string,
@@ -205,6 +251,8 @@ async function githubPutFile(
   if (!res.ok) {
     const detail = await res.text();
     console.error("[nexus/nodes] GitHub PUT failed", res.status, detail.slice(0, 300));
+    // 409 = someone else committed since our read (stale sha).
+    if (res.status === 409) throw new GitHubConflictError("GitHub PUT conflict");
     throw new Error(`GitHub PUT failed: ${res.status}`);
   }
   const json = (await res.json()) as {
@@ -234,7 +282,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const auth = authorize(req);
+  const auth = await authorize(req);
   if (!auth.ok) return NextResponse.json({ error: auth.reason }, { status: 401 });
 
   const githubToken = process.env.GITHUB_BLOG_TOKEN;
@@ -255,7 +303,7 @@ export async function POST(req: NextRequest) {
   const validated = validateNode(payload.node);
   if (!validated.ok) return NextResponse.json({ error: validated.error }, { status: 400 });
 
-  let incomingLinks: HermesLink[] = [];
+  const incomingLinks: HermesLink[] = [];
   if (payload.links !== undefined) {
     if (!Array.isArray(payload.links))
       return NextResponse.json({ error: "links must be an array" }, { status: 400 });
@@ -271,81 +319,151 @@ export async function POST(req: NextRequest) {
         source: lo.source as string,
         target: lo.target as string,
         strength,
-        source_agent: "hermes",
+        ...(auth.actor === "hermes" ? { source_agent: "hermes" as const } : {}),
       });
     }
   }
 
   const hermesNote =
-    typeof payload.hermesNote === "string" && payload.hermesNote.length <= 600
+    auth.actor === "hermes" &&
+    typeof payload.hermesNote === "string" &&
+    payload.hermesNote.length <= 600
       ? payload.hermesNote
       : undefined;
 
-  let sha: string | null = null;
-  let store: HermesStore = { ...EMPTY_STORE };
-  try {
-    const got = await githubGetFileSha(githubToken);
-    sha = got.sha;
-    if (got.content) {
-      try {
-        const parsed = JSON.parse(got.content) as unknown;
-        if (parsed && typeof parsed === "object") {
-          const p = parsed as HermesStore;
-          if (p.version === 1 && Array.isArray(p.nodes) && Array.isArray(p.links)) {
-            store = p;
-          }
-        }
-      } catch {
-        // Treat unparseable file as empty rather than failing the request.
-      }
-    }
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "github lookup failed" },
-      { status: 502 }
-    );
-  }
-
   const node: HermesNode = {
     ...validated.node,
-    source: "hermes",
+    source: auth.actor,
     updatedAt: new Date().toISOString(),
-    hermesNote,
+    ...(hermesNote ? { hermesNote } : {}),
   };
 
-  let nextStore = upsertNode(store, node);
-  for (const l of incomingLinks) nextStore = upsertLink(nextStore, l);
-
-  const contentBase64 = Buffer.from(serializeStore(nextStore), "utf8").toString("base64");
-  const message = `nexus: hermes ${sha ? "update" : "add"} ${node.id}`;
-
-  let result: { commitSha: string; htmlUrl: string };
-  try {
-    result = await githubPutFile(contentBase64, message, sha, githubToken);
-  } catch (err) {
+  const createOnly = payload.createOnly === true;
+  let idTaken = false;
+  const outcome = await commitStore(
+    githubToken,
+    (store) => {
+      if (createOnly && store.nodes.some((n) => n.id === node.id)) {
+        idTaken = true;
+        return null;
+      }
+      let next = upsertNode(store, node);
+      for (const l of incomingLinks) next = upsertLink(next, l);
+      return next;
+    },
+    (existed) => `nexus: ${auth.actor} ${existed ? "update" : "add"} ${node.id}`
+  );
+  if (idTaken) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "github commit failed" },
-      { status: 502 }
+      { error: `a node with id "${node.id}" already exists`, conflict: true },
+      { status: 409 }
     );
+  }
+  if (!outcome.ok) {
+    return NextResponse.json({ error: outcome.error }, { status: 502 });
   }
 
   return NextResponse.json(
     {
       ok: true,
-      action: sha ? "updated" : "created",
+      action: outcome.fileExisted ? "updated" : "created",
       node,
+      links: incomingLinks,
       linksAdded: incomingLinks.length,
-      commitSha: result.commitSha,
-      githubUrl: result.htmlUrl,
+      commitSha: outcome.commitSha,
+      githubUrl: outcome.htmlUrl,
     },
-    { status: sha ? 200 : 201 }
+    { status: outcome.fileExisted ? 200 : 201 }
   );
+}
+
+function parseStore(content: string | null): HermesStore {
+  if (!content) return { ...EMPTY_STORE };
+  try {
+    const parsed = JSON.parse(content) as unknown;
+    if (parsed && typeof parsed === "object") {
+      const p = parsed as HermesStore;
+      if (p.version === 1 && Array.isArray(p.nodes) && Array.isArray(p.links)) {
+        return p;
+      }
+    }
+  } catch {
+    // Treat unparseable file as empty rather than failing the request.
+  }
+  return { ...EMPTY_STORE };
+}
+
+// Read, change, commit. If another writer committed between our read and
+// our write (409), re-read and apply the change again once.
+async function commitStore(
+  token: string,
+  mutate: (store: HermesStore) => HermesStore | null,
+  message: (fileExisted: boolean) => string
+): Promise<
+  | { ok: true; fileExisted: boolean; commitSha: string; htmlUrl: string; unchanged?: boolean }
+  | { ok: false; error: string; notFound?: boolean }
+> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let sha: string | null;
+    let store: HermesStore;
+    try {
+      const got = await githubGetFileSha(token);
+      sha = got.sha;
+      store = parseStore(got.content);
+    } catch {
+      return { ok: false, error: "github lookup failed" };
+    }
+    const next = mutate(store);
+    if (!next) return { ok: false, error: "not found", notFound: true };
+    const contentBase64 = Buffer.from(serializeStore(next), "utf8").toString("base64");
+    try {
+      const result = await githubPutFile(contentBase64, message(!!sha), sha, token);
+      return { ok: true, fileExisted: !!sha, ...result };
+    } catch (err) {
+      if (err instanceof GitHubConflictError && attempt === 0) continue;
+      return { ok: false, error: "github commit failed" };
+    }
+  }
+  return { ok: false, error: "github commit failed" };
+}
+
+export async function DELETE(req: NextRequest) {
+  const rl = rateLimit("nexus-nodes", clientKey(req.headers), 20, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Too many requests, try again shortly" }, { status: 429 });
+  }
+  const auth = await authorize(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.reason }, { status: 401 });
+
+  const githubToken = process.env.GITHUB_BLOG_TOKEN;
+  if (!githubToken) {
+    return NextResponse.json(
+      { error: "server not configured: GITHUB_BLOG_TOKEN missing (reused for Hermes commits)" },
+      { status: 500 }
+    );
+  }
+
+  const id = new URL(req.url).searchParams.get("id");
+  if (!isValidId(id)) return NextResponse.json({ error: "id must be a slug" }, { status: 400 });
+
+  const outcome = await commitStore(
+    githubToken,
+    (store) => (store.nodes.some((n) => n.id === id) ? removeNode(store, id) : null),
+    () => `nexus: ${auth.actor} remove ${id}`
+  );
+  if (!outcome.ok) {
+    return NextResponse.json(
+      { error: outcome.notFound ? "node not found in the Hermes store" : outcome.error },
+      { status: outcome.notFound ? 404 : 502 }
+    );
+  }
+  return NextResponse.json({ ok: true, removed: id, commitSha: outcome.commitSha });
 }
 
 export async function GET() {
   return NextResponse.json(
     {
-      error: "method not allowed; use POST to add a node, or GET /api/nexus to read the graph",
+      error: "method not allowed; use POST to add a node, DELETE ?id= to remove one, or GET /api/nexus to read the graph",
     },
     { status: 405 }
   );
