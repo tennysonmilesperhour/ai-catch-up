@@ -145,3 +145,15 @@ test("a cycle between local additions saves one direction and terminates", async
     { id: "a", targets: ["b"] },
   ]);
 });
+
+test("renameIds retargets selected ids (open form picks, connects-to lists)", async () => {
+  const { renameIds } = await import("@/lib/nexus-sync");
+  const idMap = new Map([["cursor", "cursor-2"], ["notes", "notes"]]);
+  assert.deepEqual(renameIds(["cursor", "geck-inspect", "notes"], idMap), [
+    "cursor-2",
+    "geck-inspect",
+    "notes",
+  ]);
+  // A pick of both the old and already-renamed id collapses to one.
+  assert.deepEqual(renameIds(["cursor", "cursor-2"], idMap), ["cursor-2"]);
+});

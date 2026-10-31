@@ -173,3 +173,13 @@ export async function syncWithDependencies(
   const error = await visit(rootId);
   return error ? { synced, error } : { synced };
 }
+
+/** Map ids through a rename map, keeping order and dropping duplicates. */
+export function renameIds(ids: string[], idMap: Map<string, string>): string[] {
+  const out: string[] = [];
+  for (const id of ids) {
+    const to = idMap.get(id) ?? id;
+    if (!out.includes(to)) out.push(to);
+  }
+  return out;
+}

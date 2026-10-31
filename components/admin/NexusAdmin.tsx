@@ -12,6 +12,7 @@ import { NexusNextMoves } from "@/components/admin/NexusNextMoves";
 import { StepsModal } from "@/components/shared/StepsModal";
 import {
   linksFor,
+  renameIds,
   syncWithDependencies,
   type PostResult,
 } from "@/lib/nexus-sync";
@@ -450,19 +451,21 @@ export function NexusAdmin({
       .filter((x) => !idMap.has(x.id))
       .map((x) =>
         x.connectsTo?.some((t) => idMap.has(t))
-          ? { ...x, connectsTo: x.connectsTo.map((t) => idMap.get(t) ?? t) }
+          ? { ...x, connectsTo: renameIds(x.connectsTo, idMap) }
           : x
       );
     setCustom(next);
     saveCustom(next);
     // Everything this page keys by node id follows a rename: ticked
     // checks, link overrides at either end (renameInProgress), other local
-    // additions' connects-to (above) and the map highlight. Pinned cards
+    // additions' connects-to (above), the open add form's connects-to
+    // picks and the map highlight. Pinned cards
     // and link cards close on their own when their id disappears, and
     // drag positions are re-seeded for the new id.
     if (synced.some((s) => s.result.id !== s.localId)) {
       updateProgress((p) => renameInProgress(p, idMap));
       setFocusId((f) => (f ? idMap.get(f) ?? f : f));
+      setConnectsTo((prev) => renameIds(prev, idMap));
     }
     const names = synced.map((s) =>
       s.result.id !== s.localId
