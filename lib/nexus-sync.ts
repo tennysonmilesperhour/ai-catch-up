@@ -109,3 +109,67 @@ export async function syncAddition(
   }
   return { ok: false, error: "could not find a free id, try a different name" };
 }
+
+export type SyncedAddition = {
+  /** The id it had on this device. */
+  localId: string;
+  result: Extract<SyncResult, { ok: true }>;
+};
+
+/**
+ * Sync one local addition plus any other local (not yet synced) additions
+ * it connects to, dependencies first, so every saved link points at the
+ * final server id of its target. Without this, syncing `editor -> cursor`
+ * before `cursor` saved a link to whatever node already owned `cursor`
+ * on the server if `cursor` was later renamed.
+ *
+ * A cycle (`a -> b -> a`) is broken by leaving out the back edge: the
+ * other direction is saved, and the map draws links both ways anyway.
+ * Stops at the first failure; what was saved before it is returned.
+ */
+export async function syncWithDependencies(
+  rootId: string,
+  locals: Addition[],
+  takenIds: Iterable<string>,
+  post: PostFn
+): Promise<{ synced: SyncedAddition[]; error?: string }> {
+  const byId = new Map(locals.map((a) => [a.id, a]));
+  const finalId = new Map<string, string>();
+  const inProgress = new Set<string>();
+  const taken = new Set(takenIds);
+  const synced: SyncedAddition[] = [];
+
+  async function visit(id: string): Promise<string | null> {
+    const done = finalId.get(id);
+    if (done) return null;
+    const a = byId.get(id);
+    if (!a) return null;
+    inProgress.add(id);
+    const connectsTo: string[] = [];
+    for (const target of a.connectsTo ?? []) {
+      if (!byId.has(target)) {
+        connectsTo.push(target);
+        continue;
+      }
+      if (inProgress.has(target)) continue; // back edge of a cycle
+      const err = await visit(target);
+      if (err) return err;
+      connectsTo.push(finalId.get(target) ?? target);
+    }
+    const reservedIds = locals
+      .filter((x) => x.id !== id && !finalId.has(x.id))
+      .map((x) => x.id);
+    const result = await syncAddition({ ...a, connectsTo }, taken, post, {
+      reservedIds,
+    });
+    inProgress.delete(id);
+    if (!result.ok) return result.error;
+    finalId.set(id, result.id);
+    taken.add(result.id);
+    synced.push({ localId: id, result });
+    return null;
+  }
+
+  const error = await visit(rootId);
+  return error ? { synced, error } : { synced };
+}

@@ -97,3 +97,51 @@ test("reserved ids alone do not rename a node whose own id is free", async () =>
   }, { reservedIds: ["cursor-2", "cursor"] });
   assert.deepEqual(sent, ["cursor"]);
 });
+
+test("dependencies sync first so saved links use their final ids", async () => {
+  const { syncWithDependencies } = await import("@/lib/nexus-sync");
+  const server = new Map<string, { links: { source: string; target: string }[] }>([
+    ["cursor", { links: [] }], // another browser already saved its own cursor
+  ]);
+  const post = async (body: unknown): Promise<PostResult> => {
+    const b = body as { node: { id: string }; links: { source: string; target: string }[] };
+    if (server.has(b.node.id)) return { ok: false, status: 409, error: "taken", conflict: true };
+    server.set(b.node.id, { links: b.links });
+    return { ok: true };
+  };
+  const locals = [
+    { ...addition, id: "editor", label: "Editor", connectsTo: ["cursor", "geck-inspect"] },
+    { ...addition, id: "cursor", connectsTo: [] },
+  ];
+  // The page does not yet know the server has "cursor".
+  const out = await syncWithDependencies("editor", locals, [], post);
+  assert.equal(out.error, undefined);
+  assert.deepEqual(out.synced.map((s) => [s.localId, s.result.id]), [
+    ["cursor", "cursor-2"],
+    ["editor", "editor"],
+  ]);
+  assert.deepEqual(
+    server.get("editor")!.links.map((l) => l.target),
+    ["cursor-2", "geck-inspect"]
+  );
+});
+
+test("a cycle between local additions saves one direction and terminates", async () => {
+  const { syncWithDependencies } = await import("@/lib/nexus-sync");
+  const saved: { id: string; targets: string[] }[] = [];
+  const post = async (body: unknown): Promise<PostResult> => {
+    const b = body as { node: { id: string }; links: { target: string }[] };
+    saved.push({ id: b.node.id, targets: b.links.map((l) => l.target) });
+    return { ok: true };
+  };
+  const locals = [
+    { ...addition, id: "a", connectsTo: ["b"] },
+    { ...addition, id: "b", connectsTo: ["a"] },
+  ];
+  const out = await syncWithDependencies("a", locals, [], post);
+  assert.equal(out.synced.length, 2);
+  assert.deepEqual(saved, [
+    { id: "b", targets: [] },
+    { id: "a", targets: ["b"] },
+  ]);
+});

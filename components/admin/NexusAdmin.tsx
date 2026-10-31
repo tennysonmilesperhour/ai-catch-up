@@ -10,7 +10,11 @@ import {
 import { Nexus3D } from "@/components/admin/Nexus3D";
 import { NexusNextMoves } from "@/components/admin/NexusNextMoves";
 import { StepsModal } from "@/components/shared/StepsModal";
-import { linksFor, syncAddition, type PostResult } from "@/lib/nexus-sync";
+import {
+  linksFor,
+  syncWithDependencies,
+  type PostResult,
+} from "@/lib/nexus-sync";
 import {
   EMPTY_PROGRESS,
   integrationScore,
@@ -371,24 +375,16 @@ export function NexusAdmin({
     };
 
     if (serverWrites) {
-      setBusy(true);
-      const result = await syncAddition(addition, serverIds, postNode, {
-        reservedIds: [...custom.map((x) => x.id), ...removedIds],
-      });
-      setBusy(false);
-      if (result.ok) {
-        setServerAdded((prev) => ({
-          nodes: [...prev.nodes, result.node],
-          links: [...prev.links, ...result.links],
-        }));
-        setNotice(`Saved "${trimmedLabel}" to the server. It shows on every device.`);
+      const ok = await handleMoveToServer(addition, [...custom, addition]);
+      if (ok) {
         resetForm();
         setFormOpen(false);
         return;
       }
-      setNotice(
-        `Could not save to the server (${result.error}). Saved on this device instead.`
-      );
+      // On failure it was kept on this device by handleMoveToServer.
+      resetForm();
+      setFormOpen(false);
+      return;
     }
 
     const next = [...custom, addition];
@@ -427,51 +423,64 @@ export function NexusAdmin({
     }
   };
 
-  const handleMoveToServer = async (c: CustomAddition) => {
+  // Saves c plus any local additions it links to (dependencies first),
+  // so every saved link points at its target's final server id. `locals`
+  // is this device's additions, including c. Returns false on failure.
+  const handleMoveToServer = async (
+    c: CustomAddition,
+    locals: CustomAddition[] = custom
+  ): Promise<boolean> => {
     setBusy(true);
-    // serverIds never includes this browser's local additions, so a local
-    // node is only renamed when the server really has that id already.
-    const result = await syncAddition(c, serverIds, postNode, {
-      reservedIds: custom.filter((x) => x.id !== c.id).map((x) => x.id),
-    });
+    const { synced, error } = await syncWithDependencies(
+      c.id,
+      locals,
+      serverIds,
+      postNode
+    );
     setBusy(false);
-    if (!result.ok) {
-      setNotice(`Could not move "${c.label}" to the server (${result.error}).`);
-      return;
-    }
+    const idMap = new Map(synced.map((s) => [s.localId, s.result.id]));
+    // Whatever was not saved stays on this device (including c on a
+    // failure), with links rewritten to the ids that were saved.
     setServerAdded((prev) => ({
-      nodes: [...prev.nodes, result.node],
-      links: [...prev.links, ...result.links],
+      nodes: [...prev.nodes, ...synced.map((s) => s.result.node)],
+      links: [...prev.links, ...synced.flatMap((s) => s.result.links)],
     }));
-    const next = custom
-      .filter((x) => x.id !== c.id)
+    const next = locals
+      .filter((x) => !idMap.has(x.id))
       .map((x) =>
-        result.renamedFrom && x.connectsTo?.includes(result.renamedFrom)
-          ? {
-              ...x,
-              connectsTo: x.connectsTo.map((t) =>
-                t === result.renamedFrom ? result.id : t
-              ),
-            }
+        x.connectsTo?.some((t) => idMap.has(t))
+          ? { ...x, connectsTo: x.connectsTo.map((t) => idMap.get(t) ?? t) }
           : x
       );
     setCustom(next);
     saveCustom(next);
-    if (result.renamedFrom) {
-      // Carry this browser's ticks over to the new id.
-      const from = result.renamedFrom;
+    const renamed = synced.filter((s) => s.result.id !== s.localId);
+    if (renamed.length > 0) {
+      // Carry this browser's ticks over to the new ids.
       updateProgress((p) => {
-        if (!p.checks[from]) return p;
-        const checks = { ...p.checks, [result.id]: p.checks[from] };
-        delete checks[from];
+        const checks = { ...p.checks };
+        for (const s of renamed) {
+          if (!checks[s.localId]) continue;
+          checks[s.result.id] = checks[s.localId];
+          delete checks[s.localId];
+        }
         return { ...p, checks };
       });
-      setNotice(
-        `Moved "${c.label}" to the server as "${result.id}" because "${from}" was already taken there.`
-      );
-    } else {
-      setNotice(`Moved "${c.label}" to the server.`);
     }
+    const names = synced.map((s) =>
+      s.result.id !== s.localId
+        ? `"${s.result.node.label}" (saved as "${s.result.id}", "${s.localId}" was taken)`
+        : `"${s.result.node.label}"`
+    );
+    if (error) {
+      setNotice(
+        `Could not save "${c.label}" to the server (${error}).` +
+          (names.length > 0 ? ` Saved first: ${names.join(", ")}.` : "")
+      );
+      return false;
+    }
+    setNotice(`Saved to the server, visible on every device: ${names.join(", ")}.`);
+    return true;
   };
 
   return (
