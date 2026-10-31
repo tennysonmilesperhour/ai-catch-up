@@ -4,7 +4,7 @@ Persistent context for Claude Code on this project. Read this file at the start 
 
 ## Project overview
 
-V1.0 of an AI onboarding product for solo entrepreneurs and small-team leads who became the de facto AI lead by default. Price: $49 one-time. V1.0 ships the marketing site and admin dashboard only; the product delivery flow is v1.1. The buyer sees the landing page, pays via a Stripe payment link, and is redirected to a "thank you, video coming soon" page. Owner: Tennyson (non-developer). Claude Code is the primary builder and deployment engineer.
+V1.0 of an AI onboarding product for solo entrepreneurs and small-team leads who became the de facto AI lead by default. Price: $49 one-time. The buyer sees the landing page, pays via a Stripe payment link, lands on `/thank-you`, then signs in at `/login` with the email they paid with to reach the gated setup flow (`/setup`) and their workspace under `/admin`. Owner: Tennyson (non-developer). Claude Code is the primary builder and deployment engineer.
 
 ## Handoff protocol (critical, do not violate)
 
@@ -62,23 +62,19 @@ For how state persists, how auth works, and the full env-var list, read `docs/ar
 │       ├── nexus, nexus/nodes     read + Hermes writes
 │       └── blog/publish, admin/*, sessions, version
 ├── /content
-│   ├── /landing
-│   │   ├── hero.mdx
-│   │   ├── plateau.mdx
-│   │   ├── what-you-get.mdx
-│   │   ├── who-its-for.mdx
-│   │   └── final-cta.mdx
-│   └── /admin
-│       ├── plan.mdx
-│       ├── schedule.json
-│       ├── decisions.json
-│       └── prompts.json
+│   ├── /landing                   hero, outcomes, pricing, faq,
+│   │                             testimonials, final-cta, ... (.mdx)
+│   ├── /admin                     plan.mdx, schedule/decisions/prompts/
+│   │                             workflows.json, nexus-data.ts,
+│   │                             hermes-nexus.json, launch-checklist.ts
+│   └── /blog                      published posts (.mdx)
 ├── /components
 │   ├── /landing
 │   ├── /admin
 │   └── /shared
+├── /supabase/migrations          shared-project migrations (append only)
 └── /data
-    └── subscribers.json
+    └── subscribers.json           local dev fallback only
 ```
 
 ## Voice reference
@@ -113,25 +109,29 @@ npm run dev                   # http://localhost:3000
 ```
 
 Public site: `/`
-Admin: `/admin` (redirects to `/login` if not authenticated). Admin access requires signing in with GitHub as `ADMIN_EMAIL`.
+Admin: `/admin` (redirects to `/login` if not authenticated). Sign in with `ADMIN_EMAIL` plus `ADMIN_PASSWORD` on the email form, or with GitHub OAuth if it is configured and your verified GitHub email is `ADMIN_EMAIL`. Any other email signs in as a buyer.
+
+Checks before pushing: `npm run typecheck`, `npm run voice-check -- --strict`, `npm run build`.
 
 ## Deploying
 
-Vercel is connected to the GitHub repo. Pushing to `main` triggers a production deploy. CI (`.github/workflows/ci.yml`) runs typecheck, voice-check, and build on every PR. Env vars must be set in the Vercel dashboard, see `.env.example` and `docs/architecture.md` for the full list. The load-bearing ones:
+Vercel is connected to the GitHub repo. Pushing to `main` triggers a production deploy. CI (`.github/workflows/ci.yml`) runs typecheck, strict voice-check, and build on every PR to `main` and every push to `main`. Env vars must be set in the Vercel dashboard, see `.env.example` and `docs/architecture.md` for the full list. The load-bearing ones:
 
 - `SESSION_SECRET` (required, 32+ random chars, or auth breaks)
-- `ADMIN_EMAIL` (who gets admin via GitHub OAuth)
+- `ADMIN_EMAIL` (the one address that can be admin)
+- `ADMIN_PASSWORD` (required with `ADMIN_EMAIL` for admin on the email form; unset means admin only via GitHub OAuth)
 - `STRIPE_PAYMENT_LINK` (unset means every buy button becomes email capture)
-- `SUBSCRIBE_WEBHOOK_URL` (unset means signups are dropped in prod)
+- `SUPABASE_URL` + `SUPABASE_PUBLISHABLE_KEY` (durable signup storage; `SUBSCRIBE_WEBHOOK_URL` is an optional extra destination, and `/api/subscribe` returns 503 if neither is set)
 - `PAID_EMAILS` (set to enforce the paywall on `/setup` and buyer surfaces)
 - `NEXT_PUBLIC_SITE_URL`
 
 ## Development branch
 
-Work happens on a `claude/*` branch and merges to `main` for production deploys.
+Production deploys from `main`. Note that the GitHub default branch is still `claude/ai-onboarding-v1-RTsDk`, which is behind `main`; always start from `main` (`git fetch origin main && git checkout -B main origin/main`). Work happens on a `claude/*` branch, opens a PR into `main`, and is squash-merged once CI is green. Changing the default branch is Tennyson's call.
 
 ## Current focus
 
 _(Update as work progresses.)_
 
-- v1.0 marketing site and admin dashboard shipped; hardening for launch (see `docs/ship-plan.md`).
+- v1.0 marketing site, gated setup flow and admin dashboard shipped; hardening for launch (see `docs/ship-plan.md`).
+- Pending copy approvals (support claims) are in `docs/copy-proposals.md`.
