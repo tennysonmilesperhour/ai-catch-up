@@ -29,7 +29,11 @@ export default function PlanPage() {
 
       <div className="grid gap-6">
         {sections.length === 0 ? (
-          <p className="italic text-[var(--color-muted)]">TODO: Plan sections pending.</p>
+          <p className="text-[var(--color-muted)]">
+            No plan sections yet. Add a <code>sections</code> list to the
+            frontmatter of <code>content/admin/plan.mdx</code> and they will
+            show here.
+          </p>
         ) : (
           sections.map((s, i) => (
             <Reveal key={i} delay={i * 60}>

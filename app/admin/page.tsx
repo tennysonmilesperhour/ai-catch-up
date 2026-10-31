@@ -291,7 +291,7 @@ export default async function OverviewPage() {
                 aria-hidden
               />
               <h2 className="font-display text-base text-[var(--color-dark)]">
-                This week
+                Library totals
               </h2>
             </header>
             <div className="grid grid-cols-2 gap-4">
@@ -303,7 +303,17 @@ export default async function OverviewPage() {
               />
             </div>
             <p className="font-mono text-[10px] uppercase tracking-[0.10em] text-[var(--color-muted)] mt-5">
-              Live tracking: TODO
+              Counted from the repo on each deploy. Signups live in
+              Supabase; sales in{" "}
+              <a
+                href="https://dashboard.stripe.com/payments"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-[var(--color-cyan)]"
+              >
+                Stripe
+              </a>
+              .
             </p>
           </section>
         </aside>
