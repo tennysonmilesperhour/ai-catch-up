@@ -25,6 +25,7 @@ import {
   deriveConnectionStatus,
   STATUS_PALETTE,
 } from "@/lib/nexus-status";
+import { SCROLL_CARD_ATTR, wheelBelongsToCard } from "@/lib/nexus-wheel";
 import {
   checksFor,
   linkKey,
@@ -504,6 +505,8 @@ export function Nexus({
     const el = containerRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
+      // A pinned card or link card that can still scroll gets the wheel.
+      if (wheelBelongsToCard(e.target, e.deltaY)) return;
       e.preventDefault();
       const delta = -e.deltaY;
       setZoom((z) => {
@@ -1366,6 +1369,7 @@ const HoverTooltip = forwardRef<
   return (
     <div
       ref={ref}
+      {...{ [SCROLL_CARD_ATTR]: "" }}
       style={{
         position: "absolute",
         top: 16,
@@ -1789,6 +1793,7 @@ function LinkCard({
     <div
       role="dialog"
       aria-label={`Link between ${a.label} and ${b.label}`}
+      {...{ [SCROLL_CARD_ATTR]: "" }}
       style={{
         position: "absolute",
         top: 16,
