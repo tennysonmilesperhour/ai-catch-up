@@ -134,6 +134,13 @@ The map's job is to show what you have, how it is integrated, and what is missin
 
 Items 1-3 are the product upgrade; 4-6 round it out. All Claude Code.
 
+**Status (2026-10-31):**
+- 1 done, with one limit: every node now has checkboxes (its own `connectionChecks`, or a single "Set up and working for me" when the data has none). Ticking them sets the node's status; the old guess is only a fallback and is labelled "(guess)". Ticks are saved per browser (`localStorage`), not on the server, because Phase 2 (server storage) is still undecided. Committing each tick through the GitHub store would redeploy production on every click, so that store was not used for this.
+- 2 done: links carry `wired | potential` (override, then data, then "touches something you do not have yet = potential"). Potential links are dashed in 2D and fainter in 3D. Clicking a link in 2D opens a card with a copy-a-prompt action and a wired/potential toggle. Overrides save per browser. The data file has no per-link "why" text yet, so the card explains from the two nodes' descriptions.
+- 3 done: "Next 3 moves" panel above the map (priority x things-you-already-have it connects to; started-but-unfinished nodes rank too), with inline checks and actions, hover or "Show on map" to highlight reach, plus two scores (checks done, links wired).
+- 4 done: the add form saves through `POST /api/nexus/nodes` (admin session, same origin) when `GITHUB_BLOG_TOKEN` is set, with a "connects to" picker; synced additions can be removed (`DELETE`); old browser-only additions get a "Sync" button. Reads are live from GitHub (fixes 1.5 when the token is set). Without the token it falls back to this-browser saves and says so.
+- 5 and 6 not started.
+
 ---
 
 ## Phase 4: Polish and cleanup

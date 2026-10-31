@@ -11,7 +11,7 @@ import {
 } from "@/content/admin/nexus-data";
 import { fetchUserRepos } from "@/lib/github";
 import { mergeNexus } from "@/lib/nexus-merge";
-import { readHermesStoreFromDisk } from "@/lib/hermes-store";
+import { readHermesStoreLive } from "@/lib/hermes-store";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -31,10 +31,11 @@ export async function GET(req: Request) {
     );
   }
 
-  const [outcome, hermes] = await Promise.all([
+  const [outcome, hermesRead] = await Promise.all([
     fetchUserRepos(),
-    readHermesStoreFromDisk(),
+    readHermesStoreLive(),
   ]);
+  const hermes = hermesRead.store;
 
   const githubMerged = outcome.ok
     ? mergeNexus(NEXUS_NODES, NEXUS_LINKS, outcome.repos)
@@ -54,11 +55,12 @@ export async function GET(req: Request) {
         github: outcome.ok ? githubMerged.nodes.length - NEXUS_NODES.length : 0,
         hermes: hermes.nodes.length,
         githubSyncOk: outcome.ok,
-        // Hermes nodes are read from the deployed file. A node just added via
-        // POST /api/nexus/nodes is committed to GitHub and becomes visible
-        // here on the next deploy, not instantly. Consumers should treat this
-        // read as eventually consistent.
-        hermesEventuallyConsistent: true,
+        // With GITHUB_BLOG_TOKEN set, Hermes nodes are read from GitHub at
+        // request time, so a node added via POST /api/nexus/nodes shows up
+        // within the 60s CDN cache. Without the token (or if GitHub is
+        // failing) this falls back to the deployed file, which only updates
+        // on the next deploy; this flag says which one you got.
+        hermesEventuallyConsistent: !hermesRead.live,
       },
     },
     {

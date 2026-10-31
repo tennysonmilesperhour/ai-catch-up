@@ -7,16 +7,20 @@ import {
 } from "@/content/admin/nexus-data";
 import { fetchUserRepos } from "@/lib/github";
 import { mergeNexus } from "@/lib/nexus-merge";
-import { readHermesStoreFromDisk } from "@/lib/hermes-store";
+import { readHermesStoreLive } from "@/lib/hermes-store";
 
 export const metadata = { title: "Nexus" };
-export const revalidate = 900; // 15 min, matches the GitHub fetch cache
+// Rendered per request so nodes added from this page appear on reload.
+// The GitHub repo list keeps its own 15-minute fetch cache (lib/github.ts).
+export const dynamic = "force-dynamic";
 
 export default async function NexusPage() {
-  const [outcome, hermes] = await Promise.all([
+  const [outcome, hermesRead] = await Promise.all([
     fetchUserRepos(),
-    readHermesStoreFromDisk(),
+    readHermesStoreLive(),
   ]);
+  const hermes = hermesRead.store;
+  const serverWrites = !!process.env.GITHUB_BLOG_TOKEN;
   const merged =
     outcome.ok
       ? mergeNexus(NEXUS_NODES, NEXUS_LINKS, outcome.repos)
@@ -33,7 +37,7 @@ export default async function NexusPage() {
           )
       ).length
     : 0;
-  const hermesCount = hermes.nodes.length;
+  const hermesCount = hermes.nodes.filter((n) => n.source !== "admin").length;
 
   return (
     <div>
@@ -51,7 +55,9 @@ export default async function NexusPage() {
         </div>
         <p className="text-[var(--color-muted-dark)] mt-2 max-w-2xl">
           A living map of the onboarding. Drag a node, hover to see neighbors,
-          click to pin. New GitHub repos appear here automatically within 15
+          click to pin it and tick its connection checks. Dashed lines are
+          integrations that could exist but are not wired yet; click one to
+          see it. New GitHub repos appear here automatically within 15
           minutes. Hermes can read this graph at <code>/api/nexus</code> and
           add nodes via <code>POST /api/nexus/nodes</code>.
         </p>
@@ -60,6 +66,7 @@ export default async function NexusPage() {
         domains={DOMAINS}
         nodes={nodes as NexusNode[]}
         links={links}
+        serverWrites={serverWrites}
       />
     </div>
   );

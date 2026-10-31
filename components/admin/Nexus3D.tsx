@@ -55,6 +55,7 @@ type GraphLink = {
   source: string;
   target: string;
   strength: number;
+  status?: "wired" | "potential";
 };
 
 function brighten(hex: string, amount = 1.2): string {
@@ -185,6 +186,7 @@ export function Nexus3D({ domains, nodes, links, skillsActive = false }: Props) 
         source: l.source,
         target: l.target,
         strength: l.strength,
+        status: l.status,
       }));
     return { nodes: gNodes, links: gLinks };
   }, [nodes, links, domains]);
@@ -225,8 +227,9 @@ export function Nexus3D({ domains, nodes, links, skillsActive = false }: Props) 
     if (touchesSkill && !skillsActive && !focused) {
       return "rgba(196, 181, 253, 0.06)";
     }
-    if (!focusId) return "rgba(245, 239, 224, 0.25)";
-    if (focused) return "#d97757";
+    const potential = (raw as { status?: string }).status === "potential";
+    if (!focusId) return potential ? "rgba(245, 239, 224, 0.1)" : "rgba(245, 239, 224, 0.25)";
+    if (focused) return potential ? "rgba(217, 119, 87, 0.55)" : "#d97757";
     return "rgba(245, 239, 224, 0.06)";
   };
 
@@ -237,8 +240,9 @@ export function Nexus3D({ domains, nodes, links, skillsActive = false }: Props) 
     const touchesSkill = isSkillId(sId) || isSkillId(tId);
     const focused = sId === focusId || tId === focusId;
     if (touchesSkill && !skillsActive && !focused) return 0.4;
-    if (!focusId) return 0.8;
-    if (focused) return 2;
+    const potential = (raw as { status?: string }).status === "potential";
+    if (!focusId) return potential ? 0.4 : 0.8;
+    if (focused) return potential ? 1.2 : 2;
     return 0.6;
   };
 
