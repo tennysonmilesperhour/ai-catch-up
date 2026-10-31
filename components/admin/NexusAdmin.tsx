@@ -372,7 +372,9 @@ export function NexusAdmin({
 
     if (serverWrites) {
       setBusy(true);
-      const result = await syncAddition(addition, serverIds, postNode);
+      const result = await syncAddition(addition, serverIds, postNode, {
+        reservedIds: [...custom.map((x) => x.id), ...removedIds],
+      });
       setBusy(false);
       if (result.ok) {
         setServerAdded((prev) => ({
@@ -429,7 +431,9 @@ export function NexusAdmin({
     setBusy(true);
     // serverIds never includes this browser's local additions, so a local
     // node is only renamed when the server really has that id already.
-    const result = await syncAddition(c, serverIds, postNode);
+    const result = await syncAddition(c, serverIds, postNode, {
+      reservedIds: custom.filter((x) => x.id !== c.id).map((x) => x.id),
+    });
     setBusy(false);
     if (!result.ok) {
       setNotice(`Could not move "${c.label}" to the server (${result.error}).`);

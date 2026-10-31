@@ -54,15 +54,23 @@ export function linksFor(id: string, connectsTo: string[] | undefined): NexusLin
  * the server has; an id in there is renamed before sending. If the server
  * still reports a conflict (another browser saved in the meantime), the
  * addition is renamed and retried, up to `maxAttempts` sends.
+ *
+ * `reservedIds` are ids that must not be picked as a replacement (this
+ * browser's other local additions) but do not by themselves force `a` to
+ * be renamed. Without it, syncing local `cursor` when the server has
+ * `cursor` could pick `cursor-2` and swallow a local `cursor-2`.
  */
 export async function syncAddition(
   a: Addition,
   takenIds: Iterable<string>,
   post: PostFn,
-  maxAttempts = 4
+  options: { reservedIds?: Iterable<string>; maxAttempts?: number } = {}
 ): Promise<SyncResult> {
+  const maxAttempts = options.maxAttempts ?? 4;
   const taken = new Set(takenIds);
-  let id = uniqueId(a.id, taken);
+  const avoid = new Set([...taken, ...(options.reservedIds ?? [])]);
+  avoid.delete(a.id);
+  let id = taken.has(a.id) ? uniqueId(a.id, [...avoid, a.id]) : a.id;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const links = linksFor(id, a.connectsTo);
     const result = await post({
@@ -96,8 +104,8 @@ export async function syncAddition(
       };
     }
     if (!result.conflict) return { ok: false, error: result.error };
-    taken.add(id);
-    id = uniqueId(a.id, taken);
+    avoid.add(id);
+    id = uniqueId(a.id, avoid);
   }
   return { ok: false, error: "could not find a free id, try a different name" };
 }

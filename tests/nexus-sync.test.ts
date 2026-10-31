@@ -54,3 +54,46 @@ test("a non-conflict failure stops without retrying", async () => {
   assert.equal(calls, 1);
   assert.deepEqual(result, { ok: false, error: "server not configured" });
 });
+
+test("a replacement id never takes another local addition's id", async () => {
+  const sent: string[] = [];
+  // Server has `cursor`; this browser also has a local `cursor-2`.
+  const result = await syncAddition(
+    addition,
+    ["cursor"],
+    async (body) => {
+      sent.push((body as { node: { id: string } }).node.id);
+      return { ok: true };
+    },
+    { reservedIds: ["cursor-2"] }
+  );
+  assert.deepEqual(sent, ["cursor-3"]);
+  assert.ok(result.ok && result.id === "cursor-3");
+});
+
+test("a reserved id on retry is skipped too", async () => {
+  const sent: string[] = [];
+  const result = await syncAddition(
+    addition,
+    [],
+    async (body) => {
+      const id = (body as { node: { id: string } }).node.id;
+      sent.push(id);
+      return id === "cursor"
+        ? { ok: false, status: 409, error: "taken", conflict: true }
+        : { ok: true };
+    },
+    { reservedIds: ["cursor-2"] }
+  );
+  assert.deepEqual(sent, ["cursor", "cursor-3"]);
+  assert.ok(result.ok && result.id === "cursor-3");
+});
+
+test("reserved ids alone do not rename a node whose own id is free", async () => {
+  const sent: string[] = [];
+  await syncAddition(addition, [], async (body) => {
+    sent.push((body as { node: { id: string } }).node.id);
+    return { ok: true };
+  }, { reservedIds: ["cursor-2", "cursor"] });
+  assert.deepEqual(sent, ["cursor"]);
+});
