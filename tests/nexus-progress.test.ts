@@ -70,3 +70,45 @@ test("a link touching a gap is potential until overridden", () => {
   const p = setLinkStatus(EMPTY_PROGRESS, links[0], "wired");
   assert.equal(linkStatus(links[0], byId, p), "wired");
 });
+
+test("renaming an addition carries its ticks and link overrides at both ends", async () => {
+  const { renameInProgress } = await import("@/lib/nexus-progress");
+  const p = {
+    version: 1 as const,
+    checks: { editor: [true], other: [false, true] },
+    links: {
+      "editor->geck-inspect": "potential" as const,
+      "notes->editor": "wired" as const,
+      "notes->cursor": "potential" as const,
+      "x->y": "wired" as const,
+    },
+  };
+  const out = renameInProgress(
+    p,
+    new Map([
+      ["editor", "editor-2"],
+      ["cursor", "cursor-3"],
+      ["notes", "notes"],
+    ])
+  );
+  assert.deepEqual(out.checks, { "editor-2": [true], other: [false, true] });
+  assert.deepEqual(out.links, {
+    "editor-2->geck-inspect": "potential",
+    "notes->editor-2": "wired",
+    "notes->cursor-3": "potential",
+    "x->y": "wired",
+  });
+  // The override still applies after the rename.
+  const editor2 = { ...deployedApp, id: "editor-2", kind: "ghost" as const };
+  const byId = new Map([editor2, deployedApp].map((n) => [n.id, n]));
+  assert.equal(
+    linkStatus({ source: "editor-2", target: "geck-inspect", strength: 0.3 }, byId, out),
+    "potential"
+  );
+});
+
+test("an unchanged id map leaves progress untouched", async () => {
+  const { renameInProgress } = await import("@/lib/nexus-progress");
+  const p = toggleCheck(EMPTY_PROGRESS, deployedApp, 0);
+  assert.equal(renameInProgress(p, new Map([["geck-inspect", "geck-inspect"]])), p);
+});

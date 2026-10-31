@@ -283,3 +283,41 @@ export function saveProgress(progress: NexusProgress): void {
     console.error("Failed to save Nexus progress:", err);
   }
 }
+
+/**
+ * Move every piece of saved progress from old ids to new ones, used when
+ * syncing renames an addition (for example `editor` saved as `editor-2`):
+ * the node's ticked checks and every link override that names it at
+ * either end. Keys already present under a new id are kept as they are.
+ */
+export function renameInProgress(
+  progress: NexusProgress,
+  idMap: Map<string, string>
+): NexusProgress {
+  const moved = [...idMap].filter(([from, to]) => from !== to);
+  if (moved.length === 0) return progress;
+  const rename = (id: string) => idMap.get(id) ?? id;
+
+  const checks: NexusProgress["checks"] = {};
+  for (const [id, ticks] of Object.entries(progress.checks)) {
+    const to = rename(id);
+    if (to !== id && progress.checks[to]) continue;
+    checks[to] = ticks;
+  }
+
+  const links: NexusProgress["links"] = {};
+  for (const [key, status] of Object.entries(progress.links)) {
+    const sep = key.indexOf("->");
+    if (sep < 0) {
+      links[key] = status;
+      continue;
+    }
+    const to = linkKey({
+      source: rename(key.slice(0, sep)),
+      target: rename(key.slice(sep + 2)),
+    });
+    if (to !== key && progress.links[to]) continue;
+    links[to] = status;
+  }
+  return { ...progress, checks, links };
+}

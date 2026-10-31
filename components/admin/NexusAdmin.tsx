@@ -22,6 +22,7 @@ import {
   loadProgress,
   observedStatus,
   rankNextMoves,
+  renameInProgress,
   saveProgress,
   setLinkStatus,
   toggleCheck,
@@ -454,18 +455,14 @@ export function NexusAdmin({
       );
     setCustom(next);
     saveCustom(next);
-    const renamed = synced.filter((s) => s.result.id !== s.localId);
-    if (renamed.length > 0) {
-      // Carry this browser's ticks over to the new ids.
-      updateProgress((p) => {
-        const checks = { ...p.checks };
-        for (const s of renamed) {
-          if (!checks[s.localId]) continue;
-          checks[s.result.id] = checks[s.localId];
-          delete checks[s.localId];
-        }
-        return { ...p, checks };
-      });
+    // Everything this page keys by node id follows a rename: ticked
+    // checks, link overrides at either end (renameInProgress), other local
+    // additions' connects-to (above) and the map highlight. Pinned cards
+    // and link cards close on their own when their id disappears, and
+    // drag positions are re-seeded for the new id.
+    if (synced.some((s) => s.result.id !== s.localId)) {
+      updateProgress((p) => renameInProgress(p, idMap));
+      setFocusId((f) => (f ? idMap.get(f) ?? f : f));
     }
     const names = synced.map((s) =>
       s.result.id !== s.localId
